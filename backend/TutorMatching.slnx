@@ -1,0 +1,8 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/TutorMatching.Api/TutorMatching.Api.csproj" />
+    <Project Path="src/TutorMatching.Application/TutorMatching.Application.csproj" />
+    <Project Path="src/TutorMatching.Domain/TutorMatching.Domain.csproj" />
+    <Project Path="src/TutorMatching.Infrastructure/TutorMatching.Infrastructure.csproj" />
+  </Folder>
+</Solution>

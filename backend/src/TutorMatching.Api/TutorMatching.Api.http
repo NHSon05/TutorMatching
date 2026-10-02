@@ -1,0 +1,6 @@
+@TutorMatching.Api_HostAddress = http://localhost:5014
+
+GET {{TutorMatching.Api_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
