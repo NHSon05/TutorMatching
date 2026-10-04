@@ -1,0 +1,296 @@
+openapi: 3.1.0
+info:
+  title: TutorMatching Foundation and Accounts API
+  version: 1.0.0
+servers:
+  - url: /api/v1
+paths:
+  /auth/register:
+    post:
+      operationId: registerAccount
+      summary: Register a learner or tutor account
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegisterRequest'
+      responses:
+        '201':
+          description: Account created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AccountResponse'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+  /auth/login:
+    post:
+      operationId: login
+      summary: Start an authenticated browser session
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+      responses:
+        '200':
+          description: Session cookie issued
+          headers:
+            Set-Cookie:
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AccountResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+  /auth/logout:
+    post:
+      operationId: logout
+      summary: Revoke the current browser session
+      security:
+        - cookieAuth: []
+      responses:
+        '204':
+          description: Session revoked
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+  /auth/forgot-password:
+    post:
+      operationId: requestPasswordReset
+      summary: Request a neutral password-reset response
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ForgotPasswordRequest'
+      responses:
+        '204':
+          description: Request accepted whether or not the account exists
+        '422':
+          $ref: '#/components/responses/ValidationError'
+  /auth/reset-password:
+    post:
+      operationId: resetPassword
+      summary: Reset a password with a valid single-use credential
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ResetPasswordRequest'
+      responses:
+        '204':
+          description: Password changed and prior sessions invalidated
+        '400':
+          $ref: '#/components/responses/InvalidResetCredential'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+  /users/me:
+    get:
+      operationId: getCurrentProfile
+      summary: Get the authenticated user's private profile
+      security:
+        - cookieAuth: []
+      responses:
+        '200':
+          description: Private personal profile
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PersonalProfileResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+    put:
+      operationId: updateCurrentProfile
+      summary: Replace allowed fields on the authenticated user's private profile
+      security:
+        - cookieAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateProfileRequest'
+      responses:
+        '200':
+          description: Updated private profile
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PersonalProfileResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+components:
+  securitySchemes:
+    cookieAuth:
+      type: apiKey
+      in: cookie
+      name: tutormatch_session
+  schemas:
+    AccountRole:
+      type: string
+      enum: [LEARNER, TUTOR, ADMIN]
+    RegisterRequest:
+      type: object
+      additionalProperties: false
+      required: [fullName, email, password, passwordConfirmation, role]
+      properties:
+        fullName:
+          type: string
+          minLength: 2
+          maxLength: 100
+        email:
+          type: string
+          format: email
+        password:
+          type: string
+          minLength: 8
+        passwordConfirmation:
+          type: string
+          minLength: 8
+        role:
+          type: string
+          enum: [LEARNER, TUTOR]
+    LoginRequest:
+      type: object
+      additionalProperties: false
+      required: [email, password]
+      properties:
+        email:
+          type: string
+          format: email
+        password:
+          type: string
+          minLength: 1
+    ForgotPasswordRequest:
+      type: object
+      additionalProperties: false
+      required: [email]
+      properties:
+        email:
+          type: string
+          format: email
+    ResetPasswordRequest:
+      type: object
+      additionalProperties: false
+      required: [email, token, newPassword, passwordConfirmation]
+      properties:
+        email:
+          type: string
+          format: email
+        token:
+          type: string
+          minLength: 1
+        newPassword:
+          type: string
+          minLength: 8
+        passwordConfirmation:
+          type: string
+          minLength: 8
+    UpdateProfileRequest:
+      type: object
+      additionalProperties: false
+      required: [fullName]
+      properties:
+        fullName:
+          type: string
+          minLength: 2
+          maxLength: 100
+        phoneNumber:
+          type: [string, 'null']
+        dateOfBirth:
+          type: [string, 'null']
+          format: date
+        avatarUrl:
+          type: [string, 'null']
+          maxLength: 2048
+    AccountResponse:
+      type: object
+      additionalProperties: false
+      required: [id, email, fullName, role, status]
+      properties:
+        id:
+          type: string
+          format: uuid
+        email:
+          type: string
+          format: email
+        fullName:
+          type: string
+        role:
+          $ref: '#/components/schemas/AccountRole'
+        status:
+          type: string
+          enum: [ACTIVE, LOCKED, INACTIVE]
+    PersonalProfileResponse:
+      allOf:
+        - $ref: '#/components/schemas/AccountResponse'
+        - type: object
+          additionalProperties: false
+          properties:
+            phoneNumber:
+              type: [string, 'null']
+            dateOfBirth:
+              type: [string, 'null']
+              format: date
+            avatarUrl:
+              type: [string, 'null']
+  responses:
+    Unauthorized:
+      description: Authentication is required or invalid
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/Problem'
+    Forbidden:
+      description: The authenticated account is not permitted
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/Problem'
+    Conflict:
+      description: A unique account field conflicts with existing data
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/Problem'
+    ValidationError:
+      description: One or more request fields are invalid
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/Problem'
+    InvalidResetCredential:
+      description: Reset credential is invalid, expired, or already used
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/Problem'
+    Problem:
+      type: object
+      properties:
+        type:
+          type: string
+        title:
+          type: string
+        status:
+          type: integer
+        detail:
+          type: string
+        traceId:
+          type: string

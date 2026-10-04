@@ -1,26 +1,333 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+  --color_thuong_hieu: #FFB717;
+  --mau_vang_nen_button: #FFB717;
+  --mau_vang_hover_button: #ffcb45;
+  --mau_cam_dam: #ca6f04;
+  --mau_cam_nhat: #d38800;
+  --mau_den_text: #1D1D1D;
+  --mau_den_xam_sub_text: #475569;
+  --mau_xam_border: #e2e8f0;
+  --main_background_color: #ffffff;
+  --mau_xanh_dam: #1877F2;
+  --mau_xanh_la: #4CAF50;
+  --mau_do_dam: #f44336;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  color: var(--mau_den_text);
+  overflow-x: hidden;
+  background-color: #ffffff;
+}
+
+/* =========================================================
+   CONTAINER & SECTION BASE
+========================================================= */
+.container-custom {
+  width: 100%;
+  max-width: 1240px;
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: 20px;
+  padding-right: 20px;
+}
+
+.section-padding {
+  padding: 70px 0;
+}
+
+@media (max-width: 991px) {
+  .section-padding {
+    padding: 50px 0;
+  }
+}
+
+.section-title h2 {
+  font-size: 42px;
+  font-weight: 600;
+  line-height: 1.25;
+  color: var(--mau_den_text);
+  text-align: center;
+  margin-bottom: 16px;
+  letter-spacing: -0.5px;
+}
+
+.section-title .sub_title {
+  display: block;
+  font-size: 18px;
+  color: var(--mau_den_xam_sub_text);
+  text-align: center;
+  font-weight: 400;
+  margin-bottom: 50px;
+}
+
+@media (max-width: 768px) {
+  .section-title h2 {
+    font-size: 28px;
+    margin-bottom: 12px;
+  }
+  .section-title .sub_title {
+    font-size: 15px;
+    margin-bottom: 35px;
+  }
+}
+
+/* =========================================================
+   CTA BUTTON PILL
+========================================================= */
+.cta-trangchu {
+  display: flex;
+  justify-content: center;
+  margin-top: 50px;
+}
+
+.btn-black-pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 13px 28px;
+  border-radius: 999px;
+  font-size: 16px;
+  font-weight: 500;
+  color: #ffffff;
+  background-color: #000000;
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.12);
+  transition: all 0.3s ease;
+}
+
+.btn-black-pill:hover {
+  transform: translateY(-3px);
+  background-color: #222222;
+  box-shadow: 0 16px 32px rgba(0, 0, 0, 0.2);
+}
+
+.btn-black-pill i {
+  transition: transform 0.3s ease;
+}
+
+.btn-black-pill:hover i {
+  transform: translateX(4px);
+}
+
+/* =========================================================
+   HEADER STYLES
+========================================================= */
+.header-sticky {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background-color: rgba(255, 255, 255, 0.98);
+  backdrop-filter: blur(8px);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+  transition: all 0.3s ease;
+}
+
+/* =========================================================
+   BANNER SECTION
+========================================================= */
+.banner_home {
+  width: 100%;
+  position: relative;
+  background-color: #ffb717;
+  overflow: hidden;
+}
+
+.banner_wrapper {
+  position: relative;
+  max-width: 2400px;
+  margin: 0 auto;
+}
+
+.banner_wrapper img {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+.banner_cta_overlay {
+  position: absolute;
+  left: 6.5%;
+  bottom: 12%;
+  width: 28%;
+  height: 25%;
+  z-index: 10;
+  cursor: pointer;
+}
+
+/* =========================================================
+   SERVICES 3-CARD SECTION
+========================================================= */
+.section_service {
+  background:
+    radial-gradient(circle at top left, rgba(255, 183, 23, 0.08), transparent 35%),
+    radial-gradient(circle at center, rgba(255, 210, 120, 0.06), transparent 45%),
+    linear-gradient(180deg, #fefaf2 0%, #fdf7ec 20%, #f8f1e3 50%, #fcf9f2 85%, #ffffff 100%);
+}
+
+.service_box {
+  background: #ffffff;
+  border-radius: 24px;
+  padding: 32px 24px;
+  border: 1px solid #FFB717;
+  box-shadow: 0 4px 20px rgba(255, 183, 23, 0.08);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.service_box:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 16px 36px rgba(0, 0, 0, 0.08);
+}
+
+/* =========================================================
+   PROCESS TIMELINE
+========================================================= */
+.process_timeline_wrapper {
+  position: relative;
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 20px 0;
+}
+
+.process_center_line {
+  position: absolute;
+  top: 40px;
+  bottom: 40px;
+  left: 50%;
+  width: 3px;
+  transform: translateX(-50%);
+  background: #e2e8f0;
+  z-index: 1;
+}
+
+@media (max-width: 768px) {
+  .process_center_line {
+    left: 24px;
+  }
+}
+
+.process_node {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  z-index: 2;
+  box-shadow: 0 0 0 4px #ffffff;
+}
+
+/* =========================================================
+   FEEDBACK TICKER ANIMATION
+========================================================= */
+@keyframes scrollTickerUp {
+  0% {
+    transform: translateY(0);
+  }
+  100% {
+    transform: translateY(-50%);
+  }
+}
+
+@keyframes scrollTickerDown {
+  0% {
+    transform: translateY(-50%);
+  }
+  100% {
+    transform: translateY(0);
+  }
+}
+
+.ticker-track-up {
+  animation: scrollTickerUp 35s linear infinite;
+}
+
+.ticker-track-down {
+  animation: scrollTickerDown 35s linear infinite;
+}
+
+.ticker-track-up:hover,
+.ticker-track-down:hover {
+  animation-play-state: paused;
+}
+
+/* =========================================================
+   FLOATING ACTION BUTTONS
+========================================================= */
+.floating-contact-panel {
+  position: fixed;
+  right: 18px;
+  bottom: 85px;
+  z-index: 99;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+
+.floating-action-btn {
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
+  background: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+  position: relative;
+}
+
+.floating-action-btn:hover {
+  transform: scale(1.1);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.22);
+}
+
+.floating-action-btn .tooltip {
+  position: absolute;
+  right: 56px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: #1e293b;
+  color: #ffffff;
+  font-size: 12px;
+  font-weight: 500;
+  padding: 5px 10px;
+  border-radius: 6px;
+  white-space: nowrap;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s ease;
+}
+
+.floating-action-btn:hover .tooltip {
+  opacity: 1;
+}
+
+.back-to-top-btn {
+  position: fixed;
+  right: 20px;
+  bottom: 25px;
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  background: #FFB717;
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 14px rgba(255, 183, 23, 0.4);
+  z-index: 98;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.back-to-top-btn:hover {
+  transform: translateY(-4px);
+  background: #f59e0b;
 }

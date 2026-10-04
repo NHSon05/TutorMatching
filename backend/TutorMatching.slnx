@@ -5,4 +5,9 @@
     <Project Path="src/TutorMatching.Domain/TutorMatching.Domain.csproj" />
     <Project Path="src/TutorMatching.Infrastructure/TutorMatching.Infrastructure.csproj" />
   </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/TutorMatching.Api.IntegrationTests/TutorMatching.Api.IntegrationTests.csproj" />
+    <Project Path="tests/TutorMatching.Application.UnitTests/TutorMatching.Application.UnitTests.csproj" />
+    <Project Path="tests/TutorMatching.Domain.UnitTests/TutorMatching.Domain.UnitTests.csproj" />
+  </Folder>
 </Solution>

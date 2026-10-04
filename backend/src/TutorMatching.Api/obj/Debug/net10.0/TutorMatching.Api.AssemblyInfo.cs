@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("TutorMatching.Api")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+f2537bf81d761e450263fef8c1d34902e42e82c4")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+6632cabfc1c27fd6ce5012378d8b2dc2b3f05ef4")]
 [assembly: System.Reflection.AssemblyProductAttribute("TutorMatching.Api")]
 [assembly: System.Reflection.AssemblyTitleAttribute("TutorMatching.Api")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
