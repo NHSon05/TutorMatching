@@ -1,13 +1,16 @@
 import type { Metadata } from "next";
+import { Montserrat } from "next/font/google";
 import "./globals.css";
 
+const montserrat = Montserrat({
+  subsets: ["latin", "vietnamese"],
+  variable: "--font-montserrat",
+  display: "swap",
+});
+
 export const metadata: Metadata = {
-  title: "GiasuHome - Nền tảng kết nối gia sư 1 kèm 1",
-  description:
-    "Giasuhome.vn - Nền tảng kết nối gia sư 1 kèm 1. Kết nối gia sư giỏi và học viên trên toàn quốc. Đáp ứng mọi nhu cầu học tập của học sinh.",
-  icons: {
-    icon: "https://giasuhome.vn/lib/image/icon_logo.png",
-  },
+  title: "TutorMatching",
+  description: "Nền tảng kết nối gia sư và học viên",
 };
 
 export default function RootLayout({
@@ -16,16 +19,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="vi" className="h-full antialiased scroll-smooth">
-      <head>
-        <link
-          rel="stylesheet"
-          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
-        />
-      </head>
-      <body className="min-h-full flex flex-col font-sans text-[#1D1D1D] bg-white antialiased">
-        {children}
-      </body>
+    <html lang="vi" className={`h-full antialiased ${montserrat.variable} ${montserrat.className}`}>
+      <body className={`${montserrat.className} min-h-full flex flex-col font-sans`}>{children}</body>
     </html>
   );
 }

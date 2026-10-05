@@ -1,333 +1,249 @@
 @import "tailwindcss";
 
 :root {
-  --color_thuong_hieu: #FFB717;
-  --mau_vang_nen_button: #FFB717;
-  --mau_vang_hover_button: #ffcb45;
-  --mau_cam_dam: #ca6f04;
-  --mau_cam_nhat: #d38800;
-  --mau_den_text: #1D1D1D;
-  --mau_den_xam_sub_text: #475569;
-  --mau_xam_border: #e2e8f0;
-  --main_background_color: #ffffff;
-  --mau_xanh_dam: #1877F2;
-  --mau_xanh_la: #4CAF50;
-  --mau_do_dam: #f44336;
+  /* =========================================================================
+     BASE TYPOGRAPHY & DEFAULT CANVAS
+     ========================================================================= */
+  --background: #ffffff;
+  --foreground: #0f172a;
+  --font-montserrat: "Montserrat", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+
+  /* =========================================================================
+     1. BRAND / PRIMARY PALETTE (Blue)
+     Used for primary platform identity, CTA buttons, and Learner interface
+     ========================================================================= */
+  --color-brand-50: #eff6ff;
+  --color-brand-100: #dbeafe;
+  --color-brand-200: #bfdbfe;
+  --color-brand-300: #93c5fd;
+  --color-brand-400: #60a5fa;
+  --color-brand-500: #3b82f6;
+  --color-brand-600: #2563eb;
+  --color-brand-700: #1d4ed8;
+  --color-brand-800: #1e40af;
+  --color-brand-900: #1e3a8a;
+  --color-brand-950: #172554;
+  --color-brand: var(--color-brand-600);
+  --color-brand-hover: var(--color-brand-700);
+
+  /* =========================================================================
+     2. ROLE: TUTOR PALETTE (Amber / Warm Gold)
+     Used for Tutor workspace, badges, and verification status
+     ========================================================================= */
+  --color-tutor-50: #fffbeb;
+  --color-tutor-100: #fef3c7;
+  --color-tutor-200: #fde68a;
+  --color-tutor-300: #fcd34d;
+  --color-tutor-400: #fbbf24;
+  --color-tutor-500: #f59e0b;
+  --color-tutor-600: #d97706;
+  --color-tutor-700: #b45309;
+  --color-tutor-800: #92400e;
+  --color-tutor-900: #78350f;
+  --color-tutor-950: #451a03;
+  --color-role-tutor: var(--color-tutor-600);
+
+  /* =========================================================================
+     3. ROLE: ADMIN PALETTE (Crimson / Red)
+     Used for Admin workspace, audit logs, and critical approvals
+     ========================================================================= */
+  --color-admin-50: #fef2f2;
+  --color-admin-100: #fee2e2;
+  --color-admin-200: #fecaca;
+  --color-admin-300: #fca5a5;
+  --color-admin-400: #f87171;
+  --color-admin-500: #ef4444;
+  --color-admin-600: #dc2626;
+  --color-admin-700: #b91c1c;
+  --color-admin-800: #991b1b;
+  --color-admin-900: #7f1d1d;
+  --color-admin-950: #450a0a;
+  --color-role-admin: var(--color-admin-600);
+
+  /* =========================================================================
+     4. ROLE: SHARED / MESSAGING PALETTE (Indigo)
+     Used for messaging channels, negotiations, and common services
+     ========================================================================= */
+  --color-shared-50: #eef2ff;
+  --color-shared-100: #e0e7ff;
+  --color-shared-200: #c7d2fe;
+  --color-shared-300: #a5b4fc;
+  --color-shared-400: #818cf8;
+  --color-shared-500: #6366f1;
+  --color-shared-600: #4f46e5;
+  --color-shared-700: #4338ca;
+  --color-shared-800: #3730a3;
+  --color-shared-900: #312e81;
+  --color-shared-950: #1e1b4b;
+  --color-role-shared: var(--color-shared-600);
+
+  /* =========================================================================
+     5. SEMANTIC STATUS PALETTE (Success, Warning, Error, Info)
+     ========================================================================= */
+  --color-status-success-bg: #ecfdf5;
+  --color-status-success: #059669;
+  --color-status-success-dark: #047857;
+
+  --color-status-warning-bg: #fffbeb;
+  --color-status-warning: #d97706;
+  --color-status-warning-dark: #b45309;
+
+  --color-status-error-bg: #fef2f2;
+  --color-status-error: #dc2626;
+  --color-status-error-dark: #b91c1c;
+
+  --color-status-info-bg: #f0f9ff;
+  --color-status-info: #0284c7;
+  --color-status-info-dark: #0369a1;
+
+  /* =========================================================================
+     6. SURFACES, BORDERS & CONTENT TOKENS (Light Mode)
+     ========================================================================= */
+  --color-surface-base: #ffffff;
+  --color-surface-subtle: #f8fafc;
+  --color-surface-card: #ffffff;
+  --color-surface-muted: #f1f5f9;
+
+  --color-border-subtle: #f1f5f9;
+  --color-border-default: #e2e8f0;
+  --color-border-strong: #cbd5e1;
+
+  --color-content-primary: #0f172a;
+  --color-content-secondary: #475569;
+  --color-content-muted: #94a3b8;
+  --color-content-inverse: #ffffff;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #090d16;
+    --foreground: #f8fafc;
+
+    --color-surface-base: #090d16;
+    --color-surface-subtle: #0f172a;
+    --color-surface-card: #131b2e;
+    --color-surface-muted: #1e293b;
+
+    --color-border-subtle: #1e293b;
+    --color-border-default: #334155;
+    --color-border-strong: #475569;
+
+    --color-content-primary: #f8fafc;
+    --color-content-secondary: #cbd5e1;
+    --color-content-muted: #64748b;
+    --color-content-inverse: #0f172a;
+  }
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-montserrat);
+  --font-montserrat: var(--font-montserrat);
+  --font-mono: var(--font-montserrat);
+
+  /* Brand Scale & Tokens */
+  --color-brand-50: var(--color-brand-50);
+  --color-brand-100: var(--color-brand-100);
+  --color-brand-200: var(--color-brand-200);
+  --color-brand-300: var(--color-brand-300);
+  --color-brand-400: var(--color-brand-400);
+  --color-brand-500: var(--color-brand-500);
+  --color-brand-600: var(--color-brand-600);
+  --color-brand-700: var(--color-brand-700);
+  --color-brand-800: var(--color-brand-800);
+  --color-brand-900: var(--color-brand-900);
+  --color-brand-950: var(--color-brand-950);
+  --color-brand: var(--color-brand);
+  --color-brand-hover: var(--color-brand-hover);
+
+  /* Role Tokens */
+  --color-tutor-50: var(--color-tutor-50);
+  --color-tutor-100: var(--color-tutor-100);
+  --color-tutor-200: var(--color-tutor-200);
+  --color-tutor-300: var(--color-tutor-300);
+  --color-tutor-400: var(--color-tutor-400);
+  --color-tutor-500: var(--color-tutor-500);
+  --color-tutor-600: var(--color-tutor-600);
+  --color-tutor-700: var(--color-tutor-700);
+  --color-tutor-800: var(--color-tutor-800);
+  --color-tutor-900: var(--color-tutor-900);
+  --color-tutor-950: var(--color-tutor-950);
+  --color-role-tutor: var(--color-role-tutor);
+
+  --color-admin-50: var(--color-admin-50);
+  --color-admin-100: var(--color-admin-100);
+  --color-admin-200: var(--color-admin-200);
+  --color-admin-300: var(--color-admin-300);
+  --color-admin-400: var(--color-admin-400);
+  --color-admin-500: var(--color-admin-500);
+  --color-admin-600: var(--color-admin-600);
+  --color-admin-700: var(--color-admin-700);
+  --color-admin-800: var(--color-admin-800);
+  --color-admin-900: var(--color-admin-900);
+  --color-admin-950: var(--color-admin-950);
+  --color-role-admin: var(--color-role-admin);
+
+  --color-shared-50: var(--color-shared-50);
+  --color-shared-100: var(--color-shared-100);
+  --color-shared-200: var(--color-shared-200);
+  --color-shared-300: var(--color-shared-300);
+  --color-shared-400: var(--color-shared-400);
+  --color-shared-500: var(--color-shared-500);
+  --color-shared-600: var(--color-shared-600);
+  --color-shared-700: var(--color-shared-700);
+  --color-shared-800: var(--color-shared-800);
+  --color-shared-900: var(--color-shared-900);
+  --color-shared-950: var(--color-shared-950);
+  --color-role-shared: var(--color-role-shared);
+
+  /* Status Tokens */
+  --color-status-success-bg: var(--color-status-success-bg);
+  --color-status-success: var(--color-status-success);
+  --color-status-success-dark: var(--color-status-success-dark);
+
+  --color-status-warning-bg: var(--color-status-warning-bg);
+  --color-status-warning: var(--color-status-warning);
+  --color-status-warning-dark: var(--color-status-warning-dark);
+
+  --color-status-error-bg: var(--color-status-error-bg);
+  --color-status-error: var(--color-status-error);
+  --color-status-error-dark: var(--color-status-error-dark);
+
+  --color-status-info-bg: var(--color-status-info-bg);
+  --color-status-info: var(--color-status-info);
+  --color-status-info-dark: var(--color-status-info-dark);
+
+  /* Surfaces & Content */
+  --color-surface-base: var(--color-surface-base);
+  --color-surface-subtle: var(--color-surface-subtle);
+  --color-surface-card: var(--color-surface-card);
+  --color-surface-muted: var(--color-surface-muted);
+
+  --color-border-subtle: var(--color-border-subtle);
+  --color-border-default: var(--color-border-default);
+  --color-border-strong: var(--color-border-strong);
+
+  --color-content-primary: var(--color-content-primary);
+  --color-content-secondary: var(--color-content-secondary);
+  --color-content-muted: var(--color-content-muted);
+  --color-content-inverse: var(--color-content-inverse);
+}
+
+*,
+*::before,
+*::after,
+html,
+body,
+button,
+input,
+optgroup,
+select,
+textarea {
+  font-family: var(--font-montserrat), sans-serif;
 }
 
 body {
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-  color: var(--mau_den_text);
-  overflow-x: hidden;
-  background-color: #ffffff;
-}
-
-/* =========================================================
-   CONTAINER & SECTION BASE
-========================================================= */
-.container-custom {
-  width: 100%;
-  max-width: 1240px;
-  margin-left: auto;
-  margin-right: auto;
-  padding-left: 20px;
-  padding-right: 20px;
-}
-
-.section-padding {
-  padding: 70px 0;
-}
-
-@media (max-width: 991px) {
-  .section-padding {
-    padding: 50px 0;
-  }
-}
-
-.section-title h2 {
-  font-size: 42px;
-  font-weight: 600;
-  line-height: 1.25;
-  color: var(--mau_den_text);
-  text-align: center;
-  margin-bottom: 16px;
-  letter-spacing: -0.5px;
-}
-
-.section-title .sub_title {
-  display: block;
-  font-size: 18px;
-  color: var(--mau_den_xam_sub_text);
-  text-align: center;
-  font-weight: 400;
-  margin-bottom: 50px;
-}
-
-@media (max-width: 768px) {
-  .section-title h2 {
-    font-size: 28px;
-    margin-bottom: 12px;
-  }
-  .section-title .sub_title {
-    font-size: 15px;
-    margin-bottom: 35px;
-  }
-}
-
-/* =========================================================
-   CTA BUTTON PILL
-========================================================= */
-.cta-trangchu {
-  display: flex;
-  justify-content: center;
-  margin-top: 50px;
-}
-
-.btn-black-pill {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 10px;
-  padding: 13px 28px;
-  border-radius: 999px;
-  font-size: 16px;
-  font-weight: 500;
-  color: #ffffff;
-  background-color: #000000;
-  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.12);
-  transition: all 0.3s ease;
-}
-
-.btn-black-pill:hover {
-  transform: translateY(-3px);
-  background-color: #222222;
-  box-shadow: 0 16px 32px rgba(0, 0, 0, 0.2);
-}
-
-.btn-black-pill i {
-  transition: transform 0.3s ease;
-}
-
-.btn-black-pill:hover i {
-  transform: translateX(4px);
-}
-
-/* =========================================================
-   HEADER STYLES
-========================================================= */
-.header-sticky {
-  position: sticky;
-  top: 0;
-  z-index: 100;
-  background-color: rgba(255, 255, 255, 0.98);
-  backdrop-filter: blur(8px);
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
-  transition: all 0.3s ease;
-}
-
-/* =========================================================
-   BANNER SECTION
-========================================================= */
-.banner_home {
-  width: 100%;
-  position: relative;
-  background-color: #ffb717;
-  overflow: hidden;
-}
-
-.banner_wrapper {
-  position: relative;
-  max-width: 2400px;
-  margin: 0 auto;
-}
-
-.banner_wrapper img {
-  width: 100%;
-  height: auto;
-  display: block;
-}
-
-.banner_cta_overlay {
-  position: absolute;
-  left: 6.5%;
-  bottom: 12%;
-  width: 28%;
-  height: 25%;
-  z-index: 10;
-  cursor: pointer;
-}
-
-/* =========================================================
-   SERVICES 3-CARD SECTION
-========================================================= */
-.section_service {
-  background:
-    radial-gradient(circle at top left, rgba(255, 183, 23, 0.08), transparent 35%),
-    radial-gradient(circle at center, rgba(255, 210, 120, 0.06), transparent 45%),
-    linear-gradient(180deg, #fefaf2 0%, #fdf7ec 20%, #f8f1e3 50%, #fcf9f2 85%, #ffffff 100%);
-}
-
-.service_box {
-  background: #ffffff;
-  border-radius: 24px;
-  padding: 32px 24px;
-  border: 1px solid #FFB717;
-  box-shadow: 0 4px 20px rgba(255, 183, 23, 0.08);
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
-  display: flex;
-  flex-direction: column;
-  height: 100%;
-}
-
-.service_box:hover {
-  transform: translateY(-6px);
-  box-shadow: 0 16px 36px rgba(0, 0, 0, 0.08);
-}
-
-/* =========================================================
-   PROCESS TIMELINE
-========================================================= */
-.process_timeline_wrapper {
-  position: relative;
-  max-width: 900px;
-  margin: 0 auto;
-  padding: 20px 0;
-}
-
-.process_center_line {
-  position: absolute;
-  top: 40px;
-  bottom: 40px;
-  left: 50%;
-  width: 3px;
-  transform: translateX(-50%);
-  background: #e2e8f0;
-  z-index: 1;
-}
-
-@media (max-width: 768px) {
-  .process_center_line {
-    left: 24px;
-  }
-}
-
-.process_node {
-  position: absolute;
-  top: 50%;
-  transform: translateY(-50%);
-  width: 16px;
-  height: 16px;
-  border-radius: 50%;
-  z-index: 2;
-  box-shadow: 0 0 0 4px #ffffff;
-}
-
-/* =========================================================
-   FEEDBACK TICKER ANIMATION
-========================================================= */
-@keyframes scrollTickerUp {
-  0% {
-    transform: translateY(0);
-  }
-  100% {
-    transform: translateY(-50%);
-  }
-}
-
-@keyframes scrollTickerDown {
-  0% {
-    transform: translateY(-50%);
-  }
-  100% {
-    transform: translateY(0);
-  }
-}
-
-.ticker-track-up {
-  animation: scrollTickerUp 35s linear infinite;
-}
-
-.ticker-track-down {
-  animation: scrollTickerDown 35s linear infinite;
-}
-
-.ticker-track-up:hover,
-.ticker-track-down:hover {
-  animation-play-state: paused;
-}
-
-/* =========================================================
-   FLOATING ACTION BUTTONS
-========================================================= */
-.floating-contact-panel {
-  position: fixed;
-  right: 18px;
-  bottom: 85px;
-  z-index: 99;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 12px;
-}
-
-.floating-action-btn {
-  width: 46px;
-  height: 46px;
-  border-radius: 50%;
-  background: #ffffff;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
-  transition: transform 0.25s ease, box-shadow 0.25s ease;
-  position: relative;
-}
-
-.floating-action-btn:hover {
-  transform: scale(1.1);
-  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.22);
-}
-
-.floating-action-btn .tooltip {
-  position: absolute;
-  right: 56px;
-  top: 50%;
-  transform: translateY(-50%);
-  background: #1e293b;
-  color: #ffffff;
-  font-size: 12px;
-  font-weight: 500;
-  padding: 5px 10px;
-  border-radius: 6px;
-  white-space: nowrap;
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity 0.2s ease;
-}
-
-.floating-action-btn:hover .tooltip {
-  opacity: 1;
-}
-
-.back-to-top-btn {
-  position: fixed;
-  right: 20px;
-  bottom: 25px;
-  width: 42px;
-  height: 42px;
-  border-radius: 50%;
-  background: #FFB717;
-  color: #ffffff;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  box-shadow: 0 4px 14px rgba(255, 183, 23, 0.4);
-  z-index: 98;
-  cursor: pointer;
-  transition: all 0.3s ease;
-}
-
-.back-to-top-btn:hover {
-  transform: translateY(-4px);
-  background: #f59e0b;
+  background: var(--background);
+  color: var(--foreground);
 }
