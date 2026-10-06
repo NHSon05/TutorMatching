@@ -4,6 +4,14 @@ import type { NextRequest } from "next/server";
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
+  // Bỏ qua các file tĩnh trong public (file xác minh Google, robots.txt, sitemap.xml, images, etc.)
+  if (
+    pathname.startsWith("/google") ||
+    pathname.includes(".")
+  ) {
+    return NextResponse.next();
+  }
+
   // Lấy token và role từ cookie
   const token = request.cookies.get("auth_token")?.value;
   const role = request.cookies.get("user_role")?.value?.toUpperCase();
@@ -69,7 +77,6 @@ export function middleware(request: NextRequest) {
 
 export const config = {
   matcher: [
-    // Chạy middleware trên tất cả request ngoại trừ static files, api, _next
-    "/((?!api|_next/static|_next/image|favicon.ico).*)",
+    "/((?!api|_next/static|_next/image|favicon.ico|.*\\.[\\w]+$).*)",
   ],
 };
