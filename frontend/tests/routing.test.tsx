@@ -4,6 +4,7 @@ import LandingPage from "../src/app/(public)/page";
 import TutorsPage from "../src/app/(public)/tutors/page";
 import LoginPage from "../src/app/(public)/login/page";
 import RegisterPage from "../src/app/(public)/register/page";
+import SelectRolePage from "../src/app/(public)/select-role/page";
 import LearnerDashboardPage from "../src/app/(learner)/learner/dashboard/page";
 import TutorDashboardPage from "../src/app/(tutor)/tutor/dashboard/page";
 import AdminDashboardPage from "../src/app/(admin)/admin/dashboard/page";
@@ -38,11 +39,40 @@ describe("TutorMatching Routing & Role Architecture", () => {
     expect(screen.getByText(/Vào Không gian Quản trị/i)).toBeInTheDocument();
   });
 
-  it("renders Public Register page with role choice", () => {
+  it("renders Public Register page with 6 standardized fields", () => {
     render(<RegisterPage />);
-    expect(screen.getByText("Tạo Tài Khoản")).toBeInTheDocument();
-    expect(screen.getByText("Học viên / Phụ huynh")).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Đăng ký" })).toBeInTheDocument();
+    expect(screen.getByText("Bắt đầu hành trình của bạn")).toBeInTheDocument();
+    expect(screen.getByText("Đăng ký tài khoản")).toBeInTheDocument();
+
+    // 1. Vai trò (Gia sư, Phụ Huynh, Học Sinh)
+    expect(screen.getByText("Chọn vai trò")).toBeInTheDocument();
     expect(screen.getByText("Gia sư")).toBeInTheDocument();
+    expect(screen.getByText("Phụ Huynh")).toBeInTheDocument();
+    expect(screen.getByText("Học Sinh")).toBeInTheDocument();
+
+    // 2. Email
+    expect(screen.getByText("Email")).toBeInTheDocument();
+
+    // 3. Số điện thoại
+    expect(screen.getByText("Số điện thoại")).toBeInTheDocument();
+
+    // 4. Họ và tên
+    expect(screen.getByText("Họ và tên")).toBeInTheDocument();
+
+    // 5. Mật khẩu & 6. Xác nhận mật khẩu
+    expect(screen.getByText("Mật khẩu")).toBeInTheDocument();
+    expect(screen.getByText("Xác nhận mật khẩu")).toBeInTheDocument();
+
+    // CTAs
+    expect(screen.getByRole("button", { name: "Đăng ký" })).toBeInTheDocument();
+  });
+
+  it("renders Public Select Role page for OAuth 2.0 fallback", () => {
+    render(<SelectRolePage />);
+    expect(screen.getByText("Chọn vai trò của bạn")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Xác nhận & Tiếp tục" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Quay lại" })).toBeInTheDocument();
   });
 
   it("renders Learner Dashboard", () => {

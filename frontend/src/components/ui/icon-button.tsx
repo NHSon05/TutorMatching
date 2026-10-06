@@ -228,7 +228,7 @@ export const IconButton = React.forwardRef<HTMLButtonElement, IconButtonProps>(
       if (typeof badge === "string" || typeof badge === "number") {
         return (
           <span
-            className={`absolute ${currentSize.badgeOffset} inline-flex items-center justify-center min-w-[18px] h-[18px] px-1 text-[10px] font-bold text-white bg-status-error rounded-full ring-2 ring-white dark:ring-gray-900 leading-none shrink-0 pointer-events-none shadow-xs`}
+            className={`absolute ${currentSize.badgeOffset} inline-flex items-center justify-center min-w-4.5 h-4.5 px-1 text-[10px] font-bold text-white bg-status-error rounded-full ring-2 ring-white dark:ring-gray-900 leading-none shrink-0 pointer-events-none shadow-xs`}
             aria-hidden="true"
           >
             {badge}

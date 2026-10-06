@@ -1,12 +1,5 @@
 import type { Metadata } from "next";
-import { Montserrat } from "next/font/google";
 import "./globals.css";
-
-const montserrat = Montserrat({
-  subsets: ["latin", "vietnamese"],
-  variable: "--font-montserrat",
-  display: "swap",
-});
 
 export const metadata: Metadata = {
   title: "TutorMatching",
@@ -19,8 +12,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="vi" className={`h-full antialiased ${montserrat.variable} ${montserrat.className}`}>
-      <body className={`${montserrat.className} min-h-full flex flex-col font-sans`}>{children}</body>
+    <html lang="vi" className="h-full antialiased font-sans">
+      <body className="min-h-full flex flex-col font-sans">{children}</body>
     </html>
   );
 }

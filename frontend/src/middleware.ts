@@ -9,10 +9,12 @@ export function middleware(request: NextRequest) {
   const role = request.cookies.get("user_role")?.value?.toUpperCase();
 
   const isAuthPage = pathname.startsWith("/login") || pathname.startsWith("/register");
+  const isSelectRolePage = pathname.startsWith("/select-role");
   const isPublicPage =
     pathname === "/" ||
     pathname.startsWith("/tutors") ||
-    isAuthPage;
+    isAuthPage ||
+    isSelectRolePage;
 
   // 1. Người dùng chưa đăng nhập cố tình vào trang yêu cầu xác thực
   if (!token && !isPublicPage) {
@@ -21,8 +23,8 @@ export function middleware(request: NextRequest) {
     return NextResponse.redirect(loginUrl);
   }
 
-  // 2. Người dùng đã đăng nhập nhưng lại vào /login hoặc /register
-  if (token && isAuthPage) {
+  // 2. Người dùng đã đăng nhập và đã có vai trò nhưng vào /login, /register hoặc /select-role
+  if (token && role && (isAuthPage || isSelectRolePage)) {
     if (role === "ADMIN") {
       return NextResponse.redirect(new URL("/admin/dashboard", request.url));
     }
@@ -30,6 +32,12 @@ export function middleware(request: NextRequest) {
       return NextResponse.redirect(new URL("/tutor/dashboard", request.url));
     }
     return NextResponse.redirect(new URL("/learner/dashboard", request.url));
+  }
+
+  // 3. Người dùng đăng nhập qua OAuth2.0 nhưng chưa có vai trò (thiếu role)
+  // Nếu cố gắng vào các trang dashboard/admin/tutor/learner/messages mà chưa chọn vai trò -> chuyển đến /select-role
+  if (token && !role && !isSelectRolePage && !isPublicPage) {
+    return NextResponse.redirect(new URL("/select-role", request.url));
   }
 
   // 3. Kiểm tra Role-Based Access Control (RBAC)

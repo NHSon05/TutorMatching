@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Logo from "@assets/logo/Logo";
 
 export default function PublicFooter() {
   return (
@@ -6,9 +7,7 @@ export default function PublicFooter() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 grid grid-cols-1 md:grid-cols-4 gap-8">
         <div>
           <div className="flex items-center gap-2 mb-4">
-            <span className="w-8 h-8 bg-brand rounded-md flex items-center justify-center text-white font-bold text-lg">
-              T
-            </span>
+            <Logo variant="gradient" size={28} />
             <span className="font-bold text-lg text-white">TutorMatching</span>
           </div>
           <p className="text-sm text-gray-400">

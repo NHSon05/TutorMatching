@@ -124,7 +124,7 @@ export const TextField = React.forwardRef<HTMLInputElement, TextFieldProps>(
               ? "border-status-error focus-within:ring-2 focus-within:ring-status-error/30"
               : variant === "filled"
               ? "bg-gray-100 dark:bg-gray-800 border-transparent focus-within:bg-white dark:focus-within:bg-gray-900 focus-within:border-gray-900 dark:focus-within:border-white focus-within:ring-2 focus-within:ring-gray-900/10"
-              : "bg-white dark:bg-gray-900 border-gray-300 dark:border-gray-700 focus-within:border-gray-900 dark:focus-within:border-white focus-within:ring-2 focus-within:ring-gray-900/10 shadow-2xs"
+              : "bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-700 focus-within:border-gray-900 dark:focus-within:border-white focus-within:ring-2 focus-within:ring-gray-900/10 shadow-2xs"
           } ${disabled ? "opacity-50 bg-gray-50 dark:bg-gray-800/50 cursor-not-allowed" : ""}`}
         >
           {leadingIcon && (
