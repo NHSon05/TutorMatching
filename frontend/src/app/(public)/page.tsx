@@ -8,7 +8,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: "TutorMatching - Nền tảng kết nối Gia sư 1 kèm 1",
     description: "Kết nối gia sư chất lượng cao nhanh chóng, an toàn.",
-    url: "https://yourdomain.com",
+    url: "https://tutor-matching-psi.vercel.app/",
     siteName: "TutorMatching",
     images: [
       {
