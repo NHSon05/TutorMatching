@@ -1,4 +1,7 @@
 using TutorMatching.Infrastructure;
+using TutorMatching.Infrastructure.Configurations;
+
+DotEnvLoader.Load();
 
 var builder = WebApplication.CreateBuilder(args);
 
