@@ -11,7 +11,7 @@ Stable, compact facts for agents. Search by heading or keyword and read only the
 - Sprint features: `001-foundation-accounts` is planned/tasked; `002-tutor-discovery`,
   `003-hire-negotiation`, and `004-messaging-admin-release` are defined and awaiting planning.
 - Shared AI usage guide: `docs/guides/AI-WORKFLOW.md`.
-- The repository is still an early feature scaffold; application features and persistence mappings are not implemented yet, but Sprint 1 setup is complete.
+- Sprint 1 persistence and Application ports are in place; account use cases and HTTP endpoints remain pending in `specs/001-foundation-accounts/tasks.md`.
 
 ## Stack and layout
 
@@ -23,6 +23,8 @@ Stable, compact facts for agents. Search by heading or keyword and read only the
 - Local PostgreSQL 17 and Mailpit run through `backend/compose.yaml`; backend and frontend use separate environment files.
 - API startup and EF design-time tooling share `Infrastructure/Configurations/DotEnvLoader.cs`; it loads `.env` only beside `TutorMatching.slnx` and preserves existing process environment variables. Published deployments should supply environment variables directly.
 - Sprint 1 persistence uses ASP.NET Core Identity with UUID keys, EF Core 10, Npgsql, canonical roles/statuses, account constraints, UTC timestamps, and an initial migration validated locally and applied to Supabase through its IPv4 Session pooler.
+- T010 ports live in `TutorMatching.Application/Abstractions/`: current user, UTC clock, email, allowlisted account audit, and account service; Application references Domain only. See the local README for adapter responsibilities.
+- T011 security lives in `TutorMatching.Api/Security/`: Identity cookie (30m idle/8h absolute), per-request stamp/status validation, default authenticated access, role policies, allowlisted credentialed CORS, CSRF via `/api/v1/auth/csrf` + `X-CSRF-TOKEN`, and per-IP limits (120/min overall, 10/min auth writes). Identity lockout is configured at 5 attempts/15m; login counting and logout revocation remain T028.
 
 ## Commands
 

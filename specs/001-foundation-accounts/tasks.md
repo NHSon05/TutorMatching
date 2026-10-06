@@ -19,11 +19,11 @@ implementation and must initially fail for the intended reason.
 
 **Purpose**: Make the existing scaffold buildable as a layered, testable web application.
 
-- [X] T001 Add project references enforcing Api -> Application/Infrastructure, Infrastructure -> Application/Domain, and Application -> Domain in `backend/src/*/*.csproj`
-- [X] T002 Add `TutorMatching.Domain.UnitTests`, `TutorMatching.Application.UnitTests`, and `TutorMatching.Api.IntegrationTests` projects under `backend/tests/` and register them in `backend/TutorMatching.slnx`
-- [X] T003 [P] Add frontend component/E2E test dependencies and `test`/`test:e2e` scripts in `frontend/package.json`
-- [X] T004 [P] Add non-secret configuration examples for PostgreSQL, cookie, frontend origin, and SMTP sandbox in `backend/src/TutorMatching.Api/appsettings.Development.json` and repository environment example files
-- [X] T005 [P] Document local PostgreSQL and SMTP sandbox prerequisites without real credentials in `README.md`
+- [x] T001 Add project references enforcing Api -> Application/Infrastructure, Infrastructure -> Application/Domain, and Application -> Domain in `backend/src/*/*.csproj`
+- [x] T002 Add `TutorMatching.Domain.UnitTests`, `TutorMatching.Application.UnitTests`, and `TutorMatching.Api.IntegrationTests` projects under `backend/tests/` and register them in `backend/TutorMatching.slnx`
+- [x] T003 [P] Add frontend component/E2E test dependencies and `test`/`test:e2e` scripts in `frontend/package.json`
+- [x] T004 [P] Add non-secret configuration examples for PostgreSQL, cookie, frontend origin, and SMTP sandbox in `backend/src/TutorMatching.Api/appsettings.Development.json` and repository environment example files
+- [x] T005 [P] Document local PostgreSQL and SMTP sandbox prerequisites without real credentials in `README.md`
 
 **Checkpoint**: Backend solution and frontend scripts restore and build before feature code begins.
 
@@ -33,13 +33,13 @@ implementation and must initially fail for the intended reason.
 
 **Purpose**: Shared security, persistence, error, test, and UI infrastructure that blocks all stories.
 
-- [X] T006 Create canonical `ADMIN`, `LEARNER`, `TUTOR` role values and `ACTIVE`, `LOCKED`, `INACTIVE` account states in `backend/src/TutorMatching.Domain/Users/AccountRole.cs` and `AccountStatus.cs`
-- [X] T007 Configure ASP.NET Core Identity, EF Core 10, Npgsql, UUID keys, and UTC timestamps in `backend/src/TutorMatching.Infrastructure/Persistence/ApplicationDbContext.cs` and `backend/src/TutorMatching.Infrastructure/Persistence/ApplicationUser.cs`
-- [X] T008 Map UserAccount constraints exactly as `Email unique after normalization`, `FullName trimmed 2-100 characters`, `PhoneNumber unique when present`, `DateOfBirth in the past`, `AvatarUrl maximum 2,048 characters`, and one canonical role/status in `backend/src/TutorMatching.Infrastructure/Persistence/Configurations/ApplicationUserConfiguration.cs`
-- [X] T009 Create the initial Identity/profile/audit migration and controlled Admin demo seed in `backend/src/TutorMatching.Infrastructure/Persistence/Migrations/` and `DevelopmentDataSeeder.cs`
-- [ ] T010 [P] Define current-user, clock, email, audit, and account-service ports in `backend/src/TutorMatching.Application/Abstractions/`
-- [ ] T011 Configure secure cookie authentication, five-attempt/15-minute lockout, 30-minute idle/eight-hour absolute expiry, anti-forgery, credentialed allowlisted CORS, authorization, and rate limiting in `backend/src/TutorMatching.Api/Program.cs`
-- [ ] T012 [P] Configure RFC Problem Details and consistent validation/conflict/authentication error mapping in `backend/src/TutorMatching.Api/Errors/`
+- [x] T006 Create canonical `ADMIN`, `LEARNER`, `TUTOR` role values and `ACTIVE`, `LOCKED`, `INACTIVE` account states in `backend/src/TutorMatching.Domain/Users/AccountRole.cs` and `AccountStatus.cs`
+- [x] T007 Configure ASP.NET Core Identity, EF Core 10, Npgsql, UUID keys, and UTC timestamps in `backend/src/TutorMatching.Infrastructure/Persistence/ApplicationDbContext.cs` and `backend/src/TutorMatching.Infrastructure/Persistence/ApplicationUser.cs`
+- [x] T008 Map UserAccount constraints exactly as `Email unique after normalization`, `FullName trimmed 2-100 characters`, `PhoneNumber unique when present`, `DateOfBirth in the past`, `AvatarUrl maximum 2,048 characters`, and one canonical role/status in `backend/src/TutorMatching.Infrastructure/Persistence/Configurations/ApplicationUserConfiguration.cs`
+- [x] T009 Create the initial Identity/profile/audit migration and controlled Admin demo seed in `backend/src/TutorMatching.Infrastructure/Persistence/Migrations/` and `DevelopmentDataSeeder.cs`
+- [x] T010 [P] Define current-user, clock, email, audit, and account-service ports in `backend/src/TutorMatching.Application/Abstractions/`
+- [x] T011 Configure secure cookie authentication, five-attempt/15-minute lockout, 30-minute idle/eight-hour absolute expiry, anti-forgery, credentialed allowlisted CORS, authorization, and rate limiting in `backend/src/TutorMatching.Api/Program.cs`
+- [x] T012 [P] Configure RFC Problem Details and consistent validation/conflict/authentication error mapping in `backend/src/TutorMatching.Api/Errors/`
 - [ ] T013 [P] Implement allowlisted secret-free audit events in `backend/src/TutorMatching.Infrastructure/Auditing/AuditEvent.cs` and `AuditWriter.cs`
 - [ ] T014 [P] Implement SMTP sandbox and integration-test email adapters without logging raw links/tokens in `backend/src/TutorMatching.Infrastructure/Email/`
 - [ ] T015 Build PostgreSQL-backed API test fixtures and deterministic email capture in `backend/tests/TutorMatching.Api.IntegrationTests/Fixtures/`

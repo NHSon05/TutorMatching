@@ -1,18 +1,16 @@
 # Current Session Handoff
 
 Status: IDLE
-Updated: 2026-10-06
+Updated: 2026-10-07
 
 ## Last completed work
 
-- Implemented the Learner Dashboard (`/learner/dashboard`) based on the provided mockup image and design system.
-- Created data layer `src/data/mockLearnerDashboard.ts` with mock API function `getLearnerDashboardData()`.
-- Built modular client subcomponents in `src/components/learner/`: `DashboardTopBar`, `WelcomeBannerCard` (with 3D stacked book SVG and carousel dots), `YourCoursesSection` (3D graduation cap cards, stats, and progress bars), `MyScheduleSection` (8-column Sun-Sat schedule grid with color-coded blocks), and `RightSidebarWidgets` (mini calendar, SVG donut chart, homework progress).
-- Integrated `LearnerDashboardClient` with Server Component `src/app/(learner)/learner/dashboard/page.tsx`.
-- Updated `LearnerNavigationRail.tsx` footer with "Upgrade to Pro for more facilities" card.
-- Validated with 52/52 Vitest tests, 0 ESLint warnings, and successful Next.js build (21 static routes).
+- Completed T011: API cookie/session validation, authorization, CSRF, CORS and rate limiting in `backend/src/TutorMatching.Api/Security/`; Identity lockout configured in Infrastructure.
+- Added anonymous `GET /api/v1/auth/csrf`; unsafe API requests need its token/cookie pair. OpenAPI documents CSRF and 429 responses; corrected the misplaced Problem schema so internal refs resolve.
+- Verification: 16 security tests + 6 dotenv tests pass with fake Identity store/TestServer; 2 Domain tests pass. Application test project has no cases yet. Builds report no warnings/errors; YAML parses and all 44 refs resolve; diff check passes.
+- No real database access/migration or login/logout endpoints were introduced. See Security/README.md for frontend flow, deployment constraints and scope boundaries.
 
 ## Next work
 
-- Idle. Ready for subsequent feature work as requested.
-
+- Idle. Next Sprint 1 task is T012 when requested. T028 must enable Identity lockout counting and implement server-side logout revocation; T015 adds PostgreSQL-backed fixtures.
+- Spec Kit defaults to another feature; use `SPECIFY_FEATURE_DIRECTORY=specs/001-foundation-accounts SPECIFY_FEATURE_NO_PERSIST=1` for Sprint 1 checks.

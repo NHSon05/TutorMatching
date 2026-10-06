@@ -5,8 +5,36 @@ info:
 servers:
   - url: /api/v1
 paths:
+  /auth/csrf:
+    get:
+      operationId: GetCsrfToken
+      summary: Obtain a CSRF token for the current anonymous or authenticated identity
+      description: >-
+        Send requests with credentials included. Fetch again after sign-in or sign-out.
+        Send requestToken in X-CSRF-TOKEN on every state-changing API request,
+        together with the antiforgery cookie set by this response. Responses are not cached.
+      security: []
+      responses:
+        '200':
+          description: Request token returned and HTTP-only antiforgery cookie set
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [requestToken, headerName]
+                properties:
+                  requestToken:
+                    type: string
+                  headerName:
+                    type: string
+                    const: X-CSRF-TOKEN
+        '429':
+          $ref: '#/components/responses/RateLimited'
   /auth/register:
     post:
+      security:
+        - csrfHeader: []
+          csrfCookie: []
       operationId: registerAccount
       summary: Register a learner or tutor account
       requestBody:
@@ -16,6 +44,10 @@ paths:
             schema:
               $ref: '#/components/schemas/RegisterRequest'
       responses:
+        '400':
+          $ref: '#/components/responses/InvalidCsrf'
+        '429':
+          $ref: '#/components/responses/RateLimited'
         '201':
           description: Account created
           content:
@@ -28,6 +60,9 @@ paths:
           $ref: '#/components/responses/ValidationError'
   /auth/login:
     post:
+      security:
+        - csrfHeader: []
+          csrfCookie: []
       operationId: login
       summary: Start an authenticated browser session
       requestBody:
@@ -37,6 +72,10 @@ paths:
             schema:
               $ref: '#/components/schemas/LoginRequest'
       responses:
+        '400':
+          $ref: '#/components/responses/InvalidCsrf'
+        '429':
+          $ref: '#/components/responses/RateLimited'
         '200':
           description: Session cookie issued
           headers:
@@ -59,13 +98,22 @@ paths:
       summary: Revoke the current browser session
       security:
         - cookieAuth: []
+          csrfHeader: []
+          csrfCookie: []
       responses:
+        '400':
+          $ref: '#/components/responses/InvalidCsrf'
+        '429':
+          $ref: '#/components/responses/RateLimited'
         '204':
           description: Session revoked
         '401':
           $ref: '#/components/responses/Unauthorized'
   /auth/forgot-password:
     post:
+      security:
+        - csrfHeader: []
+          csrfCookie: []
       operationId: requestPasswordReset
       summary: Request a neutral password-reset response
       requestBody:
@@ -75,12 +123,19 @@ paths:
             schema:
               $ref: '#/components/schemas/ForgotPasswordRequest'
       responses:
+        '400':
+          $ref: '#/components/responses/InvalidCsrf'
+        '429':
+          $ref: '#/components/responses/RateLimited'
         '204':
           description: Request accepted whether or not the account exists
         '422':
           $ref: '#/components/responses/ValidationError'
   /auth/reset-password:
     post:
+      security:
+        - csrfHeader: []
+          csrfCookie: []
       operationId: resetPassword
       summary: Reset a password with a valid single-use credential
       requestBody:
@@ -90,10 +145,16 @@ paths:
             schema:
               $ref: '#/components/schemas/ResetPasswordRequest'
       responses:
+        '429':
+          $ref: '#/components/responses/RateLimited'
         '204':
           description: Password changed and prior sessions invalidated
         '400':
-          $ref: '#/components/responses/InvalidResetCredential'
+          description: Invalid CSRF token or invalid, expired or used reset credential
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
         '422':
           $ref: '#/components/responses/ValidationError'
   /users/me:
@@ -103,6 +164,8 @@ paths:
       security:
         - cookieAuth: []
       responses:
+        '429':
+          $ref: '#/components/responses/RateLimited'
         '200':
           description: Private personal profile
           content:
@@ -116,6 +179,8 @@ paths:
       summary: Replace allowed fields on the authenticated user's private profile
       security:
         - cookieAuth: []
+          csrfHeader: []
+          csrfCookie: []
       requestBody:
         required: true
         content:
@@ -123,6 +188,10 @@ paths:
             schema:
               $ref: '#/components/schemas/UpdateProfileRequest'
       responses:
+        '400':
+          $ref: '#/components/responses/InvalidCsrf'
+        '429':
+          $ref: '#/components/responses/RateLimited'
         '200':
           description: Updated private profile
           content:
@@ -137,6 +206,14 @@ paths:
           $ref: '#/components/responses/ValidationError'
 components:
   securitySchemes:
+    csrfHeader:
+      type: apiKey
+      in: header
+      name: X-CSRF-TOKEN
+    csrfCookie:
+      type: apiKey
+      in: cookie
+      name: tutormatch_session_csrf
     cookieAuth:
       type: apiKey
       in: cookie
@@ -250,7 +327,37 @@ components:
               format: date
             avatarUrl:
               type: [string, 'null']
+    Problem:
+      type: object
+      properties:
+        type:
+          type: string
+        title:
+          type: string
+        status:
+          type: integer
+        detail:
+          type: string
+        traceId:
+          type: string
   responses:
+    InvalidCsrf:
+      description: Missing or invalid CSRF token; refresh it using GET /auth/csrf
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/Problem'
+    RateLimited:
+      description: Request limit exceeded
+      headers:
+        Retry-After:
+          schema:
+            type: integer
+          description: Seconds to wait before retrying
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/Problem'
     Unauthorized:
       description: Authentication is required or invalid
       content:
@@ -281,16 +388,3 @@ components:
         application/problem+json:
           schema:
             $ref: '#/components/schemas/Problem'
-    Problem:
-      type: object
-      properties:
-        type:
-          type: string
-        title:
-          type: string
-        status:
-          type: integer
-        detail:
-          type: string
-        traceId:
-          type: string

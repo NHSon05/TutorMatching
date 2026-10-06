@@ -2,7 +2,11 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
+using TutorMatching.Application.Abstractions;
+using TutorMatching.Infrastructure.Auditing;
 using TutorMatching.Infrastructure.Persistence;
+using TutorMatching.Infrastructure.Time;
 
 namespace TutorMatching.Infrastructure;
 
@@ -32,6 +36,9 @@ public static class DependencyInjection
                 options.Password.RequireLowercase = false;
                 options.Password.RequireUppercase = false;
                 options.Password.RequireNonAlphanumeric = false;
+                options.Lockout.AllowedForNewUsers = true;
+                options.Lockout.MaxFailedAccessAttempts = 5;
+                options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(15);
             })
             .AddRoles<IdentityRole<Guid>>()
             .AddEntityFrameworkStores<ApplicationDbContext>()
@@ -39,6 +46,9 @@ public static class DependencyInjection
             .AddDefaultTokenProviders();
 
         services.AddScoped<DevelopmentDataSeeder>();
+        services.TryAddSingleton<TimeProvider>(TimeProvider.System);
+        services.TryAddSingleton<IClock, SystemClock>();
+        services.AddScoped<IAuditWriter, AuditWriter>();
 
         return services;
     }

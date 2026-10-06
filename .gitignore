@@ -6,6 +6,8 @@
 # Common generated output not owned by nested ignore files.
 .DS_Store
 .pnpm-store/
+.local/
+**/.local/
 **/bin/
 **/obj/
 
