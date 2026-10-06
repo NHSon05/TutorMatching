@@ -16,10 +16,12 @@ Stable, compact facts for agents. Search by heading or keyword and read only the
 ## Stack and layout
 
 - Frontend: Next.js 16.3.6, React 19.2.8, TypeScript, Tailwind CSS 4 in `frontend/`.
+- Frontend design system: single Montserrat font, semantic role tokens (Blue Learner, Amber Tutor, Crimson Admin, Indigo Shared) in `globals.css`, and primitives documented in `frontend/docs/design-system/`.
 - Backend: ASP.NET Core targeting .NET 10 in `backend/`.
 - Backend solution projects: `TutorMatching.Api`, `TutorMatching.Application`, `TutorMatching.Domain`, and `TutorMatching.Infrastructure`.
 - Layered backend project references and Domain/Application/API test projects are registered in the solution.
 - Local PostgreSQL 17 and Mailpit run through `backend/compose.yaml`; backend and frontend use separate environment files.
+- API startup and EF design-time tooling share `Infrastructure/Configurations/DotEnvLoader.cs`; it loads `.env` only beside `TutorMatching.slnx` and preserves existing process environment variables. Published deployments should supply environment variables directly.
 - Sprint 1 persistence uses ASP.NET Core Identity with UUID keys, EF Core 10, Npgsql, canonical roles/statuses, account constraints, UTC timestamps, and an initial migration validated locally and applied to Supabase through its IPv4 Session pooler.
 
 ## Commands

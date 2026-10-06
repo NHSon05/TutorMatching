@@ -9,6 +9,7 @@ import LearnerDashboardPage from "../src/app/(learner)/learner/dashboard/page";
 import TutorDashboardPage from "../src/app/(tutor)/tutor/dashboard/page";
 import AdminDashboardPage from "../src/app/(admin)/admin/dashboard/page";
 import MessagesPage from "../src/app/(shared)/messages/page";
+import LearnerLayout from "../src/app/(learner)/learner/layout";
 
 // Mock next/navigation
 vi.mock("next/navigation", () => ({
@@ -31,12 +32,13 @@ describe("TutorMatching Routing & Role Architecture", () => {
     expect(screen.getByText("Lê Phương Diệu")).toBeInTheDocument();
   });
 
-  it("renders Public Login page with role fast-access buttons", () => {
+  it("renders Public Login page with authentication form", () => {
     render(<LoginPage />);
-    expect(screen.getByText("Đăng Nhập")).toBeInTheDocument();
-    expect(screen.getByText(/Vào Không gian Học viên/i)).toBeInTheDocument();
-    expect(screen.getByText(/Vào Không gian Gia sư/i)).toBeInTheDocument();
-    expect(screen.getByText(/Vào Không gian Quản trị/i)).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Đăng Nhập" })).toBeInTheDocument();
+    expect(screen.getByText("Email")).toBeInTheDocument();
+    expect(screen.getByText("Mật khẩu")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Đăng nhập" })).toBeInTheDocument();
+    expect(screen.getByText("Chưa có tài khoản?")).toBeInTheDocument();
   });
 
   it("renders Public Register page with 6 standardized fields", () => {
@@ -75,10 +77,13 @@ describe("TutorMatching Routing & Role Architecture", () => {
     expect(screen.getByRole("button", { name: "Quay lại" })).toBeInTheDocument();
   });
 
-  it("renders Learner Dashboard", () => {
-    render(<LearnerDashboardPage />);
-    expect(screen.getByText("Xin chào, Học viên 👋")).toBeInTheDocument();
-    expect(screen.getByText("Gia sư đang học")).toBeInTheDocument();
+  it("renders Learner Dashboard", async () => {
+    const page = await LearnerDashboardPage();
+    render(page);
+    expect(screen.getByText("Welcome back, Esther!")).toBeInTheDocument();
+    expect(screen.getByText("Your Courses")).toBeInTheDocument();
+    expect(screen.getByText("My Schedule")).toBeInTheDocument();
+    expect(screen.getByText("Homework progress")).toBeInTheDocument();
   });
 
   it("renders Tutor Dashboard", () => {
@@ -97,5 +102,23 @@ describe("TutorMatching Routing & Role Architecture", () => {
     render(<MessagesPage />);
     expect(screen.getByText("Hộp Thư")).toBeInTheDocument();
     expect(screen.getAllByText("Lê Phương Diệu").length).toBeGreaterThan(0);
+  });
+
+  it("renders Learner Layout with TopNavigation and side NavigationRail", () => {
+    render(
+      <LearnerLayout>
+        <div data-testid="learner-content">Nội dung trang học viên</div>
+      </LearnerLayout>
+    );
+
+    expect(screen.getByText("TutorMatch")).toBeInTheDocument();
+    expect(screen.getByText("Trang chủ")).toBeInTheDocument();
+    expect(screen.getByText("Gia sư của tôi")).toBeInTheDocument();
+    expect(screen.getByText("Lịch học")).toBeInTheDocument();
+    expect(screen.getByText("Tin nhắn")).toBeInTheDocument();
+    expect(screen.getByText("Tìm gia sư")).toBeInTheDocument();
+    expect(screen.getByText("Nguyễn Hồng Sơn")).toBeInTheDocument();
+    expect(screen.getByText("Thành viên")).toBeInTheDocument();
+    expect(screen.getByTestId("learner-content")).toBeInTheDocument();
   });
 });

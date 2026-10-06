@@ -1,14 +1,18 @@
 # Current Session Handoff
 
 Status: IDLE
-Updated: 2026-10-04
+Updated: 2026-10-06
 
 ## Last completed work
 
-T006-T009 are complete. The Identity/profile/audit migration and controlled Admin seed implementation were validated locally, then the migration was applied to Supabase through the IPv4 Session pooler with TLS required.
-
-Remote verification confirmed migration history, all nine expected public tables, and canonical `ADMIN`, `LEARNER`, and `TUTOR` roles. `backend/.env` remains ignored by Git and contains the runtime connection secret.
+- Implemented the Learner Dashboard (`/learner/dashboard`) based on the provided mockup image and design system.
+- Created data layer `src/data/mockLearnerDashboard.ts` with mock API function `getLearnerDashboardData()`.
+- Built modular client subcomponents in `src/components/learner/`: `DashboardTopBar`, `WelcomeBannerCard` (with 3D stacked book SVG and carousel dots), `YourCoursesSection` (3D graduation cap cards, stats, and progress bars), `MyScheduleSection` (8-column Sun-Sat schedule grid with color-coded blocks), and `RightSidebarWidgets` (mini calendar, SVG donut chart, homework progress).
+- Integrated `LearnerDashboardClient` with Server Component `src/app/(learner)/learner/dashboard/page.tsx`.
+- Updated `LearnerNavigationRail.tsx` footer with "Upgrade to Pro for more facilities" card.
+- Validated with 52/52 Vitest tests, 0 ESLint warnings, and successful Next.js build (21 static routes).
 
 ## Next work
 
-No unfinished implementation is carried over. Continue from the next open Sprint 1 task when requested.
+- Idle. Ready for subsequent feature work as requested.
+

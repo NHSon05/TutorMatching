@@ -21,3 +21,13 @@ Search by ADR ID, subsystem, or keyword. Add only durable decisions; keep each A
 - Decision: Keep reusable AI guidance in `docs/guides/AI-WORKFLOW.md`; sprint pages are short indexes.
 - Consequence: Review gates follow specify, plan, tasks, analyze, implement, and converge artifacts.
 - Consequence: Application behavior is not implemented until its feature tasks and gates are ready.
+
+## ADR-003 - Unified frontend design system and semantic tokens
+
+- Date: 2026-10-05
+- Status: Accepted
+- Context: Frontend UI lacked unified typography, role colors, and reusable component primitives.
+- Decision: Enforce single Montserrat font globally, Photonix-aligned button primitive in `components/button.tsx`, and semantic Tailwind v4 tokens in `globals.css`.
+- Decision: Role color convention: Blue for Learner/Brand, Amber for Tutor, Crimson for Admin, Indigo for Shared/Messaging.
+- Decision: Single source of design system truth is maintained under `frontend/docs/design-system/`.
+- Consequence: All frontend pages and future components must use design system tokens and primitives without raw hex codes.

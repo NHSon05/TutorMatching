@@ -18,6 +18,7 @@ Keep this file as a small router. Load only the context required by the current 
 - `docs/Final_SRS_TutorMatch_PBL3.pdf` is the product requirements source. Inspect only relevant pages/sections.
 - `docs/DatabaseSchema.md` is the current data-model proposal. Use it for persistence or schema work.
 - Under `frontend/`, also follow the generated `frontend/AGENTS.md` and consult only the relevant local Next.js documentation.
+- For frontend UI work, follow the design system in `frontend/docs/design-system/` and reusable primitives in `frontend/src/components/`.
 
 ## Use Spec Kit for feature work
 

@@ -4,8 +4,9 @@ import type { NextRequest } from "next/server";
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
-  // Bỏ qua các file tĩnh trong public (file xác minh Google, robots.txt, sitemap.xml, images, etc.)
   if (
+    pathname.startsWith("/api") ||
+    pathname.startsWith("/_next") ||
     pathname.startsWith("/google") ||
     pathname.includes(".")
   ) {
@@ -18,28 +19,36 @@ export function middleware(request: NextRequest) {
 
   const isAuthPage = pathname.startsWith("/login") || pathname.startsWith("/register");
   const isSelectRolePage = pathname.startsWith("/select-role");
+
+  if (pathname === "/"){
+    if (token && role) {
+      if (role  === "LEARNER") {
+        return NextResponse.rewrite(new URL("/learner/dashboard", request.url));
+      }
+      if (role === "TUTOR") {
+        return NextResponse.rewrite(new URL("/tutor/dashboard", request.url));
+      }
+      if (role === "ADMIN") {
+        return NextResponse.rewrite(new URL("/admin/dashboard", request.url));
+      }
+    }
+    return NextResponse.next();
+  }
+
   const isPublicPage =
     pathname === "/" ||
     pathname.startsWith("/tutors") ||
     isAuthPage ||
     isSelectRolePage;
 
-  // 1. Người dùng chưa đăng nhập cố tình vào trang yêu cầu xác thực
   if (!token && !isPublicPage) {
     const loginUrl = new URL("/login", request.url);
     loginUrl.searchParams.set("callbackUrl", pathname);
     return NextResponse.redirect(loginUrl);
   }
 
-  // 2. Người dùng đã đăng nhập và đã có vai trò nhưng vào /login, /register hoặc /select-role
   if (token && role && (isAuthPage || isSelectRolePage)) {
-    if (role === "ADMIN") {
-      return NextResponse.redirect(new URL("/admin/dashboard", request.url));
-    }
-    if (role === "TUTOR") {
-      return NextResponse.redirect(new URL("/tutor/dashboard", request.url));
-    }
-    return NextResponse.redirect(new URL("/learner/dashboard", request.url));
+    return NextResponse.redirect(new URL("/", request.url));
   }
 
   // 3. Người dùng đăng nhập qua OAuth2.0 nhưng chưa có vai trò (thiếu role)
@@ -50,25 +59,22 @@ export function middleware(request: NextRequest) {
 
   // 3. Kiểm tra Role-Based Access Control (RBAC)
   if (token && role) {
-    // Chỉ ADMIN mới được vào /admin/*
-    if (pathname.startsWith("/admin") && role !== "ADMIN") {
-      const redirectUrl =
-        role === "TUTOR" ? "/tutor/dashboard" : "/learner/dashboard";
-      return NextResponse.redirect(new URL(redirectUrl, request.url));
+    if (role === "LEARNER") {
+      if (pathname.startsWith("/tutor") || pathname.startsWith("/admin")) {
+        return NextResponse.redirect(new URL("/", request.url));
+      }
     }
 
-    // Chỉ TUTOR mới được vào /tutor/*
-    if (pathname.startsWith("/tutor") && role !== "TUTOR") {
-      const redirectUrl =
-        role === "ADMIN" ? "/admin/dashboard" : "/learner/dashboard";
-      return NextResponse.redirect(new URL(redirectUrl, request.url));
+    if (role === "TUTOR") {
+      if (pathname.startsWith("/learner") || pathname.startsWith("/admin")) {
+        return NextResponse.redirect(new URL("/", request.url));
+      }
     }
 
-    // Chỉ LEARNER mới được vào /learner/*
-    if (pathname.startsWith("/learner") && role !== "LEARNER") {
-      const redirectUrl =
-        role === "ADMIN" ? "/admin/dashboard" : "/tutor/dashboard";
-      return NextResponse.redirect(new URL(redirectUrl, request.url));
+    if (role === "ADMIN") {
+      if (pathname.startsWith("/learner") || pathname.startsWith("/tutor")) {
+        return NextResponse.redirect(new URL("/", request.url));
+      }
     }
   }
 
