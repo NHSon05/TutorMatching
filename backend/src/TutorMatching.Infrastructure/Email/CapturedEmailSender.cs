@@ -1,7 +1,7 @@
 using System.Collections.Concurrent;
 using TutorMatching.Application.Abstractions;
 
-namespace TutorMatching.Api.IntegrationTests.Fixtures;
+namespace TutorMatching.Infrastructure.Email;
 
 public sealed class CapturedEmailSender : IEmailSender
 {
@@ -12,6 +12,7 @@ public sealed class CapturedEmailSender : IEmailSender
         CancellationToken cancellationToken = default)
     {
         cancellationToken.ThrowIfCancellationRequested();
+        EmailInput.Validate(recipient, subject, plainTextBody);
         messages.Enqueue(new CapturedEmail(recipient, subject, plainTextBody));
         return Task.CompletedTask;
     }

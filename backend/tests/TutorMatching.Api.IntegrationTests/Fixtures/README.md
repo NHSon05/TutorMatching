@@ -16,7 +16,7 @@ these tests are not silently skipped.
 
 `ApiWebApplicationFactory` overrides database configuration and EF registrations, disables
 development seeding by environment, uses ephemeral data-protection keys, and replaces SMTP
-with a factory-local `CapturedEmailSender`. Sending is synchronous-in-memory (no sleeps or
+with a factory-local `Infrastructure.Email.CapturedEmailSender`. Sending is synchronous-in-memory (no sleeps or
 external email server); cancellation is respected and concurrent capture is safe. Avoid
 logging captured recipients/bodies/tokens; `CapturedEmail.ToString()` is redacted.
 

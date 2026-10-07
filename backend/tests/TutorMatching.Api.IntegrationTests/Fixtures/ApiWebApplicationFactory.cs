@@ -10,6 +10,7 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Logging;
 using TutorMatching.Application.Abstractions;
 using TutorMatching.Infrastructure.Persistence;
+using TutorMatching.Infrastructure.Email;
 
 namespace TutorMatching.Api.IntegrationTests.Fixtures;
 

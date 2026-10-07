@@ -28,6 +28,7 @@ public static class DependencyInjection
             .Bind(configuration.GetSection("Smtp"))
             .Validate(options => !string.IsNullOrWhiteSpace(options.Host), "Smtp: Host is required")
             .Validate(options => options.Port is > 0 and <= 65535, "Smtp: Port is invalid")
+            .Validate(options => options.TimeoutSeconds is >= 1 and <= 120, "Smtp: TimeoutSeconds must be between 1 and 120")
             .Validate(options => System.Net.Mail.MailAddress.TryCreate(options.FromAddress, out _), "Smtp: FromAddress is invalid")
             .ValidateOnStart();
 

@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using TutorMatching.Application.Abstractions;
 using TutorMatching.Infrastructure.Persistence;
+using TutorMatching.Infrastructure.Email;
 
 namespace TutorMatching.Api.IntegrationTests.Fixtures;
 

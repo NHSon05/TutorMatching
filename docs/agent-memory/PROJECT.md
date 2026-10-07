@@ -26,6 +26,7 @@ Stable, compact facts for agents. Search by heading or keyword and read only the
 - T010 ports live in `TutorMatching.Application/Abstractions/`: current user, UTC clock, email, allowlisted account audit, and account service; Application references Domain only. See the local README for adapter responsibilities.
 - T011 security lives in `TutorMatching.Api/Security/`: Identity cookie (30m idle/8h absolute), per-request stamp/status validation, default authenticated access, role policies, allowlisted credentialed CORS, CSRF via `/api/v1/auth/csrf` + `X-CSRF-TOKEN`, and per-IP limits (120/min overall, 10/min auth writes). Identity lockout is configured at 5 attempts/15m; login counting and logout revocation remain T028.
 - T015 API fixtures require Docker: Testcontainers PostgreSQL 17.6, a unique database per WebApplicationFactory, migrations and factory-local email capture. T017 exposes OpenAPI 3.1 `/openapi/v1.json` in Development/Testing and tests implemented operations against the YAML contract; later account operations remain explicitly pending.
+- T014 adapters live in `Infrastructure/Email`: SMTP sandbox via MailKit with required STARTTLS when enabled, 15s default send deadline and sanitized transport errors; `CapturedEmailSender` is substituted only in test factories. Email content/tokens are never logged. Tests use a separate disposable Mailpit container.
 
 ## Commands
 
