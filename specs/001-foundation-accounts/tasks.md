@@ -42,9 +42,9 @@ implementation and must initially fail for the intended reason.
 - [x] T012 [P] Configure RFC Problem Details and consistent validation/conflict/authentication error mapping in `backend/src/TutorMatching.Api/Errors/`
 - [ ] T013 [P] Implement allowlisted secret-free audit events in `backend/src/TutorMatching.Infrastructure/Auditing/AuditEvent.cs` and `AuditWriter.cs`
 - [ ] T014 [P] Implement SMTP sandbox and integration-test email adapters without logging raw links/tokens in `backend/src/TutorMatching.Infrastructure/Email/`
-- [ ] T015 Build PostgreSQL-backed API test fixtures and deterministic email capture in `backend/tests/TutorMatching.Api.IntegrationTests/Fixtures/`
+- [X] T015 Build PostgreSQL-backed API test fixtures and deterministic email capture in `backend/tests/TutorMatching.Api.IntegrationTests/Fixtures/`
 - [ ] T016 [P] Build shared responsive navigation, form field, loading, error, success, and access-denied components in `frontend/src/components/`
-- [ ] T017 Wire OpenAPI versioning and verify the implemented surface against `specs/001-foundation-accounts/contracts/openapi.yaml` in `backend/src/TutorMatching.Api/Program.cs`
+- [X] T017 Wire OpenAPI versioning and verify the implemented surface against `specs/001-foundation-accounts/contracts/openapi.yaml` in `backend/src/TutorMatching.Api/Program.cs`
 
 **Checkpoint**: Database migration applies, test host starts, security middleware is active, and shared UI states render.
 

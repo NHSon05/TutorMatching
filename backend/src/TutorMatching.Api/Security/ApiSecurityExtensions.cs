@@ -146,8 +146,13 @@ public static class ApiSecurityExtensions
         {
             context.Response.Headers.CacheControl = "no-store";
             var tokens = antiforgery.GetAndStoreTokens(context);
-            return Results.Ok(new { requestToken = tokens.RequestToken, headerName = CsrfHeader });
-        }).AllowAnonymous().WithName("GetCsrfToken");
+            return TypedResults.Ok(new CsrfTokenResponse
+            {
+                RequestToken = tokens.RequestToken!, HeaderName = CsrfHeader
+            });
+        }).AllowAnonymous().WithName("GetCsrfToken")
+            .WithGroupName("v1")
+            .ProducesProblem(StatusCodes.Status429TooManyRequests);
 
     private static bool IsUnsafe(string method) =>
         !HttpMethods.IsGet(method) && !HttpMethods.IsHead(method) &&

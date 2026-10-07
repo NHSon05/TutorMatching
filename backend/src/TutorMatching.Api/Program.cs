@@ -2,6 +2,7 @@ using TutorMatching.Infrastructure;
 using TutorMatching.Infrastructure.Configurations;
 using TutorMatching.Api.Security;
 using TutorMatching.Api.Errors;
+using TutorMatching.Api.OpenApi;
 
 DotEnvLoader.Load();
 
@@ -13,8 +14,7 @@ builder.Services.AddControllers();
 builder.Services.AddApiErrors();
 builder.Services.AddInfrastructure(builder.Configuration);
 builder.Services.AddApiSecurity(builder.Configuration, builder.Environment);
-// Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
-builder.Services.AddOpenApi();
+builder.Services.AddVersionedOpenApi();
 
 var app = builder.Build();
 
@@ -23,7 +23,7 @@ app.UseApiErrors();
 await app.Services.SeedDevelopmentDataAsync(app.Environment.IsDevelopment());
 
 // Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
+if (app.Environment.IsDevelopment() || app.Environment.IsEnvironment("Testing"))
 {
     app.MapOpenApi().AllowAnonymous();
 }
@@ -36,3 +36,5 @@ app.MapCsrfEndpoint();
 app.MapControllers();
 
 app.Run();
+
+public partial class Program { }

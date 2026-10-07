@@ -20,6 +20,12 @@ npm --prefix frontend run dev
 
 ## Automated validation
 
+Docker Desktop must be running for the PostgreSQL-backed API fixtures (T015). They create
+their own container and a database per factory, apply migrations, capture email in memory,
+and remove the container at teardown. They do not use the database from `backend/.env`.
+The OpenAPI contract test (T017) checks currently implemented `/api/v1` operations; the
+remaining account journeys below require their later story tasks before they can pass.
+
 ```bash
 dotnet test backend/TutorMatching.slnx
 npm --prefix frontend run lint
@@ -30,6 +36,8 @@ npm --prefix frontend run test:e2e
 
 If the frontend test scripts have not yet been added, their absence is a failed foundational task,
 not permission to skip the checks.
+
+In Development, inspect `/openapi/v1.json` on the API host for the generated v1 document.
 
 ## Independent journey checks
 

@@ -17,7 +17,7 @@ export default function LearnerSchedulePage() {
           ))}
         </div>
 
-        <div className="grid grid-cols-7 min-h-[300px] divide-x divide-gray-200 p-2">
+        <div className="grid grid-cols-7 min-h-75 divide-x divide-gray-200 p-2">
           {/* Thứ 2 */}
           <div className="p-2 space-y-2">
             <div className="p-2.5 rounded-lg bg-blue-50 border border-blue-200 text-xs">

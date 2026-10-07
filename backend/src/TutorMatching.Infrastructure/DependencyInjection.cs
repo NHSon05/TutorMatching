@@ -5,6 +5,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using TutorMatching.Application.Abstractions;
 using TutorMatching.Infrastructure.Auditing;
+using TutorMatching.Infrastructure.Email;
 using TutorMatching.Infrastructure.Persistence;
 using TutorMatching.Infrastructure.Time;
 
@@ -22,6 +23,15 @@ public static class DependencyInjection
             throw new InvalidOperationException(
                 "ConnectionStrings:DefaultConnection is required.");
         }
+
+        services.AddOptions<SmtpOptions>()
+            .Bind(configuration.GetSection("Smtp"))
+            .Validate(options => !string.IsNullOrWhiteSpace(options.Host), "Smtp: Host is required")
+            .Validate(options => options.Port is > 0 and <= 65535, "Smtp: Port is invalid")
+            .Validate(options => System.Net.Mail.MailAddress.TryCreate(options.FromAddress, out _), "Smtp: FromAddress is invalid")
+            .ValidateOnStart();
+
+        services.AddTransient<IEmailSender, SmtpEmailSender>();
 
         services.AddDbContext<ApplicationDbContext>(options =>
             options.UseNpgsql(connectionString));
