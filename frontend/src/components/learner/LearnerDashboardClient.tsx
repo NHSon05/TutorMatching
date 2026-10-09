@@ -1,15 +1,13 @@
 "use client";
 
 import * as React from "react";
-import type { LearnerDashboardData } from "@/data/mockLearnerDashboard";
+import type { LearnerDashboardClientProps } from "./types";
 import { WelcomeBannerCard } from "./WelcomeBannerCard";
 import { YourCoursesSection } from "./YourCoursesSection";
 import { MyScheduleSection } from "./MyScheduleSection";
 import { RightSidebarWidgets } from "./RightSidebarWidgets";
 
-interface LearnerDashboardClientProps {
-  data: LearnerDashboardData;
-}
+export type * from "./types";
 
 export function LearnerDashboardClient({ data }: LearnerDashboardClientProps) {
   return (

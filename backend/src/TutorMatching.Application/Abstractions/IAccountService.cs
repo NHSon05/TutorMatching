@@ -4,7 +4,7 @@ namespace TutorMatching.Application.Abstractions;
 
 public interface IAccountService
 {
-    Task<AccountOperationResult> RegisterAsync(string fullName, string email, string password,
+    Task<AccountOperationResult> RegisterAsync(string fullName, string email, string? phoneNumber, string password,
         AccountRole role, CancellationToken cancellationToken = default);
 
     Task<AccountOperationResult> SignInAsync(string email, string password,

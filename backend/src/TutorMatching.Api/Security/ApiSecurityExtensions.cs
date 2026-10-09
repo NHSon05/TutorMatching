@@ -1,7 +1,10 @@
 using System.Globalization;
 using System.Threading.RateLimiting;
 using Microsoft.AspNetCore.Antiforgery;
-using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
+using System.Security.Claims;
+using TutorMatching.Application.Abstractions;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.DependencyInjection.Extensions;
@@ -17,16 +20,24 @@ public static class ApiSecurityExtensions
     public static IServiceCollection AddApiSecurity(this IServiceCollection services,
         IConfiguration configuration, IHostEnvironment environment)
     {
-        // check frontend origin
-        var origin = configuration["Frontend:Origin"];
-        if (!Uri.TryCreate(origin, UriKind.Absolute, out var uri) ||
-            (uri.Scheme != "http" && uri.Scheme != "https") ||
-            !string.IsNullOrEmpty(uri.UserInfo) || uri.AbsolutePath != "/" ||
-            !string.IsNullOrEmpty(uri.Query) || !string.IsNullOrEmpty(uri.Fragment) ||
-            (!environment.IsDevelopment() && uri.Scheme != "https"))
+        // Explicit allowlist; retain the legacy single-origin configuration.
+        var configuredOrigins = configuration.GetSection("Frontend:Origins").Get<string[]>() ?? [];
+        if (configuration["Frontend:Origin"] is { Length: > 0 } legacyOrigin)
+            configuredOrigins = [.. configuredOrigins, legacyOrigin];
+        if (configuredOrigins.Length == 0)
+            throw new InvalidOperationException("Frontend:Origins must contain at least one origin.");
+        var origins = configuredOrigins.Select(origin =>
         {
-            throw new InvalidOperationException("Frontend:Origin must be an explicit HTTP(S) origin (HTTPS outside Development).");
-        }
+            if (!Uri.TryCreate(origin, UriKind.Absolute, out var uri) ||
+                (uri.Scheme != "http" && uri.Scheme != "https") ||
+                !string.IsNullOrEmpty(uri.UserInfo) || uri.AbsolutePath != "/" ||
+                !string.IsNullOrEmpty(uri.Query) || !string.IsNullOrEmpty(uri.Fragment) ||
+                (!environment.IsDevelopment() && uri.Scheme != "https" && uri.Host != "localhost"))
+            {
+                throw new InvalidOperationException("Frontend origins must be explicit HTTP(S) origins; non-local origins require HTTPS outside Development.");
+            }
+            return uri.GetLeftPart(UriPartial.Authority);
+        }).Distinct(StringComparer.OrdinalIgnoreCase).ToArray();
 
         // cookie policy & authentication
         var securePolicy = CookieSecurePolicy.Always;
@@ -41,21 +52,82 @@ public static class ApiSecurityExtensions
 
         var cookieName = configuration["Cookie:Name"] ?? "tutormatch_session";
         services.TryAddSingleton(TimeProvider.System);
-        services.AddScoped<SessionCookieEvents>();
-        services.AddAuthentication(IdentityConstants.ApplicationScheme)
-            .AddCookie(IdentityConstants.ApplicationScheme, options =>
+        var jwt = JwtSettings.Load(configuration, securePolicy);
+        services.AddSingleton(jwt);
+        services.AddScoped<JwtCookieTokens>();
+        services.AddAuthentication(options =>
+        {
+            options.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
+            options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+            options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+            options.DefaultForbidScheme = JwtBearerDefaults.AuthenticationScheme;
+        }).AddJwtBearer(options =>
+        {
+            options.MapInboundClaims = false;
+            options.IncludeErrorDetails = false;
+            options.TokenValidationParameters = new TokenValidationParameters
             {
-                options.Cookie.Name = cookieName;
-                options.Cookie.HttpOnly = true;
-                options.Cookie.SecurePolicy = securePolicy;
-                options.Cookie.SameSite = SameSiteMode.Lax;
-                options.Cookie.Path = "/";
-                options.ExpireTimeSpan = SessionCookieEvents.IdleTimeout;
-                options.SlidingExpiration = true;
-                options.EventsType = typeof(SessionCookieEvents);
+                ValidateIssuer = true,
+                ValidIssuer = jwt.Issuer,
+                ValidateAudience = true,
+                ValidAudience = jwt.Audience,
+                ValidateIssuerSigningKey = true,
+                IssuerSigningKey = new SymmetricSecurityKey(jwt.SigningKey),
+                RequireSignedTokens = true,
+                RequireExpirationTime = true,
+                ValidateLifetime = true,
+                ValidAlgorithms = [SecurityAlgorithms.HmacSha256],
+                ClockSkew = TimeSpan.Zero,
+                NameClaimType = "sub",
+                RoleClaimType = "role"
+            };
+            options.Events = new JwtBearerEvents
+            {
+                OnMessageReceived = context =>
+                {
+                    if (context.Request.Cookies.TryGetValue(JwtCookieTokens.AccessCookie, out var token) && !string.IsNullOrWhiteSpace(token))
+                        context.Token = token;
+                    else context.NoResult(); // Do not fall back to a client-supplied Authorization header.
+                    return Task.CompletedTask;
+                },
+                OnTokenValidated = async context =>
+                {
+                    var principal = context.Principal!;
+                    if (!Guid.TryParse(principal.FindFirstValue("sub"), out var userId) ||
+                        !Guid.TryParse(principal.FindFirstValue("sid"), out var sessionId) ||
+                        !await context.HttpContext.RequestServices.GetRequiredService<ITokenSessionService>()
+                            .ValidateAsync(sessionId, userId, principal.FindFirstValue("role") ?? string.Empty, context.HttpContext.RequestAborted))
+                    {
+                        context.Fail("Invalid session.");
+                        return;
+                    }
+                    // Identity current-user and antiforgery both need a stable account identifier.
+                    var identity = (ClaimsIdentity)principal.Identity!;
+                    identity.AddClaim(new Claim(ClaimTypes.NameIdentifier, userId.ToString()));
+                    if (principal.FindFirstValue("role") is { Length: > 0 } role)
+                    {
+                        identity.AddClaim(new Claim(ClaimTypes.Role, role));
+                    }
+                },
+                OnChallenge = async context =>
+                {
+                    context.HandleResponse();
+                    await Results.Problem(statusCode: 401, title: "Authentication required.").ExecuteAsync(context.HttpContext);
+                },
+                OnForbidden = async context =>
+                {
+                    context.Response.StatusCode = StatusCodes.Status403Forbidden;
+                    await Results.Problem(statusCode: 403, title: "Access denied.").ExecuteAsync(context.HttpContext);
+                }
+            };
+        });
+        services.AddOptions<JwtBearerOptions>(JwtBearerDefaults.AuthenticationScheme)
+            .Configure<TimeProvider>((options, clock) =>
+            {
+                options.TokenValidationParameters.LifetimeValidator = (notBefore, expires, _, _) =>
+                    expires.HasValue && expires.Value > clock.GetUtcNow().UtcDateTime &&
+                    (!notBefore.HasValue || notBefore.Value <= clock.GetUtcNow().UtcDateTime);
             });
-        services.AddOptions<CookieAuthenticationOptions>(IdentityConstants.ApplicationScheme)
-            .Configure<TimeProvider>((options, clock) => options.TimeProvider = clock);
 
         // Authorization
         services.AddAuthorization(options =>
@@ -71,9 +143,9 @@ public static class ApiSecurityExtensions
 
         // CORS
         services.AddCors(options => options.AddPolicy(FrontendCorsPolicy, policy => policy
-            .WithOrigins(uri.GetLeftPart(UriPartial.Authority))
+            .WithOrigins(origins)
             .WithMethods("GET", "HEAD", "POST", "PUT", "PATCH", "DELETE", "OPTIONS")
-            .WithHeaders("Content-Type", CsrfHeader)
+            .WithHeaders("Content-Type", CsrfHeader, "Authorization", "Accept", "Origin", "X-Requested-With")
             .AllowCredentials()));
 
         // Anti CSRF
@@ -148,7 +220,8 @@ public static class ApiSecurityExtensions
             var tokens = antiforgery.GetAndStoreTokens(context);
             return TypedResults.Ok(new CsrfTokenResponse
             {
-                RequestToken = tokens.RequestToken!, HeaderName = CsrfHeader
+                RequestToken = tokens.RequestToken!,
+                HeaderName = CsrfHeader
             });
         }).AllowAnonymous().WithName("GetCsrfToken")
             .WithGroupName("v1")

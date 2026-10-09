@@ -31,3 +31,13 @@ Search by ADR ID, subsystem, or keyword. Add only durable decisions; keep each A
 - Decision: Role color convention: Blue for Learner/Brand, Amber for Tutor, Crimson for Admin, Indigo for Shared/Messaging.
 - Decision: Single source of design system truth is maintained under `frontend/docs/design-system/`.
 - Consequence: All frontend pages and future components must use design system tokens and primitives without raw hex codes.
+
+## ADR-004 - Dual JWT-refresh cookie authentication
+
+- Date: 2026-10-09
+- Status: Accepted
+- Context: Browser clients require stateless access validation with server-side revocation and no credential leakage into JavaScript.
+- Decision: Replace legacy Identity ticket cookies with short-lived (5m) HS256 JWT `accessToken` (path `/`) and single-use rotating `refreshToken` (path `/api/v1/auth`), both HttpOnly, Lax and Secure.
+- Decision: Store SHA-256 refresh hashes and session family rows in PostgreSQL; detect reuse and revoke the family atomically.
+- Decision: Preserve Identity lockout, CSRF, allowlisted CORS, 30m idle and 8h absolute session deadlines; tokens never appear in JSON.
+- Consequence: Existing Identity authentication cookies are rejected; users must log in again. Frontend refresh handling is required upon access expiry.

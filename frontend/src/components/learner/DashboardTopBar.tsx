@@ -3,13 +3,9 @@
 import * as React from "react";
 import Image from "next/image";
 import { TextField } from "../ui";
+import type { DashboardTopBarProps, DashboardUser } from "./types";
 
-export interface DashboardUser {
-  name: string;
-  avatar: string;
-  role: string;
-  unreadNotifications: number;
-}
+export type * from "./types";
 
 const DEFAULT_USER: DashboardUser = {
   name: "Esther",
@@ -18,10 +14,6 @@ const DEFAULT_USER: DashboardUser = {
   role: "Học viên",
   unreadNotifications: 3,
 };
-
-export interface DashboardTopBarProps {
-  user?: DashboardUser;
-}
 
 export function DashboardTopBar({ user = DEFAULT_USER }: DashboardTopBarProps) {
   const [searchValue, setSearchValue] = React.useState("");

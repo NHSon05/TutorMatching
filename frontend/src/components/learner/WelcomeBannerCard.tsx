@@ -3,12 +3,8 @@
 import * as React from "react";
 import Link from "next/link";
 
-interface WelcomeBannerCardProps {
-  title: string;
-  description: string;
-  actionText: string;
-  actionHref: string;
-}
+import type { WelcomeBannerCardProps } from "./types";
+
 
 export function WelcomeBannerCard({
   title,

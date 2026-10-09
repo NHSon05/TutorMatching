@@ -112,6 +112,12 @@ and account-state rules; Application owns use cases and ports; Infrastructure ow
 persistence, cookie/session, and email implementations; Api owns HTTP contracts and composition.
 Frontend calls only `/api/v1` contracts and never receives credential hashes or reset credentials.
 
+## JWT cookie change — approved 2026-10-09
+
+Replace Identity tickets with five-minute HS256 JWT access cookies and opaque, rotating refresh cookies. Signing key is externally configured (base64, at least 32 random bytes). Persist session family, stamp snapshot and SHA-256 refresh hashes in PostgreSQL; serialize refresh/logout with row locks. Validate session/account/stamp/role on every authenticated request, retaining 30-minute idle/eight-hour absolute limits. Keep Identity password checks, lockout, CSRF and CORS. Cookie names: accessToken (path /), refreshToken (path /api/v1/auth); HttpOnly, host-only, Lax and Secure except explicit local Development override. No raw tokens in JSON/logs. Add refresh endpoint and allow logout with a valid refresh credential after access expiry. Legacy tickets are rejected. Frontend refresh integration is deferred and existing clients will need it after access expiry.
+
+Governance: manually align spec → plan → tasks because Spec Kit skills are unavailable in this session. Automated analyze/converge, build, migration and test checks remain required; do not mark this amendment verified from code alone.
+
 ## Delivery Phases
 
 1. Align project references, configuration, tests, database, error handling, and OpenAPI.

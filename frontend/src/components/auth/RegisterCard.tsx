@@ -2,15 +2,27 @@
 
 import React, { useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { TextField } from "@/components/ui/text-field";
 import { Button } from "@/components/ui/button";
 import { SegmentedControl } from "@/components/ui/segmented-control";
+import { registerAccount } from "@/lib/api/auth";
 import Logo from "@assets/logo/Logo";
+import {
+  DEFAULT_COUNTRY,
+  MAX_PASSWORD_LENGTH,
+  MIN_PASSWORD_LENGTH,
+  REGISTRATION_STEPS,
+  ROLE_OPTIONS,
+  SUPPORTED_COUNTRIES,
+  type FieldErrors,
+  type RegisterCardProps,
+  type RegistrationError,
+  type RegistrationField,
+} from "./RegisterCard.types";
 
-export default function RegisterCard() {
-  const router = useRouter();
+export type * from "./RegisterCard.types";
 
+export default function RegisterCard({ className = "", onSuccess }: RegisterCardProps = {}) {
   // 1. Vai trò (Gia sư, Phụ Huynh, Học Sinh)
   const [role, setRole] = useState("TUTOR");
 
@@ -19,11 +31,7 @@ export default function RegisterCard() {
 
   // 3. Số điện thoại
   const [phoneNumber, setPhoneNumber] = useState("");
-  const [selectedCountry, setSelectedCountry] = useState({
-    code: "+84",
-    flag: "🇻🇳",
-    name: "Vietnam",
-  });
+  const [selectedCountry, setSelectedCountry] = useState(DEFAULT_COUNTRY);
   const [isCountryDropdownOpen, setIsCountryDropdownOpen] = useState(false);
 
   // 4. Họ và tên
@@ -34,47 +42,76 @@ export default function RegisterCard() {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const [errorMsg, setErrorMsg] = useState("");
+  const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
+  const [generalError, setGeneralError] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isSuccess, setIsSuccess] = useState(false);
 
-  const countries = [
-    { code: "+84", flag: "🇻🇳", name: "Vietnam" },
-    { code: "+374", flag: "🇦🇲", name: "Armenia" },
-    { code: "+1", flag: "🇺🇸", name: "United States" },
-    { code: "+44", flag: "🇬🇧", name: "United Kingdom" },
-  ];
+  const clearFieldError = (field: RegistrationField) => {
+    setFieldErrors((current) => ({ ...current, [field]: undefined }));
+  };
 
-  const roleOptions = [
-    { value: "TUTOR", label: "Gia sư"},
-    { value: "PARENT", label: "Phụ Huynh"},
-    { value: "STUDENT", label: "Học Sinh"},
-  ];
-
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    const validationErrors: FieldErrors = {};
+    if (password.length < MIN_PASSWORD_LENGTH) {
+      validationErrors.password = `Mật khẩu phải có ít nhất ${MIN_PASSWORD_LENGTH} ký tự.`;
+    } else if (password.length > MAX_PASSWORD_LENGTH) {
+      validationErrors.password = `Mật khẩu không được vượt quá ${MAX_PASSWORD_LENGTH} ký tự.`;
+    }
     if (password !== confirmPassword) {
-      setErrorMsg("Mật khẩu xác nhận không trùng khớp.");
+      validationErrors.passwordConfirmation = "Mật khẩu xác nhận không trùng khớp.";
+    }
+
+    setFieldErrors(validationErrors);
+    setGeneralError("");
+    setIsSuccess(false);
+    if (Object.keys(validationErrors).length > 0) {
       return;
     }
-    setErrorMsg("");
 
-    // Lưu role vào cookie để middleware nhận diện
-    const userRole = role === "TUTOR" ? "TUTOR" : "LEARNER";
-    document.cookie = `auth_token=registered_token; path=/; max-age=86400`;
-    document.cookie = `user_role=${userRole}; path=/; max-age=86400`;
-
-    alert(`Đăng ký thành công với vai trò: ${roleOptions.find(r => r.value === role)?.label}`);
-    if (userRole === "TUTOR") {
-      router.push("/tutor/dashboard");
-    } else {
-      router.push("/learner/dashboard");
+    setIsSubmitting(true);
+    try {
+      await registerAccount({
+        fullName: fullName.trim(),
+        email: email.trim(),
+        password,
+        passwordConfirmation: confirmPassword,
+        role: role === "TUTOR" ? "TUTOR" : "LEARNER",
+      });
+      setIsSuccess(true);
+      onSuccess?.();
+    } catch (error) {
+      const apiError = error as RegistrationError;
+      if (apiError.status === 409) {
+        setFieldErrors({ email: "Email này đã được sử dụng." });
+      } else if (apiError.errors) {
+        const serverErrors = Object.fromEntries(
+          Object.entries(apiError.errors)
+            .filter(([field, messages]) =>
+              ["fullName", "email", "password", "passwordConfirmation", "role"].includes(field) &&
+              messages.length > 0)
+            .map(([field, messages]) => [field, messages[0]])
+        ) as FieldErrors;
+        setFieldErrors(serverErrors);
+        if (Object.keys(serverErrors).length === 0) {
+          setGeneralError(apiError.message || "Không thể đăng ký. Vui lòng thử lại.");
+        }
+      } else {
+        setGeneralError(apiError.message || "Không thể đăng ký. Vui lòng thử lại.");
+      }
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
   return (
-    <div className="min-h-screen w-full p-2 sm:p-4 grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 overflow-hidden">
-      
+    <div
+      className={`min-h-screen w-full p-2 sm:p-4 grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 overflow-hidden ${className}`.trim()}
+    >
       {/* ========================================================================= */}
-      {/* CỘT TRÁI: BLUE GRADIENT BANNER & 3 STEP PROGRESS CARDS (lg:col-span-6) */}
+      {/* CỘT TRÁI: BLUE GRADIENT BANNER & 3 STEP PROGRESS CARDS (lg:col-span-7) */}
       {/* ========================================================================= */}
       <div className="lg:col-span-7 bg-linear-to-br from-[#1e3a8a] via-[#2563eb] to-[#38bdf8] rounded-3xl p-6 sm:p-8 text-white flex flex-col justify-between relative overflow-hidden min-h-125">
         {/* Ambient Glows */}
@@ -83,9 +120,7 @@ export default function RegisterCard() {
 
         {/* Top Logo */}
         <div className="relative z-10 flex items-center gap-2">
-          <Logo
-            variant="white"
-          />
+          <Logo variant="white" />
           <span className="font-bold text-xl tracking-tight text-white">
             TutorMatch
           </span>
@@ -104,37 +139,40 @@ export default function RegisterCard() {
 
         {/* 3 Step Cards */}
         <div className="relative z-10 grid grid-cols-1 sm:grid-cols-3 gap-2.5 pt-2">
-          <div className="bg-white rounded-2xl p-3.5 shadow-md flex flex-col justify-between min-h-26.25">
-            <div className="w-6 h-6 rounded-full bg-[#2563eb] text-white text-xs font-bold flex items-center justify-center mb-3">
-              1
+          {REGISTRATION_STEPS.map((s) => (
+            <div
+              key={s.step}
+              className={
+                s.isActive
+                  ? "bg-white rounded-2xl p-3.5 shadow-md flex flex-col justify-between min-h-26.25"
+                  : "bg-white/15 backdrop-blur-md border border-white/20 rounded-2xl p-3.5 flex flex-col justify-between min-h-26.25"
+              }
+            >
+              <div
+                className={
+                  s.isActive
+                    ? "w-6 h-6 rounded-full bg-[#2563eb] text-white text-xs font-bold flex items-center justify-center mb-3"
+                    : "w-6 h-6 rounded-full bg-white/25 text-white text-xs font-medium flex items-center justify-center mb-3"
+                }
+              >
+                {s.step}
+              </div>
+              <span
+                className={
+                  s.isActive
+                    ? "text-xs font-bold leading-snug text-gray-900"
+                    : "text-xs font-medium leading-snug text-white/90"
+                }
+              >
+                {s.title}
+              </span>
             </div>
-            <span className="text-xs font-bold leading-snug text-gray-900">
-              Đăng ký tài khoản
-            </span>
-          </div>
-
-          <div className="bg-white/15 backdrop-blur-md border border-white/20 rounded-2xl p-3.5 flex flex-col justify-between min-h-26.25">
-            <div className="w-6 h-6 rounded-full bg-white/25 text-white text-xs font-medium flex items-center justify-center mb-3">
-              2
-            </div>
-            <span className="text-xs font-medium leading-snug text-white/90">
-              Cài đặt thông tin
-            </span>
-          </div>
-
-          <div className="bg-white/15 backdrop-blur-md border border-white/20 rounded-2xl p-3.5 flex flex-col justify-between min-h-26.25">
-            <div className="w-6 h-6 rounded-full bg-white/25 text-white text-xs font-medium flex items-center justify-center mb-3">
-              3
-            </div>
-            <span className="text-xs font-medium leading-snug text-white/90">
-              Xác nhận thông tin
-            </span>
-          </div>
+          ))}
         </div>
       </div>
 
       {/* ========================================================================= */}
-      {/* CỘT PHẢI: FORM ĐĂNG KÝ 6 TRƯỜNG CHUẨN (lg:col-span-6) */}
+      {/* CỘT PHẢI: FORM ĐĂNG KÝ 6 TRƯỜNG CHUẨN (lg:col-span-5) */}
       {/* ========================================================================= */}
       <div className="lg:col-span-5 flex flex-col justify-center px-2 sm:px-6 py-4 sm:py-6">
         <h2 className="text-3xl font-extrabold text-gray-900 text-center mb-5 tracking-tight">
@@ -148,7 +186,7 @@ export default function RegisterCard() {
               Chọn vai trò
             </label>
             <SegmentedControl
-              options={roleOptions}
+              options={ROLE_OPTIONS}
               value={role}
               onChange={setRole}
               size="large"
@@ -165,7 +203,11 @@ export default function RegisterCard() {
               size="medium"
               placeholder="example@gmail.com"
               value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              onChange={(e) => {
+                setEmail(e.target.value);
+                clearFieldError("email");
+              }}
+              error={fieldErrors.email}
             />
           </div>
 
@@ -201,7 +243,7 @@ export default function RegisterCard() {
               {/* Dropdown cờ */}
               {isCountryDropdownOpen && (
                 <div className="absolute top-full left-0 mt-1 w-52 bg-white border border-gray-200 rounded-xl shadow-xl z-30 py-1.5 max-h-48 overflow-y-auto">
-                  {countries.map((c) => (
+                  {SUPPORTED_COUNTRIES.map((c) => (
                     <button
                       key={c.code}
                       type="button"
@@ -221,7 +263,6 @@ export default function RegisterCard() {
 
               <input
                 type="tel"
-                required
                 placeholder="0000 00 00"
                 value={phoneNumber}
                 onChange={(e) => setPhoneNumber(e.target.value)}
@@ -239,60 +280,88 @@ export default function RegisterCard() {
               size="medium"
               placeholder="Nguyễn Văn A"
               value={fullName}
-              onChange={(e) => setFullName(e.target.value)}
+              onChange={(e) => {
+                setFullName(e.target.value);
+                clearFieldError("fullName");
+              }}
+              error={fieldErrors.fullName}
             />
           </div>
 
-          {/* TRƯỜNG 5: Mật khẩu */}
-          <div className="flex justify-between gap-8">
-            <TextField
-              label={<span className="text-base font-semibold text-gray-800">Mật khẩu</span>}
-              type={showPassword ? "text" : "password"}
-              required
-              size="medium"
-              placeholder="••••••••••••••••"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              trailingIcon={
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="text-gray-400 hover:text-gray-600 focus:outline-none"
-                  aria-label={showPassword ? "Ẩn mật khẩu" : "Hiện mật khẩu"}
-                >
-                  {showPassword ? "👁️" : "🙈"}
-                </button>
-              }
-            />
+          {/* TRƯỜNG 5 & 6: Mật khẩu & Xác nhận mật khẩu */}
+          <div className="flex flex-col sm:flex-row gap-4">
+            <div className="flex-1">
+              <TextField
+                label={<span className="text-base font-semibold text-gray-800">Mật khẩu</span>}
+                type={showPassword ? "text" : "password"}
+                required
+                size="medium"
+                placeholder="••••••••••••••••"
+                value={password}
+                maxLength={MAX_PASSWORD_LENGTH + 1}
+                onChange={(e) => {
+                  setPassword(e.target.value);
+                  clearFieldError("password");
+                }}
+                error={fieldErrors.password}
+                trailingIcon={
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="text-gray-400 hover:text-gray-600 focus:outline-none"
+                    aria-label={showPassword ? "Ẩn mật khẩu" : "Hiện mật khẩu"}
+                  >
+                    {showPassword ? "👁️" : "🙈"}
+                  </button>
+                }
+              />
+            </div>
 
-            <TextField
-              label={<span className="text-base font-semibold text-gray-800">Xác nhận mật khẩu</span>}
-              type={showConfirmPassword ? "text" : "password"}
-              required
-              size="medium"
-              placeholder="••••••••••••••••"
-              value={confirmPassword}
-              onChange={(e) => setConfirmPassword(e.target.value)}
-              error={errorMsg}
-              trailingIcon={
-                <button
-                  type="button"
-                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                  className="text-gray-400 hover:text-gray-600 focus:outline-none"
-                  aria-label={showConfirmPassword ? "Ẩn mật khẩu" : "Hiện mật khẩu"}
-                >
-                  {showConfirmPassword ? "👁️" : "🙈"}
-                </button>
-              }
-            />
+            <div className="flex-1">
+              <TextField
+                label={<span className="text-base font-semibold text-gray-800">Xác nhận mật khẩu</span>}
+                type={showConfirmPassword ? "text" : "password"}
+                required
+                size="medium"
+                placeholder="••••••••••••••••"
+                value={confirmPassword}
+                maxLength={MAX_PASSWORD_LENGTH + 1}
+                onChange={(e) => {
+                  setConfirmPassword(e.target.value);
+                  clearFieldError("passwordConfirmation");
+                }}
+                error={fieldErrors.passwordConfirmation}
+                trailingIcon={
+                  <button
+                    type="button"
+                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                    className="text-gray-400 hover:text-gray-600 focus:outline-none"
+                    aria-label={showConfirmPassword ? "Ẩn mật khẩu" : "Hiện mật khẩu"}
+                  >
+                    {showConfirmPassword ? "👁️" : "🙈"}
+                  </button>
+                }
+              />
+            </div>
           </div>
 
-          {/* TRƯỜNG 6: Xác nhận mật khẩu */}
-          <div>
-            
-          </div>
+          {generalError && (
+            <p role="alert" className="text-sm font-medium text-status-error">
+              {generalError}
+            </p>
+          )}
 
-          {/* Nút Continue */}
+          {isSuccess && (
+            <p role="status" className="rounded-xl bg-status-success-bg p-3 text-sm text-status-success-dark">
+              Đăng ký thành công. Bạn có thể{" "}
+              <Link href="/login" className="font-semibold underline">
+                Đăng nhập
+              </Link>
+              .
+            </p>
+          )}
+
+          {/* Nút Submit */}
           <div className="pt-2">
             <Button
               type="submit"
@@ -300,8 +369,9 @@ export default function RegisterCard() {
               size="medium"
               shape="rounded"
               className="w-full text-base font-semibold"
+              isLoading={isSubmitting}
             >
-              Đăng ký
+              {isSubmitting ? "Đang đăng ký..." : "Đăng ký"}
             </Button>
           </div>
         </form>
@@ -317,7 +387,6 @@ export default function RegisterCard() {
           </Link>
         </p>
       </div>
-
     </div>
   );
 }

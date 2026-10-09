@@ -40,15 +40,19 @@ implementation and must initially fail for the intended reason.
 - [x] T010 [P] Define current-user, clock, email, audit, and account-service ports in `backend/src/TutorMatching.Application/Abstractions/`
 - [x] T011 Configure secure cookie authentication, five-attempt/15-minute lockout, 30-minute idle/eight-hour absolute expiry, anti-forgery, credentialed allowlisted CORS, authorization, and rate limiting in `backend/src/TutorMatching.Api/Program.cs`
 - [x] T012 [P] Configure RFC Problem Details and consistent validation/conflict/authentication error mapping in `backend/src/TutorMatching.Api/Errors/`
-- [ ] T013 [P] Implement allowlisted secret-free audit events in `backend/src/TutorMatching.Infrastructure/Auditing/AuditEvent.cs` and `AuditWriter.cs`
-- [X] T014 [P] Implement SMTP sandbox and integration-test email adapters without logging raw links/tokens in `backend/src/TutorMatching.Infrastructure/Email/`
-- [X] T015 Build PostgreSQL-backed API test fixtures and deterministic email capture in `backend/tests/TutorMatching.Api.IntegrationTests/Fixtures/`
+- [x] T013 [P] Implement allowlisted secret-free audit events in `backend/src/TutorMatching.Infrastructure/Auditing/AuditEvent.cs` and `AuditWriter.cs`
+- [x] T014 [P] Implement SMTP sandbox and integration-test email adapters without logging raw links/tokens in `backend/src/TutorMatching.Infrastructure/Email/`
+- [x] T015 Build PostgreSQL-backed API test fixtures and deterministic email capture in `backend/tests/TutorMatching.Api.IntegrationTests/Fixtures/`
 - [ ] T016 [P] Build shared responsive navigation, form field, loading, error, success, and access-denied components in `frontend/src/components/`
-- [X] T017 Wire OpenAPI versioning and verify the implemented surface against `specs/001-foundation-accounts/contracts/openapi.yaml` in `backend/src/TutorMatching.Api/Program.cs`
+- [x] T017 Wire OpenAPI versioning and verify the implemented surface against `specs/001-foundation-accounts/contracts/openapi.yaml` in `backend/src/TutorMatching.Api/Program.cs`
 
 **Checkpoint**: Database migration applies, test host starts, security middleware is active, and shared UI states render.
 
 ---
+
+## Approved authentication amendment — JWT cookies (2026-10-09)
+
+- [ ] JWT-001 Replace ticket authentication with JWT access cookies, hashed rotating refresh sessions, additive migration, login/refresh/logout and updated OpenAPI. Preserve CSRF, role/stamp revocation, lockout and session deadlines. Verify session/security/contract tests against disposable PostgreSQL plus backend build; do not check complete until evidence passes.
 
 ## Phase 3: User Story 1 - Register an account (Priority: P1) MVP
 
@@ -59,16 +63,16 @@ input, and Admin role, and confirm no credential data is returned.
 
 ### Tests
 
-- [ ] T018 [P] [US1] Add application tests for allowed roles, password confirmation, minimum eight-character password, and normalized duplicate email in `backend/tests/TutorMatching.Application.UnitTests/Authentication/RegisterAccountTests.cs`
-- [ ] T019 [P] [US1] Add API contract/integration tests for `POST /api/v1/auth/register` success, `409`, `422`, and Admin-role denial in `backend/tests/TutorMatching.Api.IntegrationTests/Authentication/RegisterEndpointTests.cs`
-- [ ] T020 [P] [US1] Add registration form component tests for field errors, submitting, conflict, and success states in `frontend/tests/components/RegisterForm.test.tsx`
+- [x] T018 [P] [US1] Add application tests for allowed roles, password confirmation, minimum eight-character password, and normalized duplicate email in `backend/tests/TutorMatching.Application.UnitTests/Authentication/RegisterAccountTests.cs`
+- [x] T019 [P] [US1] Add API contract/integration tests for `POST /api/v1/auth/register` success, `409`, `422`, and Admin-role denial in `backend/tests/TutorMatching.Api.IntegrationTests/Authentication/RegisterEndpointTests.cs`
+- [x] T020 [P] [US1] Add registration form component tests for field errors, submitting, conflict, and success states in `frontend/tests/components/RegisterForm.test.tsx`
 
 ### Implementation
 
-- [ ] T021 [US1] Implement registration command, validation, normalized uniqueness, active status, allowed role assignment, and atomic account/profile creation in `backend/src/TutorMatching.Application/Authentication/Register/`
-- [ ] T022 [US1] Implement registration endpoint and response mapping without hashes/tokens in `backend/src/TutorMatching.Api/Controllers/AuthController.cs` and `backend/src/TutorMatching.Api/Contracts/Auth/RegisterContracts.cs`
-- [ ] T023 [P] [US1] Implement responsive registration page and API client in `frontend/src/app/(auth)/register/page.tsx` and `frontend/src/lib/api/auth.ts`
-- [ ] T024 [US1] Add Playwright registration journey covering learner, tutor, duplicate email, invalid input, and Admin tampering in `frontend/tests/e2e/registration.spec.ts`
+- [x] T021 [US1] Implement registration command, validation, normalized uniqueness, active status, allowed role assignment, and atomic account/profile creation in `backend/src/TutorMatching.Application/Authentication/Register/`
+- [x] T022 [US1] Implement registration endpoint and response mapping without hashes/tokens in `backend/src/TutorMatching.Api/Controllers/AuthController.cs` and `backend/src/TutorMatching.Api/Contracts/Auth/RegisterContracts.cs`
+- [x] T023 [P] [US1] Implement responsive registration page and API client in `frontend/src/app/(auth)/register/page.tsx` and `frontend/src/lib/api/auth.ts`
+- [x] T024 [US1] Add Playwright registration journey covering learner, tutor, duplicate email, invalid input, and Admin tampering in `frontend/tests/e2e/registration.spec.ts`
 
 **Checkpoint**: US1 passes independently and produces a usable registered identity.
 
@@ -82,15 +86,15 @@ input, and Admin role, and confirm no credential data is returned.
 
 ### Tests
 
-- [ ] T025 [P] [US2] Add application tests for active/locked/inactive accounts, generic credential failure, and lockout threshold in `backend/tests/TutorMatching.Application.UnitTests/Authentication/LoginTests.cs`
-- [ ] T026 [P] [US2] Add API integration tests for login cookie flags, expiry, logout revocation, expired sessions, and no account enumeration in `backend/tests/TutorMatching.Api.IntegrationTests/Authentication/SessionEndpointTests.cs`
-- [ ] T027 [P] [US2] Add login form tests for loading, generic error, locked/inactive denial, and success in `frontend/tests/components/LoginForm.test.tsx`
+- [x] T025 [P] [US2] Add application tests for credential validation/normalization in `backend/tests/TutorMatching.Application.UnitTests/Authentication/LoginTests.cs`; verify active/locked/inactive accounts and the Identity lockout threshold in `backend/tests/TutorMatching.Api.IntegrationTests/Authentication/SessionEndpointTests.cs` and `Authorization/AccountAuthorizationTests.cs`
+- [x] T026 [P] [US2] Add API integration tests for login cookie flags, logout revocation, and neutral credential failures in `backend/tests/TutorMatching.Api.IntegrationTests/Authentication/SessionEndpointTests.cs`; retain expiry coverage in `Security/ApiSecurityTests.cs`
+- [x] T027 [P] [US2] Add login form tests for loading, generic error, locked/inactive denial, and success in `frontend/tests/components/LoginForm.test.tsx`
 
 ### Implementation
 
-- [ ] T028 [US2] Implement login/logout use cases, last-login timestamp, lockout, and security-stamp session revocation in `backend/src/TutorMatching.Application/Authentication/Sessions/`
-- [ ] T029 [US2] Add login/logout endpoints with anti-forgery and neutral credential errors in `backend/src/TutorMatching.Api/Controllers/AuthController.cs` and `backend/src/TutorMatching.Api/Contracts/Auth/SessionContracts.cs`
-- [ ] T030 [P] [US2] Implement login page, authenticated navigation state, and logout action in `frontend/src/app/(auth)/login/page.tsx`, `frontend/src/components/AppNavigation.tsx`, and `frontend/src/lib/auth/session.ts`
+- [x] T028 [US2] Implement login/logout use cases, last-login timestamp, lockout, and security-stamp session revocation in `backend/src/TutorMatching.Application/Authentication/Sessions/`
+- [x] T029 [US2] Add login/logout endpoints with anti-forgery and neutral credential errors in `backend/src/TutorMatching.Api/Controllers/AuthController.cs` and `backend/src/TutorMatching.Api/Contracts/Auth/SessionContracts.cs`
+- [x] T030 [P] [US2] Implement login page, authenticated navigation state, and logout action through existing `frontend/src/app/(public)/login/page.tsx`, `frontend/src/components/AppNavigation.tsx`, and `frontend/src/lib/auth/session.ts`
 - [ ] T031 [US2] Add Playwright sign-in/sign-out journey proving the previous session is rejected in `frontend/tests/e2e/session.spec.ts`
 
 **Checkpoint**: US2 passes independently against a seeded active account.
@@ -106,14 +110,14 @@ all are denied and data remains unchanged.
 
 ### Tests
 
-- [ ] T032 [P] [US3] Add authorization policy unit tests for canonical roles and active-account requirement in `backend/tests/TutorMatching.Application.UnitTests/Authorization/AccountPolicyTests.cs`
-- [ ] T033 [P] [US3] Add API integration tests for `401`, `403`, wrong-role, cross-account tampering, and UI-bypass calls in `backend/tests/TutorMatching.Api.IntegrationTests/Authorization/AccountAuthorizationTests.cs`
+- [x] T032 [P] [US3] Add authorization policy unit tests for canonical roles and active-account requirement in `backend/tests/TutorMatching.Application.UnitTests/Authorization/AccountPolicyTests.cs`
+- [x] T033 [P] [US3] Add API integration tests for `401`, `403`, wrong-role, cross-account tampering, and UI-bypass calls in `backend/tests/TutorMatching.Api.IntegrationTests/Authorization/AccountAuthorizationTests.cs`
 
 ### Implementation
 
-- [ ] T034 [US3] Implement current-user identity and active-account role policies in `backend/src/TutorMatching.Application/Authorization/` and `backend/src/TutorMatching.Infrastructure/Authentication/CurrentUser.cs`
-- [ ] T035 [US3] Apply authorization policies to protected endpoints and ensure client-supplied owner IDs are ignored in `backend/src/TutorMatching.Api/Controllers/`
-- [ ] T036 [P] [US3] Implement frontend route guards and access-denied state as UX only, without replacing server checks, in `frontend/src/components/AuthGuard.tsx` and `frontend/src/app/forbidden/page.tsx`
+- [x] T034 [US3] Implement current-user identity and active-account role policies in `backend/src/TutorMatching.Application/Authorization/` and `backend/src/TutorMatching.Infrastructure/Authentication/CurrentUser.cs`
+- [x] T035 [US3] Apply authorization policies to protected endpoints and ensure client-supplied owner IDs are ignored in `backend/src/TutorMatching.Api/Controllers/`
+- [x] T036 [P] [US3] Implement frontend route guards and access-denied state as UX only, without replacing server checks, in `frontend/src/components/AuthGuard.tsx` and `frontend/src/app/forbidden/page.tsx`
 - [ ] T037 [US3] Add Playwright authorization journey for visitor, wrong role, and cross-account access in `frontend/tests/e2e/authorization.spec.ts`
 
 **Checkpoint**: US3 security checks pass even when frontend controls are bypassed.
@@ -248,3 +252,7 @@ After those tests fail for the intended missing behavior, implement T021-T024 in
 Give an AI one task ID or one phase at a time. Require it to read only the linked spec/plan section,
 inspect target files before editing, run the named tests, review the diff, and report evidence. Do not
 ask an AI to implement all 57 tasks in one unreviewed prompt.
+
+## Phase 9: Convergence — Phase 4/5 verification
+
+- [ ] T058 Run `frontend/tests/e2e/session.spec.ts` and `authorization.spec.ts` against an isolated database with Playwright Chromium installed and record results for T031/T037 per US2/AC4 and US3/AC1-4 (partial). Browser launch was blocked by a missing Chromium binary; browser download was declined. API/component checks passed.

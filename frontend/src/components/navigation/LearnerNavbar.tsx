@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { LogoutButton } from "@/components/LogoutButton";
 import { usePathname } from "next/navigation";
 
 export default function LearnerNavbar() {
@@ -59,12 +60,7 @@ export default function LearnerNavbar() {
           >
             Cài đặt
           </Link>
-          <Link
-            href="/login"
-            className="text-xs font-medium text-red-600 hover:text-red-700"
-          >
-            Đăng xuất
-          </Link>
+          <LogoutButton />
         </div>
       </div>
     </header>

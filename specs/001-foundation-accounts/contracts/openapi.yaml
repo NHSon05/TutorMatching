@@ -77,7 +77,7 @@ paths:
         '429':
           $ref: '#/components/responses/RateLimited'
         '200':
-          description: Session cookie issued
+          description: HttpOnly accessToken JWT and rotating refreshToken cookies issued; tokens are never returned in JSON
           headers:
             Set-Cookie:
               schema:
@@ -92,12 +92,30 @@ paths:
           $ref: '#/components/responses/Forbidden'
         '422':
           $ref: '#/components/responses/ValidationError'
+  /auth/refresh:
+    post:
+      operationId: refreshSession
+      summary: Rotate the refresh credential and issue new HttpOnly authentication cookies
+      description: Fetch a fresh CSRF token after access expiry before refreshing. Reusing a consumed refresh token revokes its session family. Responses are not cached.
+      security:
+        - refreshCookie: []
+          csrfHeader: []
+          csrfCookie: []
+      responses:
+        '204':
+          description: Access and refresh cookies replaced
+        '400':
+          $ref: '#/components/responses/InvalidCsrf'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '429':
+          $ref: '#/components/responses/RateLimited'
   /auth/logout:
     post:
       operationId: logout
-      summary: Revoke the current browser session
+      summary: Revoke all account sessions using the refresh cookie, even after access expiry
       security:
-        - cookieAuth: []
+        - refreshCookie: []
           csrfHeader: []
           csrfCookie: []
       responses:
@@ -157,6 +175,27 @@ paths:
                 $ref: '#/components/schemas/Problem'
         '422':
           $ref: '#/components/responses/ValidationError'
+  /users/me/access/{role}:
+    get:
+      operationId: checkRoleAccess
+      summary: Check the current active account's role for workspace access
+      security:
+        - cookieAuth: []
+      parameters:
+        - name: role
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: Role permitted
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '429':
+          $ref: '#/components/responses/RateLimited'
   /users/me:
     get:
       operationId: getCurrentProfile
@@ -217,7 +256,11 @@ components:
     cookieAuth:
       type: apiKey
       in: cookie
-      name: tutormatch_session
+      name: accessToken
+    refreshCookie:
+      type: apiKey
+      in: cookie
+      name: refreshToken
   schemas:
     AccountRole:
       type: string
@@ -234,12 +277,17 @@ components:
         email:
           type: string
           format: email
+        phoneNumber:
+          type: [string, 'null']
+          maxLength: 32
         password:
           type: string
           minLength: 8
+          maxLength: 128
         passwordConfirmation:
           type: string
           minLength: 8
+          maxLength: 128
         role:
           type: string
           enum: [LEARNER, TUTOR]

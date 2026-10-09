@@ -187,6 +187,13 @@ then verify that it cannot be reused and the new password permits sign-in.
   revocation, role denial, ownership denial, profile conflicts, and password-reset failure paths.
   _(Source: SRS NFR-08, AC-01, AC-09)_
 
+### Approved authentication change (2026-10-09)
+
+- Login MUST return private account data only and issue an access credential and refresh credential in separate HttpOnly cookies; credentials MUST NOT appear in JSON or logs.
+- Refresh MUST rotate the single-use refresh credential, work after access expiry, and revoke the session family on reuse. Logout MUST revoke all account sessions, including copied credentials.
+- Existing active-account, role, lockout, CSRF, 30-minute inactivity and eight-hour absolute expiry protections remain required (FR-006–FR-011, FR-017, FR-019).
+- LEARNER and TUTOR use the same authentication mechanism. Tutor professional-profile completion and frontend routing remain outside this backend-only change.
+
 ### Key Entities
 
 - **User Account**: A person's identity, normalized email, protected password, personal fields,

@@ -5,50 +5,22 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import {
+  ROLE_CARD_OPTIONS,
+  type RoleId,
+  type SelectRoleCardProps,
+} from "./SelectRoleCard.types";
 
-interface RoleOption {
-  id: "TUTOR" | "PARENT" | "STUDENT";
-  title: "Gia sư" | "Phụ Huynh" | "Học Sinh";
-  badge: string;
-  icon: string;
-  description: string;
-  highlights: string[];
-}
+export type * from "./SelectRoleCard.types";
 
-const roleOptions: RoleOption[] = [
-  {
-    id: "TUTOR",
-    title: "Gia sư",
-    badge: "Người dạy",
-    icon: "👨‍🏫",
-    description: "Chia sẻ tri thức, tạo nguồn thu nhập linh hoạt và xây dựng thương hiệu gia sư uy tín.",
-    highlights: ["Tạo hồ sơ chuyên môn", "Nhận lớp học phù hợp", "Thu nhập minh bạch"],
-  },
-  {
-    id: "PARENT",
-    title: "Phụ Huynh",
-    badge: "Gia đình",
-    icon: "👨‍👩‍👧",
-    description: "Tìm kiếm gia sư chất lượng cao, giám sát tiến độ học tập và đồng hành cùng sự tiến bộ của con.",
-    highlights: ["Gia sư được kiểm duyệt", "Theo dõi lịch học", "Hỗ trợ học phí an toàn"],
-  },
-  {
-    id: "STUDENT",
-    title: "Học Sinh",
-    badge: "Người học",
-    icon: "🎓",
-    description: "Kết nối gia sư tận tâm, giải đáp kiến thức kịp thời và nâng cao thành tích học tập vượt bậc.",
-    highlights: ["Học 1-kèm-1 theo nhu cầu", "Lộ trình cá nhân hóa", "Kho tài liệu phong phú"],
-  },
-];
-
-export default function SelectRoleCard() {
+export default function SelectRoleCard({ className = "", onRoleSelected }: SelectRoleCardProps = {}) {
   const router = useRouter();
-  const [selectedRole, setSelectedRole] = useState<"TUTOR" | "PARENT" | "STUDENT">("TUTOR");
+  const [selectedRole, setSelectedRole] = useState<RoleId>("TUTOR");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleConfirmRole = () => {
     setIsSubmitting(true);
+    onRoleSelected?.(selectedRole);
 
     // Lưu token mô phỏng (nếu chưa có) và role vào cookie
     const userRole = selectedRole === "TUTOR" ? "TUTOR" : "LEARNER";
@@ -66,7 +38,7 @@ export default function SelectRoleCard() {
   };
 
   return (
-    <div className="min-h-screen bg-[#18181b] flex items-center justify-center p-3 sm:p-6 lg:p-8 font-sans">
+    <div className={`min-h-screen bg-[#18181b] flex items-center justify-center p-3 sm:p-6 lg:p-8 font-sans ${className}`.trim()}>
       <div className="bg-white rounded-[32px] shadow-2xl max-w-4xl w-full p-6 sm:p-10 border border-gray-100">
         
         {/* Header Section */}
@@ -87,7 +59,7 @@ export default function SelectRoleCard() {
 
         {/* 3 Role Selection Cards */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6 mb-8">
-          {roleOptions.map((role) => {
+          {ROLE_CARD_OPTIONS.map((role) => {
             const isSelected = selectedRole === role.id;
             return (
               <Card
@@ -146,7 +118,7 @@ export default function SelectRoleCard() {
           <p className="text-base text-gray-600 text-center sm:text-left">
             Vai trò đã chọn:{" "}
             <strong className="text-blue-600 font-semibold">
-              {roleOptions.find((r) => r.id === selectedRole)?.title}
+              {ROLE_CARD_OPTIONS.find((r) => r.id === selectedRole)?.title}
             </strong>
           </p>
 

@@ -37,20 +37,21 @@ public sealed class ApiSecurityTests
     }
 
     [Fact]
-    public async Task CookieIsSecureHttpOnlyLaxAndNotPersistentInProduction()
+    public async Task JwtCookiesAreSecureHttpOnlyLaxWithExplicitExpiryInProduction()
     {
         using var host = new SecurityTestHost("Production");
-        var options = host.Services.GetRequiredService<IOptionsMonitor<CookieAuthenticationOptions>>()
-            .Get(IdentityConstants.ApplicationScheme);
-        Assert.Equal(CookieSecurePolicy.Always, options.Cookie.SecurePolicy);
         using var response = await host.SignInAsync();
         Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
-        var cookie = response.Headers.GetValues("Set-Cookie")
-            .Single(value => value.StartsWith("tutormatch_session="));
-        Assert.Contains("secure", cookie);
-        Assert.Contains("httponly", cookie);
-        Assert.Contains("samesite=lax", cookie);
-        Assert.DoesNotContain("expires=", cookie);
+        var accessCookie = response.Headers.GetValues("Set-Cookie")
+            .Single(value => value.StartsWith("accessToken="));
+        var refreshCookie = response.Headers.GetValues("Set-Cookie")
+            .Single(value => value.StartsWith("refreshToken="));
+        Assert.Contains("secure", accessCookie);
+        Assert.Contains("httponly", accessCookie);
+        Assert.Contains("samesite=lax", accessCookie);
+        Assert.Contains("expires=", accessCookie);
+        Assert.Contains("secure", refreshCookie);
+        Assert.Contains("path=/api/v1/auth", refreshCookie);
     }
 
     [Theory]
@@ -81,10 +82,13 @@ public sealed class ApiSecurityTests
 
     [Theory]
     [InlineData("https://frontend.example", true)]
+    [InlineData("http://localhost:3000", true)]
+    [InlineData("https://tutor-matching-psi.vercel.app", true)]
+    [InlineData("https://tutor-matching-psi.vercel.app.evil.example", false)]
     [InlineData("https://untrusted.example", false)]
     public async Task CorsAllowsCredentialsOnlyForConfiguredOrigin(string origin, bool allowed)
     {
-        using var host = new SecurityTestHost();
+        using var host = new SecurityTestHost("Production");
         using var response = await host.SendAsync(HttpMethod.Options, "/api/v1/auth/probe",
             origin: origin, preflight: true);
         Assert.Equal(allowed, response.Headers.Contains("Access-Control-Allow-Origin"));

@@ -1,4 +1,5 @@
 import * as React from "react";
+import { AuthGuard } from "@/components/AuthGuard";
 import { LearnerNavigationRail } from "@/components/navigation/LearnerNavigationRail";
 import { DashboardTopBar } from "@/components/learner/DashboardTopBar";
 import { mockLearnerDashboardData } from "@/data/mockLearnerDashboard";
@@ -11,7 +12,7 @@ export default function LearnerLayout({
   const user = mockLearnerDashboardData.user;
 
   return (
-    <div className="min-h-screen flex bg-gray-50 dark:bg-gray-950">
+    <AuthGuard role="LEARNER"><div className="min-h-screen flex bg-gray-50 dark:bg-gray-950">
       {/* Sidebar bên trái */}
       <LearnerNavigationRail />
       {/* Vùng giao diện chính bên phải */}
@@ -22,6 +23,6 @@ export default function LearnerLayout({
           {children}
         </main>
       </div>
-    </div>
+    </div></AuthGuard>
   );
 }

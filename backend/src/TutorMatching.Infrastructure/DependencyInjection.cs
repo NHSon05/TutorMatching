@@ -5,6 +5,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using TutorMatching.Application.Abstractions;
 using TutorMatching.Infrastructure.Auditing;
+using TutorMatching.Infrastructure.Authentication;
 using TutorMatching.Infrastructure.Email;
 using TutorMatching.Infrastructure.Persistence;
 using TutorMatching.Infrastructure.Time;
@@ -60,6 +61,10 @@ public static class DependencyInjection
         services.TryAddSingleton<TimeProvider>(TimeProvider.System);
         services.TryAddSingleton<IClock, SystemClock>();
         services.AddScoped<IAuditWriter, AuditWriter>();
+        services.AddScoped<IAccountService, IdentityAccountService>();
+        services.AddScoped<ITokenSessionService, TokenSessionService>();
+        services.AddHttpContextAccessor();
+        services.AddScoped<ICurrentUser, CurrentUser>();
 
         return services;
     }

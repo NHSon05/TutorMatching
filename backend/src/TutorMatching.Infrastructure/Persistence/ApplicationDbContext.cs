@@ -16,6 +16,8 @@ public sealed class ApplicationDbContext(
     private static readonly Guid TutorRoleId = Guid.Parse("33333333-3333-3333-3333-333333333333");
 
     public DbSet<AuditEvent> AuditEvents => Set<AuditEvent>();
+    public DbSet<TokenSession> TokenSessions => Set<TokenSession>();
+    public DbSet<SessionRefreshToken> SessionRefreshTokens => Set<SessionRefreshToken>();
 
     protected override void OnModelCreating(ModelBuilder builder)
     {
@@ -23,6 +25,21 @@ public sealed class ApplicationDbContext(
 
         builder.ApplyConfiguration(new ApplicationUserConfiguration());
         builder.ApplyConfiguration(new AuditEventConfiguration());
+        builder.Entity<TokenSession>(entity =>
+        {
+            entity.ToTable("TokenSessions");
+            entity.HasKey(x => x.Id);
+            entity.Property(x => x.SecurityStamp).HasMaxLength(256).IsRequired();
+            entity.Property(x => x.Role).HasMaxLength(16).IsRequired();
+            entity.HasOne<ApplicationUser>().WithMany().HasForeignKey(x => x.UserId).OnDelete(DeleteBehavior.Cascade);
+        });
+        builder.Entity<SessionRefreshToken>(entity =>
+        {
+            entity.ToTable("SessionRefreshTokens");
+            entity.HasKey(x => x.TokenHash);
+            entity.Property(x => x.TokenHash).HasMaxLength(64);
+            entity.HasOne<TokenSession>().WithMany().HasForeignKey(x => x.SessionId).OnDelete(DeleteBehavior.Cascade);
+        });
 
         builder.Entity<IdentityUserRole<Guid>>()
             .HasIndex(userRole => userRole.UserId)

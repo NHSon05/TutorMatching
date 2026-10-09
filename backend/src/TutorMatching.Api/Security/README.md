@@ -17,8 +17,13 @@ then CSRF validation before endpoint execution.
 - Authentication is required by default. Public endpoints must explicitly opt out with
   `AllowAnonymous`. ADMIN/LEARNER/TUTOR policies check canonical roles; resource ownership
   remains the responsibility of T034/T035 and the corresponding use cases.
-- CORS accepts credentials only from `Frontend__Origin`, a single explicit origin without
-  path/query. It must use HTTPS outside Development. CORS is not an authorization mechanism.
+- CORS accepts credentials from the explicit `Frontend:Origins` array (environment variables
+  `Frontend__Origins__0`, `Frontend__Origins__1`, etc.). Legacy `Frontend__Origin` is also accepted.
+  Defaults allow `http://localhost:3000` and `https://tutor-matching-psi.vercel.app`.
+  Origins cannot contain paths/queries; trailing slashes are normalized. HTTPS is required outside
+  Development except for explicitly configured localhost origins. CORS is not authorization.
+  Local API uses port 5014; set Vercel's `NEXT_PUBLIC_API_BASE_URL` to the deployed HTTPS API URL
+  ending in `/api/v1`, then rebuild the frontend.
 - Rate limits are per remote IP: 120 requests/minute overall and 10 unsafe auth requests/minute
   shared across `/api/v1/auth/*`, with no queue. Rejection is 429 with Retry-After.
   Limits are process-local. Before deploying behind a proxy, configure trusted forwarded

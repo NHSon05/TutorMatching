@@ -1,4 +1,5 @@
 using System.Text.Json.Nodes;
+using System.Globalization;
 using TutorMatching.Api.IntegrationTests.Fixtures;
 using YamlDotNet.Serialization;
 
@@ -10,9 +11,8 @@ public sealed class OpenApiContractTests(PostgreSqlFixture fixture)
     // These operations belong to subsequent story tasks, not the foundation checkpoint.
     private static readonly HashSet<string> PendingOperations =
     [
-        "POST /api/v1/auth/register", "POST /api/v1/auth/login", "POST /api/v1/auth/logout",
         "POST /api/v1/auth/forgot-password", "POST /api/v1/auth/reset-password",
-        "GET /api/v1/users/me", "PUT /api/v1/users/me"
+        "PUT /api/v1/users/me"
     ];
 
     [Fact]
@@ -36,7 +36,9 @@ public sealed class OpenApiContractTests(PostgreSqlFixture fixture)
         foreach (var (key, operation) in actualOps)
         {
             Assert.True(expectedOps.TryGetValue(key, out var contract), $"Undocumented operation: {key}");
-            Assert.Equal(contract!["operationId"]!.GetValue<string>(), operation["operationId"]!.GetValue<string>());
+            Assert.True(contract!["operationId"] is JsonValue, $"Missing contract operationId: {key}");
+            Assert.True(operation["operationId"] is JsonValue, $"Missing generated operationId: {key}");
+            Assert.Equal(contract["operationId"]!.GetValue<string>(), operation["operationId"]!.GetValue<string>());
             Assert.True(JsonNode.DeepEquals(contract["security"], operation["security"] ?? actual["security"]), $"Security drift: {key}");
             Assert.Equal(contract["responses"]!.AsObject().Select(x => x.Key).Order(),
                 operation["responses"]!.AsObject().Select(x => x.Key).Order());
@@ -101,7 +103,9 @@ public sealed class OpenApiContractTests(PostgreSqlFixture fixture)
         // Compare specified constraints; generated documents may add descriptions/standard fields.
         foreach (var key in new[] { "type", "format", "const", "enum", "minLength", "maxLength", "additionalProperties" })
             if (expected[key] is { } constraint)
-                Assert.True(JsonNode.DeepEquals(constraint, actual[key]), $"Schema constraint drift: {key}");
+                Assert.True(
+                    ConstraintEquals(constraint, actual[key]),
+                    $"Schema constraint drift: {key}; expected {constraint.ToJsonString()}, actual {actual[key]?.ToJsonString() ?? "<missing>"}");
         if (expected["required"] is JsonArray required)
             Assert.Equal(required.Select(x => x!.GetValue<string>()).Order(),
                 actual["required"]!.AsArray().Select(x => x!.GetValue<string>()).Order());
@@ -111,5 +115,34 @@ public sealed class OpenApiContractTests(PostgreSqlFixture fixture)
             Assert.NotNull(actual["properties"]?[key]);
             CompareSchema(expectedDoc, property!, actualDoc, actual["properties"]![key]!);
         }
+    }
+
+    private static bool ConstraintEquals(JsonNode expected, JsonNode? actual)
+    {
+        if (expected is JsonArray expectedArray && actual is JsonArray actualArray)
+        {
+            return expectedArray.Select(item => item!.ToJsonString()).Order()
+                .SequenceEqual(actualArray.Select(item => item!.ToJsonString()).Order());
+        }
+
+        if (expected is JsonValue expectedValue &&
+            expectedValue.TryGetValue<string>(out var text) &&
+            bool.TryParse(text, out var expectedBoolean) &&
+            actual is JsonValue actualValue &&
+            actualValue.TryGetValue<bool>(out var actualBoolean))
+        {
+            return expectedBoolean == actualBoolean;
+        }
+
+        if (expected is JsonValue numericExpected &&
+            numericExpected.TryGetValue<string>(out var numericText) &&
+            decimal.TryParse(numericText, NumberStyles.Number, CultureInfo.InvariantCulture, out var expectedNumber) &&
+            actual is not null &&
+            decimal.TryParse(actual.ToJsonString(), NumberStyles.Number, CultureInfo.InvariantCulture, out var actualNumber))
+        {
+            return expectedNumber == actualNumber;
+        }
+
+        return JsonNode.DeepEquals(expected, actual);
     }
 }

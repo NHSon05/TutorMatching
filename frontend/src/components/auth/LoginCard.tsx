@@ -6,20 +6,23 @@ import { useRouter } from "next/navigation";
 import { TextField } from "@/components/ui/text-field";
 import { Button } from "@/components/ui/button";
 import Logo from "@assets/logo/Logo";
+import type { UserRole } from "@/types";
+import { login } from "@/lib/auth/session";
+import type { LoginCardProps } from "./LoginCard.types";
 
-export default function LoginCard() {
+export type * from "./LoginCard.types";
+
+export default function LoginCard({ className = "", onSuccess }: LoginCardProps = {}) {
   const router = useRouter();
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
-  const [rememberMe, setRememberMe] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleRoleDemo = (role: "LEARNER" | "TUTOR" | "ADMIN") => {
-    // Lưu role vào cookie để middleware nhận diện
-    document.cookie = `auth_token=demo_token_${role.toLowerCase()}; path=/; max-age=86400`;
-    document.cookie = `user_role=${role}; path=/; max-age=86400`;
+  const navigateToWorkspace = (role: UserRole) => {
+    onSuccess?.(role);
 
     if (role === "ADMIN") {
       router.push("/admin/dashboard");
@@ -30,16 +33,24 @@ export default function LoginCard() {
     }
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (isSubmitting) return;
     if (!email || !password) {
       setErrorMsg("Vui lòng nhập đầy đủ email và mật khẩu.");
       return;
     }
     setErrorMsg("");
 
-    // Mặc định đăng nhập vào không gian Học viên
-    handleRoleDemo("LEARNER");
+    setIsSubmitting(true);
+    try {
+      const account = await login(email, password);
+      navigateToWorkspace(account.role);
+    } catch {
+      setErrorMsg("Không thể đăng nhập. Kiểm tra thông tin hoặc thử lại sau.");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const handleGoogleOAuth = () => {
@@ -48,7 +59,7 @@ export default function LoginCard() {
   };
 
   return (
-    <div className="min-h-screen w-full p-2 sm:p-4 grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 overflow-hidden font-sans">
+    <div className={`min-h-screen w-full p-2 sm:p-4 grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 overflow-hidden font-sans ${className}`.trim()}>
       {/* ========================================================================= */}
       {/* CỘT TRÁI: BLUE GRADIENT BANNER & 3 STEP/HIGHLIGHT CARDS (lg:col-span-7)   */}
       {/* ========================================================================= */}
@@ -159,11 +170,11 @@ export default function LoginCard() {
             <label className="flex items-center gap-2 cursor-pointer text-gray-600 select-none">
               <input
                 type="checkbox"
-                checked={rememberMe}
-                onChange={(e) => setRememberMe(e.target.checked)}
+                checked={false}
+                disabled
                 className="w-4 h-4 rounded text-blue-600 border-gray-300 focus:ring-blue-500 cursor-pointer"
               />
-              <span className="text-sm sm:text-base">Ghi nhớ đăng nhập</span>
+              <span className="text-sm sm:text-base">Phiên đăng nhập tạm thời</span>
             </label>
             <Link
               href="#"
@@ -181,12 +192,13 @@ export default function LoginCard() {
           <div className="pt-2">
             <Button
               type="submit"
+              disabled={isSubmitting}
               variant="brand"
               size="medium"
               shape="rounded"
               className="w-full text-base font-semibold"
             >
-              Đăng nhập
+              {isSubmitting ? "Đang đăng nhập..." : "Đăng nhập"}
             </Button>
           </div>
         </form>
@@ -218,6 +230,7 @@ export default function LoginCard() {
           shape="rounded"
           isFullWidth
           onClick={handleGoogleOAuth}
+          disabled
           leadingIcon={
             <svg className="w-5 h-5 shrink-0" viewBox="0 0 24 24" aria-hidden="true">
               <path

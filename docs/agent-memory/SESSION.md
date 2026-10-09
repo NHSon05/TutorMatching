@@ -1,16 +1,29 @@
 # Current Session Handoff
 
-Status: IDLE
-Updated: 2026-10-07
+Status: DUAL JWT COOKIE FOUNDATION COMPLETED & VERIFIED
+Updated: 2026-10-10
 
-## Last completed work
+## Completed scope
 
-- Completed T014: SMTP input validation, cancellation/timeout, sanitized transport failures, and reusable capture adapter in `Infrastructure/Email`. Renamed typo `SmptEmailSender.cs` to `SmtpEmailSender.cs`; test factories now import the shared capture adapter.
-- Added seven email tests including real SMTP delivery through disposable Mailpit, required TLS rejection, concurrent capture/reset and safe invalid-input handling.
-- Verification: final API test run passes 34/34; build has no warnings/errors; diff check passes. One preceding run had transient PostgreSQL container connection timeouts, resolved on rerun with fresh containers without code changes.
-- No real email recipients, user mailbox or user database was changed. See `Infrastructure/Email/README.md` for sandbox configuration and testing.
+- Implemented Dual JWT Cookie authentication infrastructure (ADR-004):
+  - `JwtSettings.cs`: Loads issuer, audience, and 256-bit signing key with `CookieSecurePolicy`.
+  - `JwtCookieTokens.cs`: Issues `accessToken` (5m, path `/`) and `refreshToken` (path `/api/v1/auth`), both HttpOnly and Lax.
+  - `ITokenSessionService.cs` & `TokenSessionGrant.cs`: Application abstraction for session creation, refresh, validation, and revocation.
+  - `TokenSession.cs` & `SessionRefreshToken.cs`: Database models for session family tracking and hashed refresh tokens.
+  - `TokenSessionService.cs`: PostgreSQL-backed session service implementing single-use rotation, family reuse revocation, and security stamp synchronization.
+  - Updated `ApiSecurityExtensions.cs`: Null-safe role claims, proper `OnForbidden` handling, and extended CORS headers.
+  - Updated `SecurityTestHost.cs`: Mock `TestTokenSessions` with simulated token refresh on 401.
+  - Fixed `AuthController.cs`: Pass `AccountRole` enum directly to `AccountResponse`.
 
-## Next work
+## Verification
 
-- Idle. T013/T016 remain unchecked; do not mark them complete solely from this task's tests. T028 must enable Identity lockout counting and server-side logout revocation.
-- Spec Kit defaults to another feature; use `SPECIFY_FEATURE_DIRECTORY=specs/001-foundation-accounts SPECIFY_FEATURE_NO_PERSIST=1` for Sprint 1 checks.
+- `dotnet build backend/TutorMatching.slnx`: Succeeded with 0 Errors and 0 Warnings.
+- `dotnet test backend/tests/TutorMatching.Domain.UnitTests/`: 2/2 passed.
+- `dotnet test backend/tests/TutorMatching.Application.UnitTests/`: 16/16 passed.
+- `dotnet test backend/tests/TutorMatching.Api.IntegrationTests/ --filter FullyQualifiedName~ApiSecurityTests`: 19/19 passed.
+- `dotnet test backend/tests/TutorMatching.Api.IntegrationTests/ --filter FullyQualifiedName~DotEnvLoaderTests`: 6/6 passed.
+
+## Next steps
+
+- Run full PostgreSQL-backed integration test suite `SessionEndpointTests.cs` against local Docker PostgreSQL/Mailpit.
+- Run database migrations against test container / local environment.

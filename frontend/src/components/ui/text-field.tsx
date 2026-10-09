@@ -110,7 +110,7 @@ export const TextField = React.forwardRef<HTMLInputElement, TextFieldProps>(
         {label && (
           <label
             htmlFor={inputId}
-            className={`block text-gray-700 dark:text-gray-300 ${currentSize.label}`}
+            className={`block text-gray-900 dark:text-gray-300 ${currentSize.label}`}
           >
             {label}
           </label>

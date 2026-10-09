@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { LogoutButton } from "@/components/LogoutButton";
 import { usePathname } from "next/navigation";
 
 export default function AdminSidebar() {
@@ -47,13 +48,7 @@ export default function AdminSidebar() {
       </nav>
 
       <div className="p-4 border-t border-gray-800">
-        <Link
-          href="/login"
-          className="flex items-center gap-2 text-sm text-gray-400 hover:text-red-400 transition-colors"
-        >
-          <span>🚪</span>
-          <span>Đăng xuất Admin</span>
-        </Link>
+        <LogoutButton />
       </div>
     </aside>
   );

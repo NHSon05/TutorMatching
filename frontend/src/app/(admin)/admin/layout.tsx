@@ -1,4 +1,5 @@
 import AdminSidebar from "@/components/navigation/AdminSidebar";
+import { AuthGuard } from "@/components/AuthGuard";
 
 export default function AdminLayout({
   children,
@@ -6,7 +7,7 @@ export default function AdminLayout({
   children: React.ReactNode;
 }) {
   return (
-    <div className="min-h-screen flex bg-gray-100 text-gray-900 font-sans">
+    <AuthGuard role="ADMIN"><div className="min-h-screen flex bg-gray-100 text-gray-900 font-sans">
       <AdminSidebar />
       <div className="flex-1 flex flex-col min-w-0">
         <header className="h-16 bg-white border-b border-gray-200 px-6 flex items-center justify-between">
@@ -22,6 +23,6 @@ export default function AdminLayout({
           {children}
         </main>
       </div>
-    </div>
+    </div></AuthGuard>
   );
 }

@@ -1,4 +1,5 @@
 using System.Globalization;
+using System.Security.Claims;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Identity;
@@ -41,6 +42,17 @@ public sealed class SessionCookieEvents(
         {
             await RejectAsync(context);
             return;
+        }
+
+        if (signInManager.UserManager.SupportsUserRole)
+        {
+            var roles = await signInManager.UserManager.GetRolesAsync(user);
+            var claimedRoles = context.Principal!.FindAll(ClaimTypes.Role).Select(x => x.Value).ToArray();
+            if (roles.Count != 1 || claimedRoles.Length != 1 || roles[0] != claimedRoles[0])
+            {
+                await RejectAsync(context);
+                return;
+            }
         }
 
         context.ShouldRenew = true;

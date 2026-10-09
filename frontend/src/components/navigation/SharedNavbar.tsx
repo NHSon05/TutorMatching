@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { LogoutButton } from "@/components/LogoutButton";
 import { usePathname } from "next/navigation";
 
 export default function SharedNavbar() {
@@ -50,12 +51,7 @@ export default function SharedNavbar() {
           >
             ← Về Dashboard
           </Link>
-          <Link
-            href="/login"
-            className="text-xs text-red-600 hover:text-red-700 font-medium"
-          >
-            Đăng xuất
-          </Link>
+          <LogoutButton />
         </div>
       </div>
     </header>

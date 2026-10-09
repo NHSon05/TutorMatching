@@ -1,13 +1,8 @@
 "use client";
 
 import * as React from "react";
-import type { ScheduleItem } from "@/data/mockLearnerDashboard";
+import type { MyScheduleSectionProps } from "./types";
 
-interface MyScheduleSectionProps {
-  days: Array<"Sun" | "Mon" | "Tue" | "Wed" | "Thu" | "Fri" | "Sat">;
-  times: Array<"08:00" | "07:00" | "10:00" | "12:00">;
-  items: ScheduleItem[];
-}
 
 const colorMap = {
   yellow: {

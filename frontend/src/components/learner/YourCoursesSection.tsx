@@ -3,7 +3,7 @@
 import * as React from "react";
 import Link from "next/link";
 import Image from "next/image";
-import type { CourseItem } from "@/data/mockLearnerDashboard";
+import type { YourCoursesSectionProps } from "./types";
 
 // ============================================================================
 // SVG ICONS
@@ -140,13 +140,9 @@ function GraduationBannerIllustration({
 // MAIN COMPONENT
 // ============================================================================
 
-interface YourCoursesSectionProps {
-  courses: CourseItem[];
-}
-
-export function YourCoursesSection({ courses }: YourCoursesSectionProps) {
+export function YourCoursesSection({ courses, className = "" }: YourCoursesSectionProps) {
   return (
-    <div className="space-y-4">
+    <div className={`space-y-4 ${className}`.trim()}>
       {/* Header */}
       <div className="flex items-center justify-between">
         <h3 className="text-lg font-bold text-gray-900 dark:text-white tracking-tight">

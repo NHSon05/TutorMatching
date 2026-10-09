@@ -18,3 +18,8 @@
 !**/.env.example
 *.dump
 *.sql.gz
+
+# Sandbox and package caches
+Library/
+scratch/
+**/.nuget/

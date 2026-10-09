@@ -2,14 +2,13 @@
 
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Tutor, TutorFilter, getMockTutors } from "@/data/mockTutors";
+import { getMockTutors } from "@/data/mockTutors";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Avatar } from "@/components/ui/avatar";
+import type { Tutor, TutorFilter, TutorsListClientProps } from "./types";
 
-interface TutorsListClientProps {
-  initialTutors: Tutor[];
-}
+export type * from "./types";
 
 export default function TutorsListClient({ initialTutors }: TutorsListClientProps) {
   const router = useRouter();

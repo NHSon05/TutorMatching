@@ -1,28 +1,6 @@
-export interface Tutor {
-  id: number;
-  name: string;
-  avatar: string;
-  title: string;
-  rating: number;
-  location: string;
-  experience: string;
-  sessionsCount: string;
-  tags: string[];
-  priceFormatted: string;
-  pricePerHour: number;
-  mode: "Online" | "Offline" | "Online / Offline";
-  category: "math" | "english" | "physics" | "chemistry" | "literature" | "it";
-  city: "hanoi" | "danang" | "hcm";
-  level: "primary" | "secondary" | "highschool" | "university";
-}
+import type { Tutor, TutorFilter } from "@/components/tutors/types";
 
-export interface TutorFilter {
-  category?: string;
-  city?: string;
-  level?: string;
-  mode?: string;
-  search?: string;
-}
+export type * from "@/components/tutors/types";
 
 export const mockTutors: Tutor[] = [
   {

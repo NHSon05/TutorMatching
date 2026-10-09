@@ -25,7 +25,8 @@ public static class ApiProblems
 
     public static ObjectResult FromFailure(
         HttpContext context,
-        AccountFailure failure
+        AccountFailure failure,
+        IReadOnlyDictionary<string, string[]>? errors = null
     )
     {
         var (status, title) = failure switch
@@ -40,7 +41,13 @@ public static class ApiProblems
             _ => (500, "Đã xảy ra lỗi hệ thống.")
         };
 
-        return ToResult(Create(context, status, title));
+        var problem = Create(context, status, title);
+        if (errors is not null && errors.Count > 0)
+        {
+            problem.Extensions["errors"] = errors;
+        }
+
+        return ToResult(problem);
     }
 
     public static ObjectResult ToResult(ProblemDetails problem)
@@ -54,5 +61,4 @@ public static class ApiProblems
 
         return result;
     }
-
 }

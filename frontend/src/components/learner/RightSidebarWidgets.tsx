@@ -1,19 +1,8 @@
 "use client";
 
 import * as React from "react";
-import type { CalendarDay, HomeworkItem } from "@/data/mockLearnerDashboard";
+import type { RightSidebarWidgetsProps } from "./types";
 
-interface RightSidebarWidgetsProps {
-  calendar: {
-    month: string;
-    days: CalendarDay[];
-    communityGrowth: {
-      percentage: number;
-      growthText: string;
-    };
-  };
-  homework: HomeworkItem[];
-}
 
 export function RightSidebarWidgets({
   calendar,

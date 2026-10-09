@@ -12,11 +12,14 @@ import MessagesPage from "../src/app/(shared)/messages/page";
 import LearnerLayout from "../src/app/(learner)/learner/layout";
 
 // Mock next/navigation
+const { router } = vi.hoisted(() => ({ router: { push: vi.fn(), replace: vi.fn() } }));
+vi.mock("@/lib/auth/session", () => ({
+  getSession: vi.fn().mockResolvedValue({ id: "test", fullName: "Signed-in learner", role: "LEARNER", status: "ACTIVE" }),
+  logout: vi.fn(),
+}));
 vi.mock("next/navigation", () => ({
   usePathname: () => "/",
-  useRouter: () => ({
-    push: vi.fn(),
-  }),
+  useRouter: () => router,
 }));
 
 describe("TutorMatching Routing & Role Architecture", () => {
@@ -104,14 +107,14 @@ describe("TutorMatching Routing & Role Architecture", () => {
     expect(screen.getAllByText("Lê Phương Diệu").length).toBeGreaterThan(0);
   });
 
-  it("renders Learner Layout with TopNavigation and side NavigationRail", () => {
+  it("renders Learner Layout with TopNavigation and side NavigationRail", async () => {
     render(
       <LearnerLayout>
         <div data-testid="learner-content">Nội dung trang học viên</div>
       </LearnerLayout>
     );
 
-    expect(screen.getByText("TutorMatch")).toBeInTheDocument();
+    expect(await screen.findByText("TutorMatch")).toBeInTheDocument();
     expect(screen.getByText("Trang chủ")).toBeInTheDocument();
     expect(screen.getByText("Gia sư của tôi")).toBeInTheDocument();
     expect(screen.getByText("Lịch học")).toBeInTheDocument();

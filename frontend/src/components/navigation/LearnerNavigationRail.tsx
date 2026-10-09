@@ -190,7 +190,7 @@ export function LearnerNavigationRail() {
                   </div>
                 )}
               </div>
-              {/* <button
+              <button
                 type="button"
                 onClick={toggleMode}
                 aria-label={isCollapsed ? "Mở rộng thanh điều hướng" : "Thu gọn thanh điều hướng"}
@@ -200,7 +200,7 @@ export function LearnerNavigationRail() {
                 }`}
               >
                 <SidebarToggleIcon collapsed={isCollapsed} className="w-4 h-4" />
-              </button> */}
+              </button>
             </div>
           </div>
         }
