@@ -19,10 +19,8 @@ public sealed class ApplicationDbContextFactory : IDesignTimeDbContextFactory<Ap
                 "ConnectionStrings__DefaultConnection must be set before running EF Core tools.");
         }
 
-        var options = new DbContextOptionsBuilder<ApplicationDbContext>()
-            .UseNpgsql(connectionString)
-            .Options;
-
-        return new ApplicationDbContext(options);
+        var options = new DbContextOptionsBuilder<ApplicationDbContext>();
+        options.UseTutorMatchingDatabase(connectionString);
+        return new ApplicationDbContext(options.Options);
     }
 }

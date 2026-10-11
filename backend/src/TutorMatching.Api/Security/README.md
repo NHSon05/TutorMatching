@@ -4,16 +4,36 @@
 after routing. The middleware order is CORS, rate limiting, authentication, authorization,
 then CSRF validation before endpoint execution.
 
-- Authentication uses the Identity application cookie: HTTP-only, SameSite=Lax, host-only,
-  session cookie (no remember-me), 30-minute idle timeout and 8-hour absolute lifetime.
-- The original issue time is protected inside the ticket and survives cookie renewals.
-  Each authenticated request validates the current user/security stamp, ACTIVE state and
-  absence of soft deletion. Password-reset stamp rotation rejects old cookies immediately.
+- Authentication uses a five-minute HS256 JWT access cookie and an opaque rotating refresh
+  cookie: HTTP-only, SameSite=Lax, host-only, with 30-minute refresh expiry and 8-hour absolute lifetime.
+- `Jwt__SigningKey` is required in every environment: Base64 of at least 32 random bytes.
+  Generate a private development value with `openssl rand -base64 32`; use a secret store in production.
+  Missing, malformed or short keys fail startup. No built-in signing key is accepted as a fallback.
+- PostgreSQL stores session families and SHA-256 refresh hashes. Refresh and logout lock the
+  same session row in a transaction; replay of a consumed token revokes the family.
+- Migration `20261010031244_AddTokenSessions` supports both a fresh database and the legacy
+  timestamp schema recorded as `20261009000000_AddTokenSessions` in existing installations.
+  It renames `LastActivityAt`, preserves revocation/consumption in the new booleans, retains
+  nullable legacy audit timestamps, and bounds refresh expiry by creation + 30m and session
+  absolute expiry. It never drops existing token tables. Automatic downgrade is intentionally
+  rejected because those tables may predate this migration; use a forward migration instead.
+- Migration `20261011113055_UseTokenStateTimestamps` replaces the intermediate booleans with
+  `revoked_at` / `consumed_at` as the sole persisted state. Known legacy times are preserved;
+  true booleans without a time become PostgreSQL `-infinity` (Npgsql `DateTimeOffset.MinValue`),
+  meaning unknown historical time, never the migration execution time. NULL means not yet
+  revoked/consumed, not necessarily unexpired or authorized. Do not disable Npgsql infinity
+  conversions. New transitions record actual UTC time; repeated logout preserves revocation time.
+  Stop old API workers before migration; old binaries reference columns removed by this upgrade.
+  Downgrade is rejected to avoid losing event times; use a reviewed forward migration.
+- Each authenticated request and refresh validates the current user/security stamp, ACTIVE state,
+  absence of soft deletion and exactly one current role matching the session. Role removal or
+  replacement rejects old access even if the stamp is unchanged; refresh revokes the mismatched
+  session. Password-reset stamp rotation rejects old cookies immediately.
 - Cookie SecurePolicy is always `Always` outside Development. Development supports
   `Always` or `SameAsRequest` via `Cookie__SecurePolicy`.
 - Identity is configured for five failed attempts and a 15-minute lockout. T028 must call
   the Identity password sign-in/check flow with `lockoutOnFailure: true`; configuration
-  alone does not count attempts. No login endpoint is introduced by T011.
+  alone does not count attempts. Login uses `CheckPasswordSignInAsync` with this flag enabled.
 - Authentication is required by default. Public endpoints must explicitly opt out with
   `AllowAnonymous`. ADMIN/LEARNER/TUTOR policies check canonical roles; resource ownership
   remains the responsibility of T034/T035 and the corresponding use cases.
@@ -36,6 +56,11 @@ then CSRF validation before endpoint execution.
 2. Include credentials and the `X-CSRF-TOKEN` header on POST/PUT/PATCH/DELETE requests,
    including anonymous registration/login/reset. Invalid or missing tokens return 400.
 3. Fetch a fresh token after login/logout, because the token is bound to the current identity.
+4. Protected frontend requests use `authenticatedFetch`: on 401, coordinate renewal with a
+   shared promise and Web Locks, recheck `/users/me`, fetch fresh CSRF, refresh, then retry once.
+   Login/refresh/logout do not use this retry wrapper. Network/5xx/429 failures remain errors,
+   not logout signals. Cross-tab coordination requires a Web Locks-capable browser on HTTPS
+   (or localhost). Tabs must share the same frontend origin to share the lock.
 
 Use same-site frontend/API hosts (e.g. localhost with different ports, or HTTPS subdomains
 of the same site). Unrelated sites require a separately reviewed SameSite=None deployment;
@@ -44,10 +69,11 @@ CORS alone cannot override SameSite=Lax cookies.
 ## Verification and remaining work
 
 `ApiSecurityTests` exercises real middleware/cookies through TestServer with a fake Identity
-store and controlled clock, without connecting to PostgreSQL. Database-backed fixtures and
-actual login/lockout/logout/password-reset journeys remain T015/T025-T029/T045-T049.
-T028 must implement server-side logout revocation; deleting a browser cookie alone does not
-invalidate copies of it. This foundation does not claim logout replay protection is complete.
+store and controlled clock. `SessionEndpointTests` uses disposable PostgreSQL databases with
+real migrations, login/lockout/logout, refresh reuse detection and concurrent refresh/logout.
+`TokenSessionMigrationTests` verifies upgrading populated legacy tables without reviving revoked,
+consumed or expired credentials. `JwtSettingsTests` checks required key configuration.
+Password-reset journeys remain separate work.
 
 References: Microsoft Learn [cookie authentication](https://learn.microsoft.com/aspnet/core/security/authentication/cookie?view=aspnetcore-10.0),
 [antiforgery](https://learn.microsoft.com/aspnet/core/security/anti-request-forgery?view=aspnetcore-10.0),

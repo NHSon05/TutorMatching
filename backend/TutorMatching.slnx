@@ -10,4 +10,7 @@
     <Project Path="tests/TutorMatching.Application.UnitTests/TutorMatching.Application.UnitTests.csproj" />
     <Project Path="tests/TutorMatching.Domain.UnitTests/TutorMatching.Domain.UnitTests.csproj" />
   </Folder>
+  <Folder Name="/tools/">
+    <Project Path="tools/TutorMatching.DatabaseMigrator/TutorMatching.DatabaseMigrator.csproj" />
+  </Folder>
 </Solution>

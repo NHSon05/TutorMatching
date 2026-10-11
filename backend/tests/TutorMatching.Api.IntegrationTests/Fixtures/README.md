@@ -9,6 +9,8 @@ dotnet test backend/tests/TutorMatching.Api.IntegrationTests/TutorMatching.Api.I
 The `PostgreSQL API` xUnit collection starts its own `postgres:17.6-alpine` container
 with an automatically assigned host port. Each `CreateFactoryAsync()` creates a unique
 database in that container, starts the real API in `Testing`, and applies EF migrations.
+Fixtures use `DatabaseMigrationRunner` to support both legacy and snake_case history;
+an optional target migration allows tests to construct populated pre-upgrade schemas.
 Dispose each factory with `await using`; collection teardown removes the temporary container
 and its databases. No migration/reset is run against Supabase or the development database.
 The first run may download container images. An unavailable Docker daemon fails the tests;
@@ -26,3 +28,5 @@ process environment variables. Test overrides always take precedence for databas
 
 Evidence: `PostgreSqlFixtureTests` checks real API startup, migrations, roles, audit persistence,
 invalid audit rejection, database/email isolation, cancellation and capture reset.
+`SnakeCaseSchemaTests` verifies catalog names, model constraints, check/unique enforcement,
+populated upgrades without rebuilding PostgreSQL objects, sequence continuity and history collisions.

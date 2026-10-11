@@ -2,6 +2,9 @@ using System.Net;
 using System.Net.Http.Json;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.EntityFrameworkCore;
+using Npgsql;
+using TutorMatching.Application.Abstractions;
 using TutorMatching.Api.IntegrationTests.Fixtures;
 using TutorMatching.Infrastructure.Persistence;
 
@@ -10,6 +13,74 @@ namespace TutorMatching.Api.IntegrationTests.Authentication;
 [Collection("PostgreSQL API")]
 public sealed class SessionEndpointTests(PostgreSqlFixture fixture)
 {
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task RoleRemovalOrReplacementDeniesAccessAndRefreshWithoutStampChange(bool replaceRole)
+    {
+        await using var factory = await fixture.CreateFactoryAsync();
+        using var client = factory.CreateApiClient();
+        await Register(client);
+        using var login = await Post(client, "login", new { email = "session@example.com", password = "password" });
+        Assert.Equal(HttpStatusCode.OK, login.StatusCode);
+        await using var scope = factory.Services.CreateAsyncScope();
+        var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+        var manager = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
+        var user = (await manager.FindByEmailAsync("session@example.com"))!;
+        var stamp = user.SecurityStamp;
+        var session = await db.TokenSessions.AsNoTracking().SingleAsync();
+        Assert.True((await manager.RemoveFromRoleAsync(user, "LEARNER")).Succeeded);
+        if (replaceRole) Assert.True((await manager.AddToRoleAsync(user, "TUTOR")).Succeeded);
+        Assert.Equal(stamp, (await db.Users.AsNoTracking().SingleAsync()).SecurityStamp);
+
+        // Direct service assertion avoids relying on /me's independent profile/role checks.
+        var service = scope.ServiceProvider.GetRequiredService<ITokenSessionService>();
+        Assert.False(await service.ValidateAsync(session.Id, user.Id, session.Role));
+        using var denied = await client.GetAsync("/api/v1/users/me");
+        Assert.Equal(HttpStatusCode.Unauthorized, denied.StatusCode);
+        using var refresh = await Post(client, "refresh", null);
+        Assert.Equal(HttpStatusCode.Unauthorized, refresh.StatusCode);
+        Assert.DoesNotContain(refresh.Headers.GetValues("Set-Cookie"), value =>
+            value.StartsWith("accessToken=") && !value.StartsWith("accessToken=;"));
+        Assert.NotNull((await db.TokenSessions.AsNoTracking().SingleAsync()).RevokedAt);
+        Assert.Single(await db.SessionRefreshTokens.ToListAsync());
+    }
+
+    [Fact]
+    public async Task RotationReuseAndLogoutRecordActualEventTimesWithoutOverwritingRevocation()
+    {
+        await using var factory = await fixture.CreateFactoryAsync();
+        using var client = factory.CreateApiClient();
+        await Register(client);
+        await using var scope = factory.Services.CreateAsyncScope();
+        var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+        var service = scope.ServiceProvider.GetRequiredService<ITokenSessionService>();
+        var grant = (await service.CreateAsync((await db.Users.SingleAsync()).Id))!;
+        Assert.Null((await db.TokenSessions.SingleAsync()).RevokedAt);
+        Assert.Null((await db.SessionRefreshTokens.SingleAsync()).ConsumedAt);
+        Assert.True(await service.ValidateAsync(grant.SessionId, grant.UserId, grant.Role));
+        factory.Clock.Advance(TimeSpan.FromMinutes(1));
+        var consumedAt = factory.Clock.GetUtcNow();
+        var rotated = await service.RefreshAsync(grant.RefreshToken);
+        Assert.NotNull(rotated);
+        var tokens = await db.SessionRefreshTokens.AsNoTracking().ToListAsync();
+        Assert.Single(tokens, token => token.ConsumedAt == consumedAt);
+        Assert.Single(tokens, token => token.ConsumedAt is null);
+        factory.Clock.Advance(TimeSpan.FromMinutes(1));
+        var revokedAt = factory.Clock.GetUtcNow();
+        Assert.Null(await service.RefreshAsync(grant.RefreshToken));
+        Assert.Equal(revokedAt, (await db.TokenSessions.AsNoTracking().SingleAsync()).RevokedAt);
+        factory.Clock.Advance(TimeSpan.FromMinutes(1));
+        Assert.True(await service.LogoutAsync(rotated.RefreshToken));
+        Assert.Equal(revokedAt, (await db.TokenSessions.AsNoTracking().SingleAsync()).RevokedAt);
+
+        var another = (await service.CreateAsync(grant.UserId))!;
+        factory.Clock.Advance(TimeSpan.FromMinutes(1));
+        Assert.True(await service.LogoutAsync(another.RefreshToken));
+        Assert.Equal(factory.Clock.GetUtcNow(), (await db.TokenSessions.AsNoTracking()
+            .SingleAsync(s => s.Id == another.SessionId)).RevokedAt);
+    }
+
     [Fact]
     public async Task LoginCreatesPrivateSessionAndLogoutRevokesCopiedCookie()
     {
@@ -106,4 +177,66 @@ public sealed class SessionEndpointTests(PostgreSqlFixture fixture)
         return await client.SendAsync(request);
     }
     private sealed record Csrf(string RequestToken, string HeaderName);
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task ConcurrentRefreshOrLogoutCannotLeaveAnActiveFamily(bool logout)
+    {
+        await using var factory = await fixture.CreateFactoryAsync();
+        using var client = factory.CreateApiClient();
+        await Register(client);
+        await using var setup = factory.Services.CreateAsyncScope();
+        var db = setup.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+        var user = await db.Users.SingleAsync();
+        var grant = (await setup.ServiceProvider.GetRequiredService<ITokenSessionService>().CreateAsync(user.Id))!;
+
+        // Hold the row so both requests overlap deterministically. Without the
+        // service lock both read ConsumedAt=null and block only at SaveChanges.
+        await using var blocker = new NpgsqlConnection(db.Database.GetConnectionString());
+        await blocker.OpenAsync();
+        await using var transaction = await blocker.BeginTransactionAsync();
+        await using var command = new NpgsqlCommand("SELECT 1 FROM token_sessions WHERE id = @id FOR UPDATE", blocker, transaction);
+        command.Parameters.AddWithValue("id", grant.SessionId);
+        await command.ExecuteScalarAsync();
+
+        await using var firstScope = factory.Services.CreateAsyncScope();
+        await using var secondScope = factory.Services.CreateAsyncScope();
+        var first = firstScope.ServiceProvider.GetRequiredService<ITokenSessionService>().RefreshAsync(grant.RefreshToken);
+        var secondService = secondScope.ServiceProvider.GetRequiredService<ITokenSessionService>();
+        Task<TokenSessionGrant?>? secondRefresh = null;
+        Task<bool>? secondLogout = null;
+        if (logout) secondLogout = secondService.LogoutAsync(grant.RefreshToken);
+        else secondRefresh = secondService.RefreshAsync(grant.RefreshToken);
+
+        await using var observer = new NpgsqlConnection(db.Database.GetConnectionString());
+        await observer.OpenAsync();
+        var waiting = false;
+        try
+        {
+            using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(15));
+            while (!waiting)
+            {
+                await using var query = new NpgsqlCommand("SELECT count(*) FROM pg_stat_activity WHERE datname = current_database() AND cardinality(pg_blocking_pids(pid)) > 0", observer);
+                waiting = (long)(await query.ExecuteScalarAsync(timeout.Token))! >= 2;
+                if (!waiting) await Task.Delay(20, timeout.Token);
+            }
+        }
+        finally
+        {
+            await transaction.CommitAsync();
+        }
+
+        var firstGrant = await first;
+        if (secondRefresh is not null)
+        {
+            var secondGrant = await secondRefresh;
+            Assert.True((firstGrant is null) != (secondGrant is null));
+        }
+        if (secondLogout is not null) Assert.True(await secondLogout);
+        await using var verification = factory.Services.CreateAsyncScope();
+        var service = verification.ServiceProvider.GetRequiredService<ITokenSessionService>();
+        Assert.False(await service.ValidateAsync(grant.SessionId, grant.UserId, grant.Role));
+        if (firstGrant is not null) Assert.Null(await service.RefreshAsync(firstGrant.RefreshToken));
+    }
 }

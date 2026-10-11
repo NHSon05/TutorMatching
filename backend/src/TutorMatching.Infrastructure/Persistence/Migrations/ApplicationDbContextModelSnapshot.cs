@@ -26,27 +26,32 @@ namespace TutorMatching.Infrastructure.Persistence.Migrations
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
 
                     b.Property<string>("ConcurrencyStamp")
                         .IsConcurrencyToken()
-                        .HasColumnType("text");
+                        .HasColumnType("text")
+                        .HasColumnName("concurrency_stamp");
 
                     b.Property<string>("Name")
                         .HasMaxLength(256)
-                        .HasColumnType("character varying(256)");
+                        .HasColumnType("character varying(256)")
+                        .HasColumnName("name");
 
                     b.Property<string>("NormalizedName")
                         .HasMaxLength(256)
-                        .HasColumnType("character varying(256)");
+                        .HasColumnType("character varying(256)")
+                        .HasColumnName("normalized_name");
 
-                    b.HasKey("Id");
+                    b.HasKey("Id")
+                        .HasName("pk_asp_net_roles");
 
                     b.HasIndex("NormalizedName")
                         .IsUnique()
-                        .HasDatabaseName("RoleNameIndex");
+                        .HasDatabaseName("role_name_index");
 
-                    b.ToTable("AspNetRoles", (string)null);
+                    b.ToTable("asp_net_roles", (string)null);
 
                     b.HasData(
                         new
@@ -76,260 +81,400 @@ namespace TutorMatching.Infrastructure.Persistence.Migrations
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
+                        .HasColumnType("integer")
+                        .HasColumnName("id");
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
                     b.Property<string>("ClaimType")
-                        .HasColumnType("text");
+                        .HasColumnType("text")
+                        .HasColumnName("claim_type");
 
                     b.Property<string>("ClaimValue")
-                        .HasColumnType("text");
+                        .HasColumnType("text")
+                        .HasColumnName("claim_value");
 
                     b.Property<Guid>("RoleId")
-                        .HasColumnType("uuid");
+                        .HasColumnType("uuid")
+                        .HasColumnName("role_id");
 
-                    b.HasKey("Id");
+                    b.HasKey("Id")
+                        .HasName("pk_asp_net_role_claims");
 
-                    b.HasIndex("RoleId");
+                    b.HasIndex("RoleId")
+                        .HasDatabaseName("ix_asp_net_role_claims_role_id");
 
-                    b.ToTable("AspNetRoleClaims", (string)null);
+                    b.ToTable("asp_net_role_claims", (string)null);
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserClaim<System.Guid>", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
+                        .HasColumnType("integer")
+                        .HasColumnName("id");
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
                     b.Property<string>("ClaimType")
-                        .HasColumnType("text");
+                        .HasColumnType("text")
+                        .HasColumnName("claim_type");
 
                     b.Property<string>("ClaimValue")
-                        .HasColumnType("text");
+                        .HasColumnType("text")
+                        .HasColumnName("claim_value");
 
                     b.Property<Guid>("UserId")
-                        .HasColumnType("uuid");
+                        .HasColumnType("uuid")
+                        .HasColumnName("user_id");
 
-                    b.HasKey("Id");
+                    b.HasKey("Id")
+                        .HasName("pk_asp_net_user_claims");
 
-                    b.HasIndex("UserId");
+                    b.HasIndex("UserId")
+                        .HasDatabaseName("ix_asp_net_user_claims_user_id");
 
-                    b.ToTable("AspNetUserClaims", (string)null);
+                    b.ToTable("asp_net_user_claims", (string)null);
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserLogin<System.Guid>", b =>
                 {
                     b.Property<string>("LoginProvider")
-                        .HasColumnType("text");
+                        .HasColumnType("text")
+                        .HasColumnName("login_provider");
 
                     b.Property<string>("ProviderKey")
-                        .HasColumnType("text");
+                        .HasColumnType("text")
+                        .HasColumnName("provider_key");
 
                     b.Property<string>("ProviderDisplayName")
-                        .HasColumnType("text");
+                        .HasColumnType("text")
+                        .HasColumnName("provider_display_name");
 
                     b.Property<Guid>("UserId")
-                        .HasColumnType("uuid");
+                        .HasColumnType("uuid")
+                        .HasColumnName("user_id");
 
-                    b.HasKey("LoginProvider", "ProviderKey");
+                    b.HasKey("LoginProvider", "ProviderKey")
+                        .HasName("pk_asp_net_user_logins");
 
-                    b.HasIndex("UserId");
+                    b.HasIndex("UserId")
+                        .HasDatabaseName("ix_asp_net_user_logins_user_id");
 
-                    b.ToTable("AspNetUserLogins", (string)null);
+                    b.ToTable("asp_net_user_logins", (string)null);
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserRole<System.Guid>", b =>
                 {
                     b.Property<Guid>("UserId")
-                        .HasColumnType("uuid");
+                        .HasColumnType("uuid")
+                        .HasColumnName("user_id");
 
                     b.Property<Guid>("RoleId")
-                        .HasColumnType("uuid");
+                        .HasColumnType("uuid")
+                        .HasColumnName("role_id");
 
-                    b.HasKey("UserId", "RoleId");
+                    b.HasKey("UserId", "RoleId")
+                        .HasName("pk_asp_net_user_roles");
 
-                    b.HasIndex("RoleId");
+                    b.HasIndex("RoleId")
+                        .HasDatabaseName("ix_asp_net_user_roles_role_id");
 
                     b.HasIndex("UserId")
                         .IsUnique()
-                        .HasDatabaseName("UX_AspNetUserRoles_UserId");
+                        .HasDatabaseName("ux_asp_net_user_roles_user_id");
 
-                    b.ToTable("AspNetUserRoles", (string)null);
+                    b.ToTable("asp_net_user_roles", (string)null);
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserToken<System.Guid>", b =>
                 {
                     b.Property<Guid>("UserId")
-                        .HasColumnType("uuid");
+                        .HasColumnType("uuid")
+                        .HasColumnName("user_id");
 
                     b.Property<string>("LoginProvider")
-                        .HasColumnType("text");
+                        .HasColumnType("text")
+                        .HasColumnName("login_provider");
 
                     b.Property<string>("Name")
-                        .HasColumnType("text");
+                        .HasColumnType("text")
+                        .HasColumnName("name");
 
                     b.Property<string>("Value")
-                        .HasColumnType("text");
+                        .HasColumnType("text")
+                        .HasColumnName("value");
 
-                    b.HasKey("UserId", "LoginProvider", "Name");
+                    b.HasKey("UserId", "LoginProvider", "Name")
+                        .HasName("pk_asp_net_user_tokens");
 
-                    b.ToTable("AspNetUserTokens", (string)null);
+                    b.ToTable("asp_net_user_tokens", (string)null);
                 });
 
             modelBuilder.Entity("TutorMatching.Infrastructure.Auditing.AuditEvent", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
 
                     b.Property<string>("Action")
                         .IsRequired()
                         .HasMaxLength(100)
-                        .HasColumnType("character varying(100)");
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("action");
 
                     b.Property<Guid?>("ActorUserId")
-                        .HasColumnType("uuid");
+                        .HasColumnType("uuid")
+                        .HasColumnName("actor_user_id");
 
                     b.Property<DateTimeOffset>("CreatedAt")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at")
                         .HasDefaultValueSql("CURRENT_TIMESTAMP");
 
                     b.Property<string>("EntityId")
                         .HasMaxLength(200)
-                        .HasColumnType("character varying(200)");
+                        .HasColumnType("character varying(200)")
+                        .HasColumnName("entity_id");
 
                     b.Property<string>("EntityType")
                         .IsRequired()
                         .HasMaxLength(100)
-                        .HasColumnType("character varying(100)");
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("entity_type");
 
                     b.Property<string>("IpAddress")
                         .HasMaxLength(64)
-                        .HasColumnType("character varying(64)");
+                        .HasColumnType("character varying(64)")
+                        .HasColumnName("ip_address");
 
-                    b.HasKey("Id");
+                    b.HasKey("Id")
+                        .HasName("pk_audit_events");
 
-                    b.HasIndex("ActorUserId");
+                    b.HasIndex("ActorUserId")
+                        .HasDatabaseName("ix_audit_events_actor_user_id");
 
-                    b.ToTable("AuditEvents", (string)null);
+                    b.ToTable("audit_events", (string)null);
                 });
 
             modelBuilder.Entity("TutorMatching.Infrastructure.Persistence.ApplicationUser", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
 
                     b.Property<int>("AccessFailedCount")
-                        .HasColumnType("integer");
+                        .HasColumnType("integer")
+                        .HasColumnName("access_failed_count");
 
                     b.Property<string>("AvatarUrl")
                         .HasMaxLength(2048)
-                        .HasColumnType("character varying(2048)");
+                        .HasColumnType("character varying(2048)")
+                        .HasColumnName("avatar_url");
 
                     b.Property<string>("ConcurrencyStamp")
                         .IsConcurrencyToken()
-                        .HasColumnType("text");
+                        .HasColumnType("text")
+                        .HasColumnName("concurrency_stamp");
 
                     b.Property<DateTimeOffset>("CreatedAt")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at")
                         .HasDefaultValueSql("CURRENT_TIMESTAMP");
 
                     b.Property<DateOnly?>("DateOfBirth")
-                        .HasColumnType("date");
+                        .HasColumnType("date")
+                        .HasColumnName("date_of_birth");
 
                     b.Property<DateTimeOffset?>("DeletedAt")
-                        .HasColumnType("timestamp with time zone");
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("deleted_at");
 
                     b.Property<string>("Email")
                         .IsRequired()
                         .HasMaxLength(256)
-                        .HasColumnType("character varying(256)");
+                        .HasColumnType("character varying(256)")
+                        .HasColumnName("email");
 
                     b.Property<bool>("EmailConfirmed")
-                        .HasColumnType("boolean");
+                        .HasColumnType("boolean")
+                        .HasColumnName("email_confirmed");
 
                     b.Property<string>("FullName")
                         .IsRequired()
                         .HasMaxLength(100)
-                        .HasColumnType("character varying(100)");
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("full_name");
 
                     b.Property<DateTimeOffset?>("LastLoginAt")
-                        .HasColumnType("timestamp with time zone");
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("last_login_at");
 
                     b.Property<bool>("LockoutEnabled")
-                        .HasColumnType("boolean");
+                        .HasColumnType("boolean")
+                        .HasColumnName("lockout_enabled");
 
                     b.Property<DateTimeOffset?>("LockoutEnd")
-                        .HasColumnType("timestamp with time zone");
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("lockout_end");
 
                     b.Property<string>("NormalizedEmail")
                         .IsRequired()
                         .HasMaxLength(256)
-                        .HasColumnType("character varying(256)");
+                        .HasColumnType("character varying(256)")
+                        .HasColumnName("normalized_email");
 
                     b.Property<string>("NormalizedUserName")
                         .HasMaxLength(256)
-                        .HasColumnType("character varying(256)");
+                        .HasColumnType("character varying(256)")
+                        .HasColumnName("normalized_user_name");
 
                     b.Property<string>("PasswordHash")
-                        .HasColumnType("text");
+                        .HasColumnType("text")
+                        .HasColumnName("password_hash");
 
                     b.Property<string>("PhoneNumber")
                         .HasMaxLength(32)
-                        .HasColumnType("character varying(32)");
+                        .HasColumnType("character varying(32)")
+                        .HasColumnName("phone_number");
 
                     b.Property<bool>("PhoneNumberConfirmed")
-                        .HasColumnType("boolean");
+                        .HasColumnType("boolean")
+                        .HasColumnName("phone_number_confirmed");
 
                     b.Property<string>("SecurityStamp")
-                        .HasColumnType("text");
+                        .HasColumnType("text")
+                        .HasColumnName("security_stamp");
 
                     b.Property<string>("Status")
                         .IsRequired()
                         .HasMaxLength(16)
-                        .HasColumnType("character varying(16)");
+                        .HasColumnType("character varying(16)")
+                        .HasColumnName("status");
 
                     b.Property<bool>("TwoFactorEnabled")
-                        .HasColumnType("boolean");
+                        .HasColumnType("boolean")
+                        .HasColumnName("two_factor_enabled");
 
                     b.Property<DateTimeOffset>("UpdatedAt")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at")
                         .HasDefaultValueSql("CURRENT_TIMESTAMP");
 
                     b.Property<string>("UserName")
                         .HasMaxLength(256)
-                        .HasColumnType("character varying(256)");
+                        .HasColumnType("character varying(256)")
+                        .HasColumnName("user_name");
 
-                    b.HasKey("Id");
+                    b.HasKey("Id")
+                        .HasName("pk_user_accounts");
 
                     b.HasIndex("NormalizedEmail")
                         .IsUnique()
-                        .HasDatabaseName("UX_UserAccounts_NormalizedEmail");
+                        .HasDatabaseName("ux_user_accounts_normalized_email");
 
                     b.HasIndex("NormalizedUserName")
                         .IsUnique()
-                        .HasDatabaseName("UserNameIndex");
+                        .HasDatabaseName("user_name_index");
 
                     b.HasIndex("PhoneNumber")
                         .IsUnique()
-                        .HasDatabaseName("UX_UserAccounts_PhoneNumber")
-                        .HasFilter("\"PhoneNumber\" IS NOT NULL");
+                        .HasDatabaseName("ux_user_accounts_phone_number")
+                        .HasFilter("phone_number IS NOT NULL");
 
-                    b.ToTable("UserAccounts", null, t =>
+                    b.ToTable("user_accounts", null, t =>
                         {
-                            t.HasCheckConstraint("CK_UserAccounts_DateOfBirth_Past", "\"DateOfBirth\" IS NULL OR \"DateOfBirth\" < CURRENT_DATE");
+                            t.HasCheckConstraint("ck_user_accounts_date_of_birth_past", "date_of_birth IS NULL OR date_of_birth < CURRENT_DATE");
 
-                            t.HasCheckConstraint("CK_UserAccounts_FullName_Trimmed_Length", "\"FullName\" = btrim(\"FullName\") AND char_length(\"FullName\") BETWEEN 2 AND 100");
+                            t.HasCheckConstraint("ck_user_accounts_full_name_trimmed_length", "full_name = btrim(full_name) AND char_length(full_name) BETWEEN 2 AND 100");
 
-                            t.HasCheckConstraint("CK_UserAccounts_Status_Canonical", "\"Status\" IN ('ACTIVE', 'LOCKED', 'INACTIVE')");
+                            t.HasCheckConstraint("ck_user_accounts_status_canonical", "status IN ('ACTIVE', 'LOCKED', 'INACTIVE')");
                         });
+                });
+
+            modelBuilder.Entity("TutorMatching.Infrastructure.Persistence.SessionRefreshToken", b =>
+                {
+                    b.Property<string>("TokenHash")
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)")
+                        .HasColumnName("token_hash");
+
+                    b.Property<DateTimeOffset?>("ConsumedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("consumed_at");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<DateTimeOffset>("ExpiresAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("expires_at");
+
+                    b.Property<Guid>("SessionId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("session_id");
+
+                    b.HasKey("TokenHash")
+                        .HasName("pk_session_refresh_tokens");
+
+                    b.HasIndex("SessionId")
+                        .HasDatabaseName("ix_session_refresh_tokens_session_id");
+
+                    b.ToTable("session_refresh_tokens", (string)null);
+                });
+
+            modelBuilder.Entity("TutorMatching.Infrastructure.Persistence.TokenSession", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<DateTimeOffset>("AbsoluteExpiresAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("absolute_expires_at");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<DateTimeOffset>("LastRefreshedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("last_refreshed_at");
+
+                    b.Property<DateTimeOffset?>("RevokedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("revoked_at");
+
+                    b.Property<string>("Role")
+                        .IsRequired()
+                        .HasMaxLength(16)
+                        .HasColumnType("character varying(16)")
+                        .HasColumnName("role");
+
+                    b.Property<string>("SecurityStamp")
+                        .IsRequired()
+                        .HasMaxLength(256)
+                        .HasColumnType("character varying(256)")
+                        .HasColumnName("security_stamp");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("user_id");
+
+                    b.HasKey("Id")
+                        .HasName("pk_token_sessions");
+
+                    b.HasIndex("UserId")
+                        .HasDatabaseName("ix_token_sessions_user_id");
+
+                    b.ToTable("token_sessions", (string)null);
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<System.Guid>", b =>
@@ -338,7 +483,8 @@ namespace TutorMatching.Infrastructure.Persistence.Migrations
                         .WithMany()
                         .HasForeignKey("RoleId")
                         .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .IsRequired()
+                        .HasConstraintName("fk_asp_net_role_claims_asp_net_roles_role_id");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserClaim<System.Guid>", b =>
@@ -347,7 +493,8 @@ namespace TutorMatching.Infrastructure.Persistence.Migrations
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .IsRequired()
+                        .HasConstraintName("fk_asp_net_user_claims_user_accounts_user_id");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserLogin<System.Guid>", b =>
@@ -356,7 +503,8 @@ namespace TutorMatching.Infrastructure.Persistence.Migrations
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .IsRequired()
+                        .HasConstraintName("fk_asp_net_user_logins_user_accounts_user_id");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserRole<System.Guid>", b =>
@@ -365,13 +513,15 @@ namespace TutorMatching.Infrastructure.Persistence.Migrations
                         .WithMany()
                         .HasForeignKey("RoleId")
                         .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .IsRequired()
+                        .HasConstraintName("fk_asp_net_user_roles_asp_net_roles_role_id");
 
                     b.HasOne("TutorMatching.Infrastructure.Persistence.ApplicationUser", null)
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .IsRequired()
+                        .HasConstraintName("fk_asp_net_user_roles_user_accounts_user_id");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserToken<System.Guid>", b =>
@@ -380,7 +530,8 @@ namespace TutorMatching.Infrastructure.Persistence.Migrations
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .IsRequired()
+                        .HasConstraintName("fk_asp_net_user_tokens_user_accounts_user_id");
                 });
 
             modelBuilder.Entity("TutorMatching.Infrastructure.Auditing.AuditEvent", b =>
@@ -388,7 +539,28 @@ namespace TutorMatching.Infrastructure.Persistence.Migrations
                     b.HasOne("TutorMatching.Infrastructure.Persistence.ApplicationUser", null)
                         .WithMany()
                         .HasForeignKey("ActorUserId")
-                        .OnDelete(DeleteBehavior.SetNull);
+                        .OnDelete(DeleteBehavior.SetNull)
+                        .HasConstraintName("fk_audit_events_user_accounts_actor_user_id");
+                });
+
+            modelBuilder.Entity("TutorMatching.Infrastructure.Persistence.SessionRefreshToken", b =>
+                {
+                    b.HasOne("TutorMatching.Infrastructure.Persistence.TokenSession", null)
+                        .WithMany()
+                        .HasForeignKey("SessionId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_session_refresh_tokens_token_sessions_session_id");
+                });
+
+            modelBuilder.Entity("TutorMatching.Infrastructure.Persistence.TokenSession", b =>
+                {
+                    b.HasOne("TutorMatching.Infrastructure.Persistence.ApplicationUser", null)
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_token_sessions_user_accounts_user_id");
                 });
 #pragma warning restore 612, 618
         }

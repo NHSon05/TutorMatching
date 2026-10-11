@@ -33,8 +33,7 @@ public sealed class TokenSessionService(
             Role = role,
             CreatedAt = now,
             LastRefreshedAt = now,
-            AbsoluteExpiresAt = now.AddHours(8),
-            IsRevoked = false
+            AbsoluteExpiresAt = now.AddHours(8)
         };
         dbContext.TokenSessions.Add(session);
 
@@ -49,8 +48,7 @@ public sealed class TokenSessionService(
             TokenHash = hash,
             SessionId = sessionId,
             CreatedAt = now,
-            ExpiresAt = refreshExpiry,
-            IsUsed = false
+            ExpiresAt = refreshExpiry
         };
         dbContext.SessionRefreshTokens.Add(refreshTokenEntity);
 
@@ -63,19 +61,22 @@ public sealed class TokenSessionService(
         if (string.IsNullOrWhiteSpace(rawRefreshToken)) return null;
 
         var hash = HashToken(rawRefreshToken.Trim());
+        await using var transaction = await dbContext.Database.BeginTransactionAsync(cancellationToken);
+        var session = await LockSessionAsync(hash, cancellationToken);
+        if (session is null || session.RevokedAt is not null) return null;
+
+        // Read the credential only after acquiring the family lock: a concurrent
+        // refresh may have consumed it while this transaction was waiting.
         var tokenEntity = await dbContext.SessionRefreshTokens
             .FirstOrDefaultAsync(t => t.TokenHash == hash, cancellationToken);
         if (tokenEntity is null) return null;
 
-        var session = await dbContext.TokenSessions
-            .FirstOrDefaultAsync(s => s.Id == tokenEntity.SessionId, cancellationToken);
-        if (session is null || session.IsRevoked) return null;
-
         // Reuse detection: If token was already used, revoke the entire session family immediately.
-        if (tokenEntity.IsUsed)
+        if (tokenEntity.ConsumedAt is not null)
         {
-            session.IsRevoked = true;
+            session.RevokedAt = clock.UtcNow;
             await dbContext.SaveChangesAsync(cancellationToken);
+            await transaction.CommitAsync(cancellationToken);
             return null;
         }
 
@@ -84,14 +85,15 @@ public sealed class TokenSessionService(
 
         var user = await userManager.FindByIdAsync(session.UserId.ToString());
         if (user is null || user.Status != AccountStatus.ACTIVE || user.DeletedAt is not null ||
-            user.SecurityStamp != session.SecurityStamp)
+            user.SecurityStamp != session.SecurityStamp || !await HasCurrentRoleAsync(user, session.Role))
         {
-            session.IsRevoked = true;
+            session.RevokedAt = now;
             await dbContext.SaveChangesAsync(cancellationToken);
+            await transaction.CommitAsync(cancellationToken);
             return null;
         }
 
-        tokenEntity.IsUsed = true;
+        tokenEntity.ConsumedAt = now;
 
         var newRawToken = GenerateSecureToken();
         var newHash = HashToken(newRawToken);
@@ -104,13 +106,13 @@ public sealed class TokenSessionService(
             TokenHash = newHash,
             SessionId = session.Id,
             CreatedAt = now,
-            ExpiresAt = newExpiry,
-            IsUsed = false
+            ExpiresAt = newExpiry
         };
         dbContext.SessionRefreshTokens.Add(newRefreshTokenEntity);
         session.LastRefreshedAt = now;
 
         await dbContext.SaveChangesAsync(cancellationToken);
+        await transaction.CommitAsync(cancellationToken);
         return new TokenSessionGrant(session.Id, session.UserId, session.Role, newRawToken, newExpiry);
     }
 
@@ -118,7 +120,7 @@ public sealed class TokenSessionService(
     {
         var session = await dbContext.TokenSessions.AsNoTracking()
             .FirstOrDefaultAsync(s => s.Id == sessionId, cancellationToken);
-        if (session is null || session.UserId != userId || session.IsRevoked) return false;
+        if (session is null || session.UserId != userId || session.RevokedAt is not null) return false;
         if (!string.Equals(session.Role, role, StringComparison.OrdinalIgnoreCase)) return false;
 
         var now = clock.UtcNow;
@@ -131,7 +133,7 @@ public sealed class TokenSessionService(
             return false;
         }
 
-        return true;
+        return await HasCurrentRoleAsync(user, session.Role);
     }
 
     public async Task<bool> LogoutAsync(string rawRefreshToken, CancellationToken cancellationToken = default)
@@ -139,24 +141,37 @@ public sealed class TokenSessionService(
         if (string.IsNullOrWhiteSpace(rawRefreshToken)) return false;
 
         var hash = HashToken(rawRefreshToken.Trim());
-        var tokenEntity = await dbContext.SessionRefreshTokens
-            .FirstOrDefaultAsync(t => t.TokenHash == hash, cancellationToken);
-        if (tokenEntity is null) return false;
-
-        var session = await dbContext.TokenSessions
-            .FirstOrDefaultAsync(s => s.Id == tokenEntity.SessionId, cancellationToken);
-        if (session is not null)
+        await using var transaction = await dbContext.Database.BeginTransactionAsync(cancellationToken);
+        var session = await LockSessionAsync(hash, cancellationToken);
+        if (session is null) return false;
+        session.RevokedAt ??= clock.UtcNow;
+        var user = await userManager.FindByIdAsync(session.UserId.ToString());
+        if (user is not null)
         {
-            session.IsRevoked = true;
-            var user = await userManager.FindByIdAsync(session.UserId.ToString());
-            if (user is not null)
-            {
-                await userManager.UpdateSecurityStampAsync(user);
-            }
+            var result = await userManager.UpdateSecurityStampAsync(user);
+            if (!result.Succeeded) throw new InvalidOperationException("Unable to revoke sessions.");
         }
 
         await dbContext.SaveChangesAsync(cancellationToken);
+        await transaction.CommitAsync(cancellationToken);
         return true;
+    }
+
+    private async Task<bool> HasCurrentRoleAsync(ApplicationUser user, string sessionRole)
+    {
+        var roles = await userManager.GetRolesAsync(user);
+        return roles.Count == 1 && string.Equals(roles[0], sessionRole, StringComparison.OrdinalIgnoreCase);
+    }
+
+    private async Task<TokenSession?> LockSessionAsync(string hash, CancellationToken cancellationToken)
+    {
+        // Parameterized SQL; refresh and logout serialize on the same session row.
+        var sessions = await dbContext.TokenSessions.FromSqlInterpolated($"""
+            SELECT s.* FROM token_sessions AS s
+            WHERE s.id = (SELECT t.session_id FROM session_refresh_tokens AS t WHERE t.token_hash = {hash})
+            FOR UPDATE OF s
+            """).ToListAsync(cancellationToken);
+        return sessions.SingleOrDefault();
     }
 
     private static string GenerateSecureToken() =>

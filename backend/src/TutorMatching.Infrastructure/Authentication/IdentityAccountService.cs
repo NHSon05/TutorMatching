@@ -171,7 +171,7 @@ public sealed class IdentityAccountService(
         if (ex.InnerException is not PostgresException { SqlState: PostgresErrorCodes.UniqueViolation } postgres)
             return null;
 
-        return string.Equals(postgres.ConstraintName, "UX_UserAccounts_PhoneNumber", StringComparison.Ordinal)
+        return string.Equals(postgres.ConstraintName, "ux_user_accounts_phone_number", StringComparison.Ordinal)
             ? AccountFailure.DuplicatePhoneNumber
             : AccountFailure.DuplicateEmail;
     }

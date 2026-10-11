@@ -1,4 +1,6 @@
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.Extensions.DependencyInjection;
 using Npgsql;
 using Testcontainers.PostgreSql;
@@ -20,7 +22,7 @@ public sealed class PostgreSqlFixture : IAsyncLifetime
     public Task InitializeAsync() => container.StartAsync();
     public Task DisposeAsync() => container.DisposeAsync().AsTask();
 
-    public async Task<ApiWebApplicationFactory> CreateFactoryAsync()
+    public async Task<ApiWebApplicationFactory> CreateFactoryAsync(string? targetMigration = null)
     {
         // Generated names only; no user input or shared database is accepted.
         var name = $"test_{Guid.NewGuid():N}";
@@ -40,7 +42,8 @@ public sealed class PostgreSqlFixture : IAsyncLifetime
         try
         {
             await using var scope = factory.Services.CreateAsyncScope();
-            await scope.ServiceProvider.GetRequiredService<ApplicationDbContext>().Database.MigrateAsync();
+            await DatabaseMigrationRunner.MigrateAsync(
+                scope.ServiceProvider.GetRequiredService<ApplicationDbContext>(), targetMigration);
             return factory;
         }
         catch

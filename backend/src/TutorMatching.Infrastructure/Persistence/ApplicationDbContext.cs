@@ -50,6 +50,8 @@ public sealed class ApplicationDbContext(
             CreateRole(AdminRoleId, AccountRole.ADMIN),
             CreateRole(LearnerRoleId, AccountRole.LEARNER),
             CreateRole(TutorRoleId, AccountRole.TUTOR));
+
+        SnakeCaseNaming.Apply(builder);
     }
 
     public override int SaveChanges(bool acceptAllChangesOnSuccess)

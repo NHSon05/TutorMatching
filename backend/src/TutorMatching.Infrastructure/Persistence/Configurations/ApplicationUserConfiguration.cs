@@ -11,14 +11,14 @@ public sealed class ApplicationUserConfiguration : IEntityTypeConfiguration<Appl
         builder.ToTable("UserAccounts", table =>
         {
             table.HasCheckConstraint(
-                "CK_UserAccounts_FullName_Trimmed_Length",
-                "\"FullName\" = btrim(\"FullName\") AND char_length(\"FullName\") BETWEEN 2 AND 100");
+                "ck_user_accounts_full_name_trimmed_length",
+                "full_name = btrim(full_name) AND char_length(full_name) BETWEEN 2 AND 100");
             table.HasCheckConstraint(
-                "CK_UserAccounts_DateOfBirth_Past",
-                "\"DateOfBirth\" IS NULL OR \"DateOfBirth\" < CURRENT_DATE");
+                "ck_user_accounts_date_of_birth_past",
+                "date_of_birth IS NULL OR date_of_birth < CURRENT_DATE");
             table.HasCheckConstraint(
-                "CK_UserAccounts_Status_Canonical",
-                "\"Status\" IN ('ACTIVE', 'LOCKED', 'INACTIVE')");
+                "ck_user_accounts_status_canonical",
+                "status IN ('ACTIVE', 'LOCKED', 'INACTIVE')");
         });
 
         builder.Property(user => user.Email)
@@ -42,7 +42,7 @@ public sealed class ApplicationUserConfiguration : IEntityTypeConfiguration<Appl
 
         builder.HasIndex(user => user.PhoneNumber)
             .IsUnique()
-            .HasFilter("\"PhoneNumber\" IS NOT NULL")
+            .HasFilter("phone_number IS NOT NULL")
             .HasDatabaseName("UX_UserAccounts_PhoneNumber");
 
         builder.Property(user => user.DateOfBirth)

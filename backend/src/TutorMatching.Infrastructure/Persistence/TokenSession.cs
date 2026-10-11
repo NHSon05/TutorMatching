@@ -9,5 +9,6 @@ public sealed class TokenSession
     public DateTimeOffset CreatedAt { get; set; }
     public DateTimeOffset LastRefreshedAt { get; set; }
     public DateTimeOffset AbsoluteExpiresAt { get; set; }
-    public bool IsRevoked { get; set; }
+    // MinValue represents an unknown historical revocation time (PostgreSQL -infinity).
+    public DateTimeOffset? RevokedAt { get; set; }
 }

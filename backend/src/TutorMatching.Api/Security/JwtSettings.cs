@@ -16,20 +16,15 @@ public sealed class JwtSettings
         var audience = configuration["Jwt:Audience"] ?? "tutormatching-client";
         var rawKey = configuration["Jwt:SigningKey"];
         byte[] keyBytes;
-        if (!string.IsNullOrWhiteSpace(rawKey))
+        if (string.IsNullOrWhiteSpace(rawKey))
+            throw new InvalidOperationException("Jwt:SigningKey is required (Base64 of at least 32 random bytes).");
+        try
         {
-            try
-            {
-                keyBytes = Convert.FromBase64String(rawKey);
-            }
-            catch (FormatException)
-            {
-                keyBytes = System.Text.Encoding.UTF8.GetBytes(rawKey);
-            }
+            keyBytes = Convert.FromBase64String(rawKey);
         }
-        else
+        catch (FormatException)
         {
-            keyBytes = System.Text.Encoding.UTF8.GetBytes("development-jwt-signing-key-32-bytes!!");
+            throw new InvalidOperationException("Jwt:SigningKey must be valid Base64.");
         }
 
         if (keyBytes.Length < 32)

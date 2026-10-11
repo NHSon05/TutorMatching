@@ -36,7 +36,7 @@ public static class DependencyInjection
         services.AddTransient<IEmailSender, SmtpEmailSender>();
 
         services.AddDbContext<ApplicationDbContext>(options =>
-            options.UseNpgsql(connectionString));
+            options.UseTutorMatchingDatabase(connectionString));
 
         services.AddDataProtection();
 

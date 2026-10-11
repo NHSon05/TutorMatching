@@ -51,7 +51,7 @@ public sealed class ApiWebApplicationFactory : WebApplicationFactory<Program>
             // Also replace EF registrations explicitly: no fallback to developer .env is possible.
             services.RemoveAll<DbContextOptions<ApplicationDbContext>>();
             services.RemoveAll<IDbContextOptionsConfiguration<ApplicationDbContext>>();
-            services.AddDbContext<ApplicationDbContext>(options => options.UseNpgsql(connectionString));
+            services.AddDbContext<ApplicationDbContext>(options => options.UseTutorMatchingDatabase(connectionString));
             services.RemoveAll<IEmailSender>();
             services.AddSingleton<IEmailSender>(Emails);
             services.AddSingleton<TimeProvider>(Clock);
