@@ -1,7 +1,7 @@
-# Agent-local state can contain credentials; track only the shared Spec Kit skills.
-.agents/*
-!.agents/skills/
-!.agents/skills/**
+# Hidden configuration and tooling directories
+.agents/
+.config/
+.specify/
 
 # Common generated output not owned by nested ignore files.
 .DS_Store
