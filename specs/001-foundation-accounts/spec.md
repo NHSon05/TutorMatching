@@ -60,6 +60,9 @@ then verify that the same session can no longer access that capability.
    and cannot be reused.
 5. **Given** repeated failed sign-in attempts, **When** the configured threshold is reached, **Then**
    further attempts are temporarily limited without permanently deleting or changing the account.
+6. **Given** an expired access token and a valid refresh credential, **When** a protected request
+   is made, **Then** the browser restores the session and retries once; concurrent tabs coordinate
+   renewal. Expired refresh credentials end the session; temporary service failures remain retryable.
 
 ---
 

@@ -10,8 +10,9 @@ Stable, compact facts for agents. Search by heading or keyword and read only the
 - Spec Kit constitution: `.specify/memory/constitution.md`.
 - Sprint features: `001-foundation-accounts` is planned/tasked; `002-tutor-discovery`,
   `003-hire-negotiation`, and `004-messaging-admin-release` are defined and awaiting planning.
+- `005-database-snake-case` is implemented and applied to local PostgreSQL; physical names include Identity and EF history.
 - Shared AI usage guide: `docs/guides/AI-WORKFLOW.md`.
-- Sprint 1 persistence and Application ports are in place. Registration is implemented end to end; login/logout, profile, authorization journeys, and password reset remain pending in `specs/001-foundation-accounts/tasks.md`.
+- Sprint 1 persistence and Application ports are in place. Registration, JWT login/logout/refresh and authorization are implemented; browser E2E verification, profile editing and password reset remain pending in `specs/001-foundation-accounts/tasks.md`.
 
 ## Stack and layout
 
@@ -23,8 +24,12 @@ Stable, compact facts for agents. Search by heading or keyword and read only the
 - Local PostgreSQL 17 and Mailpit run through `backend/compose.yaml`; backend and frontend use separate environment files.
 - API startup and EF design-time tooling share `Infrastructure/Configurations/DotEnvLoader.cs`; it loads `.env` only beside `TutorMatching.slnx` and preserves existing process environment variables. Published deployments should supply environment variables directly.
 - Sprint 1 persistence uses ASP.NET Core Identity with UUID keys, EF Core 10, Npgsql, canonical roles/statuses, account constraints, UTC timestamps, and an initial migration validated locally and applied to Supabase through its IPv4 Session pooler.
+- All current physical tables/columns/keys/indexes/sequences use snake_case. `SnakeCaseNaming` configures EF; `DatabaseOptions` configures `ef_migrations_history` with snake_case columns. Historical migrations retain original names; `UseSnakeCaseDatabaseNames` performs renames without rebuilding objects.
 - T010 ports live in `TutorMatching.Application/Abstractions/`: current user, UTC clock, email, token sessions, allowlisted account audit, and account service; Application references Domain only. See the local README for adapter responsibilities.
 - Authentication uses dual HttpOnly cookies (`accessToken` JWT 5m path `/`, `refreshToken` opaque rotating path `/api/v1/auth`), server-side TokenSessions, 30m idle/8h absolute limits, per-request stamp/status/role validation, CSRF, and allowlisted credentialed CORS. Login counts failures (5 attempts/15m); logout revokes all sessions via security stamp. `/users/me` derives ownership from claims; `/users/me/access/{role}` checks current database role. Frontend guards use `/users/me`, not editable role cookies.
+- `Jwt__SigningKey` is required Base64 (at least 32 random bytes), without fallback. `AddTokenSessions` migration creates session/refresh tables. Refresh/logout serialize on a PostgreSQL session row lock. Frontend `authenticatedFetch` uses a shared renewal promise and Web Locks across same-origin tabs, checks session under the lock, renews CSRF, then retries once. Requires HTTPS/localhost and Web Locks; transient failures do not log out.
+- Token migration also adopts the legacy timestamp schema (`20261009000000_AddTokenSessions`, absent from repo), preserving revoked/used states and bounded expiry. Automatic downgrade is blocked to avoid dropping adopted tables. Local PostgreSQL upgraded 2026-10-10; other deployment databases still require migration.
+- `UseTokenStateTimestamps` replaces token booleans with nullable `revoked_at`/`consumed_at`. Known times survive; unknown legacy events use PostgreSQL `-infinity` / `DateTimeOffset.MinValue`. Runtime writes actual UTC times. Access/refresh require current Identity role matching the session; refresh revokes role mismatches even without stamp changes. Stop old API before migrating.
 - T015 API fixtures require Docker: Testcontainers PostgreSQL 17.6, a unique database per WebApplicationFactory, migrations and factory-local email capture. T017 exposes OpenAPI 3.1 `/openapi/v1.json` in Development/Testing and tests implemented operations against the YAML contract; registration is covered while later account operations remain explicitly pending.
 - T014 adapters live in `Infrastructure/Email`: SMTP sandbox via MailKit with required STARTTLS when enabled, 15s default send deadline and sanitized transport errors; `CapturedEmailSender` is substituted only in test factories. Email content/tokens are never logged. Tests use a separate disposable Mailpit container.
 
@@ -36,6 +41,7 @@ Stable, compact facts for agents. Search by heading or keyword and read only the
 - Backend development: `dotnet run --project backend/src/TutorMatching.Api`.
 - Backend build: `dotnet build backend/TutorMatching.slnx`.
 - Backend tests: `dotnet test backend/TutorMatching.slnx`.
+- Database upgrade: stop old API processes, run `dotnet run --project backend/tools/TutorMatching.DatabaseMigrator`, then start updated API. Runner normalizes legacy history before EF migration discovery; first upgrade must use the runner, not bare `dotnet ef database update`. Remote targets require `-- --allow-remote` and explicit environment configuration.
 - Frontend component tests: `npm --prefix frontend run test`.
 - Frontend E2E tests: `npm --prefix frontend run test:e2e`.
 - Local services: copy `backend/.env.example` to `backend/.env`, then run `docker compose --env-file backend/.env -f backend/compose.yaml up -d --wait`.

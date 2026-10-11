@@ -1,29 +1,34 @@
 # Current Session Handoff
 
-Status: DUAL JWT COOKIE FOUNDATION COMPLETED & VERIFIED
-Updated: 2026-10-10
+Status: CODE COMPLETE — TOKEN SECURITY MIGRATION AWAITS DEPLOYMENT
+Updated: 2026-10-11
 
 ## Completed scope
 
-- Implemented Dual JWT Cookie authentication infrastructure (ADR-004):
-  - `JwtSettings.cs`: Loads issuer, audience, and 256-bit signing key with `CookieSecurePolicy`.
-  - `JwtCookieTokens.cs`: Issues `accessToken` (5m, path `/`) and `refreshToken` (path `/api/v1/auth`), both HttpOnly and Lax.
-  - `ITokenSessionService.cs` & `TokenSessionGrant.cs`: Application abstraction for session creation, refresh, validation, and revocation.
-  - `TokenSession.cs` & `SessionRefreshToken.cs`: Database models for session family tracking and hashed refresh tokens.
-  - `TokenSessionService.cs`: PostgreSQL-backed session service implementing single-use rotation, family reuse revocation, and security stamp synchronization.
-  - Updated `ApiSecurityExtensions.cs`: Null-safe role claims, proper `OnForbidden` handling, and extended CORS headers.
-  - Updated `SecurityTestHost.cs`: Mock `TestTokenSessions` with simulated token refresh on 401.
-  - Fixed `AuthController.cs`: Pass `AccountRole` enum directly to `AccountResponse`.
+- Approved follow-up: timestamp-only token state and current-role validation, not index/audit policy.
+- TokenSession.RevokedAt / SessionRefreshToken.ConsumedAt replace persisted booleans.
+- New forward migration 20261011113055_UseTokenStateTimestamps preserves known times and
+  maps true booleans without a time to PostgreSQL -infinity (unknown time, not migration time).
+- Access validation and refresh require exactly one current role matching the session;
+  refresh revokes on mismatch even when security stamp has not changed.
+- Refresh/logout row locks retained; repeated logout preserves first revocation timestamp.
+- Prior snake_case/JWT/frontend changes remain uncommitted. Scope: specs/005-database-snake-case.
 
 ## Verification
 
-- `dotnet build backend/TutorMatching.slnx`: Succeeded with 0 Errors and 0 Warnings.
-- `dotnet test backend/tests/TutorMatching.Domain.UnitTests/`: 2/2 passed.
-- `dotnet test backend/tests/TutorMatching.Application.UnitTests/`: 16/16 passed.
-- `dotnet test backend/tests/TutorMatching.Api.IntegrationTests/ --filter FullyQualifiedName~ApiSecurityTests`: 19/19 passed.
-- `dotnet test backend/tests/TutorMatching.Api.IntegrationTests/ --filter FullyQualifiedName~DotEnvLoaderTests`: 6/6 passed.
+- Targeted session/schema/migration suite: 19 passed.
+- Full backend: 74 API integration + 16 Application + 2 Domain = 92 passed.
+- EF reports no pending model changes; git diff --check clean.
+- Tests cover role removal/replacement with unchanged stamp, event timestamps, repeated logout,
+  legacy/current/fresh schemas, inconsistent legacy state and concurrent refresh/logout.
+- Frontend unchanged this turn; prior verification: 83 tests, TypeScript/scoped lint.
 
-## Next steps
+## Deployment / next executable step
 
-- Run full PostgreSQL-backed integration test suite `SessionEndpointTests.cs` against local Docker PostgreSQL/Mailpit.
-- Run database migrations against test container / local environment.
+- New timestamp migration NOT applied to existing local or remote databases this turn.
+- Local DB was previously upgraded through UseSnakeCaseDatabaseNames only.
+- Stop old API, run `dotnet run --project backend/tools/TutorMatching.DatabaseMigrator`
+  against the intended environment, then start updated API. Old binaries require removed booleans.
+- Do not reset DB/history or disable Npgsql infinity conversion; forward fixes only.
+- Remote runs require --allow-remote. Index/audit retention/permissions remain out of scope.
+- Existing account browser E2E tasks T031/T037/T058 and profile/password-reset work remain pending.

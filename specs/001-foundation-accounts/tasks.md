@@ -52,7 +52,9 @@ implementation and must initially fail for the intended reason.
 
 ## Approved authentication amendment — JWT cookies (2026-10-09)
 
-- [ ] JWT-001 Replace ticket authentication with JWT access cookies, hashed rotating refresh sessions, additive migration, login/refresh/logout and updated OpenAPI. Preserve CSRF, role/stamp revocation, lockout and session deadlines. Verify session/security/contract tests against disposable PostgreSQL plus backend build; do not check complete until evidence passes.
+- [x] JWT-001 Replace ticket authentication with JWT access cookies, hashed rotating refresh sessions, additive migration, login/refresh/logout and updated OpenAPI. Preserve CSRF, role/stamp revocation, lockout and session deadlines. Evidence 2026-10-10: solution build via `dotnet test backend/TutorMatching.slnx --no-restore -m:1`; 60 API integration tests (including PostgreSQL session/security/OpenAPI), 16 Application and 2 Domain tests passed.
+- [x] JWT-002 Harden JWT-001: require a Base64 signing secret without fallback, serialize refresh/logout and test simultaneous requests against PostgreSQL; integrate frontend single-flight/Web Locks refresh with one retry, CSRF renewal, and transient-error handling. Evidence 2026-10-10: JWT settings tests, 5 real-DB session tests, 83 frontend tests (11 refresh tests), TypeScript and scoped ESLint passed. Multi-tab tests use independent clients with shared lock simulation; browser E2E remains T058.
+- [x] JWT-003 Support the existing timestamp-based token schema recorded as migration `20261009000000_AddTokenSessions`; preserve revocation/consumption and bounded expiry without dropping data. Evidence: `TokenSessionMigrationTests` plus 5 session tests pass on disposable PostgreSQL; the inspected local database was upgraded and full entity queries succeeded. Automatic downgrade is blocked to protect adopted tables.
 
 ## Phase 3: User Story 1 - Register an account (Priority: P1) MVP
 

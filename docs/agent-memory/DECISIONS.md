@@ -41,3 +41,24 @@ Search by ADR ID, subsystem, or keyword. Add only durable decisions; keep each A
 - Decision: Store SHA-256 refresh hashes and session family rows in PostgreSQL; detect reuse and revoke the family atomically.
 - Decision: Preserve Identity lockout, CSRF, allowlisted CORS, 30m idle and 8h absolute session deadlines; tokens never appear in JSON.
 - Consequence: Existing Identity authentication cookies are rejected; users must log in again. Frontend refresh handling is required upon access expiry.
+
+## ADR-005 - Physical database identifiers use snake_case
+
+- Date: 2026-10-11
+- Status: Accepted
+- Context: User requested consistent snake_case for the entire database, including Identity/history.
+- Decision: Central EF model naming plus a customized provider history repository; no CLR/JSON/enum changes.
+- Decision: Upgrade by renaming existing objects; preserve rows, relationships, security state and history.
+- Decision: An explicit DatabaseMigrator normalizes old history before EF discovers migrations; startup never mutates schema.
+- Consequence: Stop old API processes before upgrade; use forward fixes because original custom legacy names cannot be reconstructed reliably.
+- Evidence: 87 backend tests pass; local catalog has zero uppercase identifiers with unchanged table OIDs/data row counts.
+
+## ADR-006 - Canonical token timestamps and live role validation
+
+- Date: 2026-10-11
+- Status: Accepted
+- Context: Approved removal of duplicated token state and stale session authorization.
+- Decision: Persist nullable revoked_at/consumed_at only; preserve known legacy times and use -infinity for unknown historical events without reactivating credentials.
+- Decision: Validate exactly one current Identity role matching the session on access and refresh; revoke mismatched sessions on refresh.
+- Consequence: Npgsql infinity conversion stays enabled; unknown times must not be presented as real event dates. Stop old API before forward-only migration.
+- Evidence: 92 backend tests pass, including inconsistent legacy state, timestamp transitions and role changes without stamp changes.
