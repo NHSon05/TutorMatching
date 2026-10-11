@@ -1,4 +1,5 @@
 import { API_BASE_URL, getCsrfToken, throwApiProblem, type AccountResponse } from "@/lib/api/auth";
+import { authenticatedFetch } from "@/lib/auth/authenticated-fetch";
 
 export async function login(email: string, password: string): Promise<AccountResponse> {
   const csrf = await getCsrfToken();
@@ -12,7 +13,9 @@ export async function login(email: string, password: string): Promise<AccountRes
 }
 
 export async function getSession(): Promise<AccountResponse | null> {
-  const response = await fetch(`${API_BASE_URL}/users/me`, { credentials: "include", cache: "no-store" });
+  const response = await authenticatedFetch(() => fetch(`${API_BASE_URL}/users/me`, {
+    credentials: "include", cache: "no-store",
+  }));
   if (response.status === 401) return null;
   if (!response.ok) return throwApiProblem(response);
   return response.json();
