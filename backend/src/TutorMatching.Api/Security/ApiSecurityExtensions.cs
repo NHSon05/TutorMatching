@@ -216,7 +216,7 @@ public static class ApiSecurityExtensions
     public static IEndpointConventionBuilder MapCsrfEndpoint(this IEndpointRouteBuilder endpoints) =>
         endpoints.MapGet("/api/v1/auth/csrf", (HttpContext context, IAntiforgery antiforgery) =>
         {
-            context.Response.Headers.CacheControl = "no-store";
+            // context.Response.Headers.CacheControl = "no-store";
             var tokens = antiforgery.GetAndStoreTokens(context);
             return TypedResults.Ok(new CsrfTokenResponse
             {

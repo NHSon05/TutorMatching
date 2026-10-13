@@ -12,7 +12,7 @@ public sealed class JwtCookieTokens(JwtSettings settings, TimeProvider clock)
     public const string RefreshCookie = "refreshToken";
     public const string RefreshPath = "/api/v1/auth";
 
-    public void Issue(HttpContext context, TokenSessionGrant grant)
+    public string Issue(HttpContext context, TokenSessionGrant grant)
     {
         var now = clock.GetUtcNow();
         var accessExpires = now.AddMinutes(5);
@@ -57,6 +57,8 @@ public sealed class JwtCookieTokens(JwtSettings settings, TimeProvider clock)
             SameSite = SameSiteMode.Lax,
             Expires = grant.ExpiresAt
         });
+
+        return accessToken;
     }
 
     public void Clear(HttpContext context)

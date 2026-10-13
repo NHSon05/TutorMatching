@@ -16,7 +16,7 @@ public sealed class AuthController(RegisterAccountHandler registerHandler,
     [HttpPost("login", Name = "login")]
     [AllowAnonymous]
     [Consumes("application/json")]
-    [ProducesResponseType(typeof(AccountResponse), 200, "application/json")]
+    [ProducesResponseType(typeof(LoginResponse), 200, "application/json")]
     [ProducesResponseType(typeof(ProblemDetails), 400, "application/problem+json")]
     [ProducesResponseType(typeof(ProblemDetails), 401, "application/problem+json")]
     [ProducesResponseType(typeof(ProblemDetails), 403, "application/problem+json")]
@@ -30,8 +30,9 @@ public sealed class AuthController(RegisterAccountHandler registerHandler,
         var account = result.Account!;
         var grant = await tokens.CreateAsync(account.Id, cancellationToken);
         if (grant is null) return InvalidSession();
-        cookies.Issue(HttpContext, grant);
-        return Ok(new AccountResponse(account.Id, account.Email, account.FullName, account.Role, account.Status));
+        var accessToken = cookies.Issue(HttpContext, grant);
+        return Ok(new LoginResponse(account.Id, account.Email, account.FullName, account.Role, account.Status,
+            accessToken, grant.RefreshToken, account.AvatarUrl));
     }
 
     [HttpPost("refresh", Name = "refreshSession")]

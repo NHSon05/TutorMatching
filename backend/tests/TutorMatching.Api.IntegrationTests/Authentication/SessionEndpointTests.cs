@@ -81,12 +81,21 @@ public sealed class SessionEndpointTests(PostgreSqlFixture fixture)
             .SingleAsync(s => s.Id == another.SessionId)).RevokedAt);
     }
 
-    [Fact]
-    public async Task LoginCreatesPrivateSessionAndLogoutRevokesCopiedCookie()
+    [Theory]
+    [InlineData(null)]
+    [InlineData("https://example.com/avatar.png")]
+    public async Task LoginReturnsTokensAndAvatarAndLogoutRevokesCopiedCookie(string? avatarUrl)
     {
         await using var factory = await fixture.CreateFactoryAsync();
         using var client = factory.CreateApiClient();
         await Register(client);
+        await using (var scope = factory.Services.CreateAsyncScope())
+        {
+            var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+            var user = await db.Users.SingleAsync();
+            user.AvatarUrl = avatarUrl;
+            await db.SaveChangesAsync();
+        }
         using var login = await Post(client, "login", new { email = "session@example.com", password = "password" });
         Assert.Equal(HttpStatusCode.OK, login.StatusCode);
         var cookie = login.Headers.GetValues("Set-Cookie").Single(x => x.StartsWith("accessToken="));
@@ -94,9 +103,20 @@ public sealed class SessionEndpointTests(PostgreSqlFixture fixture)
         Assert.Contains("httponly", refreshCookie);
         Assert.Contains("secure", refreshCookie);
         Assert.Contains("path=/api/v1/auth", refreshCookie);
-        var body = await login.Content.ReadAsStringAsync();
-        Assert.DoesNotContain("accessToken", body);
-        Assert.DoesNotContain("refreshToken", body);
+        var body = await login.Content.ReadFromJsonAsync<System.Text.Json.JsonElement>();
+        var accessToken = body.GetProperty("accessToken").GetString();
+        var refreshToken = body.GetProperty("refreshToken").GetString();
+        Assert.False(string.IsNullOrWhiteSpace(accessToken));
+        Assert.False(string.IsNullOrWhiteSpace(refreshToken));
+        Assert.Equal($"accessToken={accessToken}", cookie.Split(';')[0]);
+        Assert.Equal($"refreshToken={refreshToken}", refreshCookie.Split(';')[0]);
+        Assert.Equal(avatarUrl, body.GetProperty("avatarUrl").GetString());
+        Assert.Equal("session@example.com", body.GetProperty("email").GetString());
+        Assert.Equal("Session User", body.GetProperty("fullName").GetString());
+        Assert.Equal("LEARNER", body.GetProperty("role").GetString());
+        Assert.Equal("ACTIVE", body.GetProperty("status").GetString());
+        Assert.NotEqual(Guid.Empty, body.GetProperty("id").GetGuid());
+        Assert.True(login.Headers.CacheControl?.NoStore);
         Assert.Contains("httponly", cookie);
         Assert.Contains("secure", cookie);
         using var me = await client.GetAsync("/api/v1/users/me");
