@@ -7,7 +7,7 @@ import { TextField } from "@/components/ui/text-field";
 import { Button } from "@/components/ui/button";
 import Logo from "@assets/logo/Logo";
 import type { UserRole } from "@/types";
-import { login } from "@/lib/auth/session";
+import { useLogin } from "@/hooks/use-auth";
 import type { LoginCardProps } from "./LoginCard.types";
 
 export type * from "./LoginCard.types";
@@ -19,7 +19,7 @@ export default function LoginCard({ className = "", onSuccess }: LoginCardProps 
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const { mutateAsync: login, isPending: isSubmitting, reset } = useLogin();
 
   const navigateToWorkspace = (role: UserRole) => {
     onSuccess?.(role);
@@ -29,7 +29,7 @@ export default function LoginCard({ className = "", onSuccess }: LoginCardProps 
     } else if (role === "TUTOR") {
       router.push("/tutor/dashboard");
     } else {
-      router.push("/learner/dashboard");
+      router.push("/");
     }
   };
 
@@ -42,14 +42,13 @@ export default function LoginCard({ className = "", onSuccess }: LoginCardProps 
     }
     setErrorMsg("");
 
-    setIsSubmitting(true);
     try {
-      const account = await login(email, password);
+      const account = await login({ email, password });
       navigateToWorkspace(account.role);
     } catch {
       setErrorMsg("Không thể đăng nhập. Kiểm tra thông tin hoặc thử lại sau.");
     } finally {
-      setIsSubmitting(false);
+      reset();
     }
   };
 
@@ -172,7 +171,7 @@ export default function LoginCard({ className = "", onSuccess }: LoginCardProps 
                 type="checkbox"
                 checked={false}
                 disabled
-                className="w-4 h-4 rounded text-blue-600 border-gray-300 focus:ring-blue-500 cursor-pointer"
+                className="w-4 h-4 rounded text-brand border-gray-300 focus:ring-blue-500 cursor-pointer"
               />
               <span className="text-sm sm:text-base">Phiên đăng nhập tạm thời</span>
             </label>
@@ -182,7 +181,7 @@ export default function LoginCard({ className = "", onSuccess }: LoginCardProps 
                 e.preventDefault();
                 alert("Vui lòng liên hệ quản trị viên hoặc sử dụng đăng nhập Google để truy cập.");
               }}
-              className="text-[#2563eb] font-semibold hover:underline text-sm sm:text-base"
+              className="text-brand font-semibold hover:underline text-sm sm:text-base"
             >
               Quên mật khẩu?
             </Link>

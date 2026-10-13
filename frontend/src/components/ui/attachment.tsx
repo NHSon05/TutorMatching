@@ -32,7 +32,7 @@ function getFileTypeIcon(type: AttachmentType) {
       );
     case "doc":
       return (
-        <span className="w-8 h-8 rounded-lg bg-blue-50 text-blue-600 dark:bg-blue-950/40 dark:text-blue-400 flex items-center justify-center font-bold text-[10px] shrink-0 border border-blue-100 dark:border-blue-900/40">
+        <span className="w-8 h-8 rounded-lg bg-blue-50 text-brand dark:bg-blue-950/40 dark:text-blue-400 flex items-center justify-center font-bold text-[10px] shrink-0 border border-blue-100 dark:border-blue-900/40">
           DOC
         </span>
       );

@@ -1,4 +1,5 @@
 import { afterEach, beforeEach, expect, it, vi } from "vitest";
+import { fetchTransport } from "./http-test-transport";
 
 const csrf = { headerName: "X-CSRF-TOKEN", requestToken: "fresh-csrf" };
 const account = { id: "user", role: "LEARNER" };
@@ -10,7 +11,7 @@ beforeEach(() => {
   fetchMock.mockReset();
   lock.mockClear();
   lock.mockImplementation(async (_name, callback) => callback());
-  vi.stubGlobal("fetch", fetchMock);
+  vi.stubGlobal("fetch", fetchTransport(fetchMock));
   vi.stubGlobal("navigator", { locks: { request: lock } });
 });
 afterEach(() => { vi.unstubAllGlobals(); vi.restoreAllMocks(); });
@@ -24,7 +25,7 @@ it("refreshes an expired access token using CSRF and retries the session", async
   const { getSession } = await import("@/lib/auth/session");
   await expect(getSession()).resolves.toEqual(account);
   expect(fetchMock).toHaveBeenNthCalledWith(4, expect.stringContaining("/auth/refresh"), expect.objectContaining({
-    credentials: "include", method: "POST", headers: { "X-CSRF-TOKEN": "fresh-csrf" },
+    credentials: "include", method: "POST", headers: expect.objectContaining({ "x-csrf-token": "fresh-csrf" }),
   }));
 });
 
@@ -79,7 +80,7 @@ it("allows retry after a network failure without ending the session", async () =
     .mockResolvedValueOnce(Response.json(csrf))
     .mockRejectedValueOnce(new TypeError("Network unavailable"));
   const { getSession } = await import("@/lib/auth/session");
-  await expect(getSession()).rejects.toThrow("Network unavailable");
+  await expect(getSession()).rejects.toMatchObject({ cause: expect.objectContaining({ message: "Network unavailable" }) });
   expect(ended).not.toHaveBeenCalled();
   fetchMock.mockResolvedValueOnce(new Response(null, { status: 401 }))
     .mockResolvedValueOnce(new Response(null, { status: 401 }))

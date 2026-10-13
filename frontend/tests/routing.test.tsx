@@ -1,32 +1,68 @@
-import { render, screen } from "@testing-library/react";
-import { describe, it, expect, vi } from "vitest";
-import LandingPage from "../src/app/(public)/page";
+import { screen, waitFor } from "@testing-library/react";
+import { render } from "./query-wrapper";
+import { describe, it, expect, vi, beforeEach } from "vitest";
+import HomePage from "../src/app/(public)/page";
 import TutorsPage from "../src/app/(public)/tutors/page";
 import LoginPage from "../src/app/(public)/login/page";
 import RegisterPage from "../src/app/(public)/register/page";
 import SelectRolePage from "../src/app/(public)/select-role/page";
-import LearnerDashboardPage from "../src/app/(learner)/learner/dashboard/page";
+import LegacyLearnerDashboardRedirect from "../src/app/(public)/learner/dashboard/page";
 import TutorDashboardPage from "../src/app/(tutor)/tutor/dashboard/page";
 import AdminDashboardPage from "../src/app/(admin)/admin/dashboard/page";
-import MessagesPage from "../src/app/(shared)/messages/page";
-import LearnerLayout from "../src/app/(learner)/learner/layout";
+import MessagesPage from "../src/app/(public)/messages/page";
+import SettingsPage from "../src/app/(public)/settings/page";
+import { LearnerShell } from "../src/components/layouts/LearnerShell";
+import { SiteShell } from "../src/components/layouts/SiteShell";
+import { getSession } from "@/lib/auth/session";
+import { useAuthStore } from "@/stores/use-auth-store";
 
 // Mock next/navigation
-const { router } = vi.hoisted(() => ({ router: { push: vi.fn(), replace: vi.fn() } }));
-vi.mock("@/lib/auth/session", () => ({
-  getSession: vi.fn().mockResolvedValue({ id: "test", fullName: "Signed-in learner", role: "LEARNER", status: "ACTIVE" }),
-  logout: vi.fn(),
+const { router, route } = vi.hoisted(() => ({
+  router: { push: vi.fn(), replace: vi.fn() },
+  route: { path: "/" },
 }));
+
+vi.mock("@/lib/auth/session", () => ({
+  getSession: vi.fn(),
+  logout: vi.fn(),
+  login: vi.fn(),
+}));
+
 vi.mock("next/navigation", () => ({
-  usePathname: () => "/",
+  usePathname: () => route.path,
   useRouter: () => router,
 }));
 
 describe("TutorMatching Routing & Role Architecture", () => {
-  it("renders Public Landing page with hero CTA", () => {
-    render(<LandingPage />);
+  beforeEach(() => {
+    vi.resetAllMocks();
+    useAuthStore.getState().clearAuth();
+    route.path = "/";
+    vi.mocked(getSession).mockResolvedValue(null);
+  });
+
+  it("renders Public Landing page on / with hero CTA when unauthenticated (guest)", async () => {
+    vi.mocked(getSession).mockResolvedValue(null);
+    const page = await HomePage();
+    render(page);
     expect(screen.getByText(/Kiến tạo tương lai/i)).toBeInTheDocument();
     expect(screen.getByText("Đăng ký ngay")).toBeInTheDocument();
+  });
+
+  it("renders Learner Dashboard on / when authenticated as LEARNER", async () => {
+    vi.mocked(getSession).mockResolvedValue({
+      id: "test",
+      fullName: "Signed-in learner",
+      email: "learner@example.com",
+      role: "LEARNER",
+      status: "ACTIVE",
+    });
+    const page = await HomePage();
+    render(page);
+    expect(await screen.findByText("Welcome back, Esther!")).toBeInTheDocument();
+    expect(screen.getByText("Your Courses")).toBeInTheDocument();
+    expect(screen.getByText("My Schedule")).toBeInTheDocument();
+    expect(screen.getByText("Homework progress")).toBeInTheDocument();
   });
 
   it("renders Public Tutors list page", () => {
@@ -42,6 +78,34 @@ describe("TutorMatching Routing & Role Architecture", () => {
     expect(screen.getByText("Mật khẩu")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Đăng nhập" })).toBeInTheDocument();
     expect(screen.getByText("Chưa có tài khoản?")).toBeInTheDocument();
+  });
+
+  it("blocks authenticated user from /login and redirects to their workspace", async () => {
+    vi.mocked(getSession).mockResolvedValue({
+      id: "learner-test",
+      fullName: "Learner",
+      email: "l@example.com",
+      role: "LEARNER",
+      status: "ACTIVE",
+    });
+
+    render(<LoginPage />);
+    await waitFor(() => expect(router.replace).toHaveBeenCalledWith("/"));
+    expect(screen.queryByRole("heading", { name: "Đăng Nhập" })).not.toBeInTheDocument();
+  });
+
+  it("blocks authenticated tutor from /login and redirects to /tutor/dashboard", async () => {
+    vi.mocked(getSession).mockResolvedValue({
+      id: "tutor-test",
+      fullName: "Tutor",
+      email: "t@example.com",
+      role: "TUTOR",
+      status: "ACTIVE",
+    });
+
+    render(<LoginPage />);
+    await waitFor(() => expect(router.replace).toHaveBeenCalledWith("/tutor/dashboard"));
+    expect(screen.queryByRole("heading", { name: "Đăng Nhập" })).not.toBeInTheDocument();
   });
 
   it("renders Public Register page with 6 standardized fields", () => {
@@ -80,13 +144,9 @@ describe("TutorMatching Routing & Role Architecture", () => {
     expect(screen.getByRole("button", { name: "Quay lại" })).toBeInTheDocument();
   });
 
-  it("renders Learner Dashboard", async () => {
-    const page = await LearnerDashboardPage();
-    render(page);
-    expect(screen.getByText("Welcome back, Esther!")).toBeInTheDocument();
-    expect(screen.getByText("Your Courses")).toBeInTheDocument();
-    expect(screen.getByText("My Schedule")).toBeInTheDocument();
-    expect(screen.getByText("Homework progress")).toBeInTheDocument();
+  it("redirects legacy /learner/dashboard to /", () => {
+    render(<LegacyLearnerDashboardRedirect />);
+    expect(router.replace).toHaveBeenCalledWith("/");
   });
 
   it("renders Tutor Dashboard", () => {
@@ -107,21 +167,70 @@ describe("TutorMatching Routing & Role Architecture", () => {
     expect(screen.getAllByText("Lê Phương Diệu").length).toBeGreaterThan(0);
   });
 
-  it("renders Learner Layout with TopNavigation and side NavigationRail", async () => {
+  it("renders Settings page", () => {
+    render(<SettingsPage />);
+    expect(screen.getByText("Cài Đặt Tài Khoản")).toBeInTheDocument();
+  });
+
+  it("renders Learner Shell with persistent NavigationRail and TopBar", () => {
     render(
-      <LearnerLayout>
+      <LearnerShell
+        account={{
+          id: "1",
+          fullName: "Nguyễn Hồng Sơn",
+          email: "learner@example.com",
+          role: "LEARNER",
+          status: "ACTIVE",
+        }}
+      >
         <div data-testid="learner-content">Nội dung trang học viên</div>
-      </LearnerLayout>
+      </LearnerShell>
     );
 
-    expect(await screen.findByText("TutorMatch")).toBeInTheDocument();
+    expect(screen.getByText("TutorMatch")).toBeInTheDocument();
     expect(screen.getByText("Trang chủ")).toBeInTheDocument();
     expect(screen.getByText("Gia sư của tôi")).toBeInTheDocument();
     expect(screen.getByText("Lịch học")).toBeInTheDocument();
     expect(screen.getByText("Tin nhắn")).toBeInTheDocument();
     expect(screen.getByText("Tìm gia sư")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Đăng xuất" })).toBeInTheDocument();
     expect(screen.getByText("Nguyễn Hồng Sơn")).toBeInTheDocument();
     expect(screen.getByText("Thành viên")).toBeInTheDocument();
     expect(screen.getByTestId("learner-content")).toBeInTheDocument();
+  });
+
+  it("renders LearnerShell inside SiteShell when logged in as LEARNER on /tutors", async () => {
+    route.path = "/tutors";
+    vi.mocked(getSession).mockResolvedValue({
+      id: "1",
+      fullName: "Nguyễn Hồng Sơn",
+      email: "learner@example.com",
+      role: "LEARNER",
+      status: "ACTIVE",
+    });
+    render(
+      <SiteShell>
+        <div data-testid="tutors-content">Danh sách gia sư</div>
+      </SiteShell>
+    );
+
+    expect(await screen.findByRole("button", { name: "Đăng xuất" })).toBeInTheDocument();
+    expect(screen.getByText("TutorMatch")).toBeInTheDocument();
+    expect(screen.getByText("Trang chủ")).toBeInTheDocument();
+    expect(screen.getByTestId("tutors-content")).toBeInTheDocument();
+  });
+
+  it("renders PublicNavbar/Footer inside SiteShell when guest on /tutors", async () => {
+    route.path = "/tutors";
+    vi.mocked(getSession).mockResolvedValue(null);
+    render(
+      <SiteShell>
+        <div data-testid="tutors-content">Danh sách gia sư</div>
+      </SiteShell>
+    );
+
+    expect(await screen.findByRole("banner")).toBeInTheDocument();
+    expect(screen.getByRole("contentinfo")).toBeInTheDocument();
+    expect(screen.getByTestId("tutors-content")).toBeInTheDocument();
   });
 });

@@ -14,7 +14,7 @@ export default function LandingView() {
       <div className="bg-linear-to-r from-blue-50 via-sky-50 to-indigo-50 border-b border-blue-100/80 py-2.5 px-4 text-center shrink-0">
         <div className="max-w-7xl mx-auto flex items-center justify-center gap-3 text-xs sm:text-sm text-gray-700">
           <span className="inline-flex items-center gap-1.5 font-semibold text-blue-700">
-            <span className="w-2 h-2 rounded-full bg-blue-600 animate-pulse" />
+            <span className="w-2 h-2 rounded-full bg-brand animate-pulse" />
             Kiến tạo tương lai thông qua giáo dục
           </span>
           <span className="hidden md:inline text-gray-400">•</span>
@@ -23,7 +23,7 @@ export default function LandingView() {
           </span>
           <Link
             href="/tutors"
-            className="ml-2 inline-flex items-center justify-center px-4 py-1 text-xs font-semibold text-white bg-blue-600 hover:bg-blue-700 rounded-full transition shadow-xs"
+            className="ml-2 inline-flex items-center justify-center px-4 py-1 text-xs font-semibold text-white bg-brand hover:bg-blue-700 rounded-full transition shadow-xs"
           >
             Đăng ký ngay
           </Link>
@@ -47,7 +47,7 @@ export default function LandingView() {
               </h2>
 
               {/* Thẻ Gia sư tông màu xanh Brand */}
-              <div className="relative w-full max-w-70 sm:max-w-[320px] aspect-4/5 rounded-3xl overflow-hidden bg-linear-to-br from-blue-600 to-blue-700 p-4 flex flex-col justify-end shadow-lg shadow-blue-500/15 transition-transform hover:-translate-y-1">
+              <div className="relative w-full max-w-70 sm:max-w-[320px] aspect-4/5 rounded-3xl overflow-hidden bg-linear-to-br from-brand to-blue-700 p-4 flex flex-col justify-end shadow-lg shadow-blue-500/15 transition-transform hover:-translate-y-1">
                 {/* Ảnh gia sư */}
                 <div className="absolute inset-0 flex items-center justify-center">
                   <Image
@@ -135,7 +135,7 @@ export default function LandingView() {
                     <div className="flex items-center gap-1.5 mt-0.5">
                       <span className="text-[10px] text-gray-500 font-medium">Học sinh tích cực</span>
                       <span className="text-gray-300">•</span>
-                      <span className="text-[10px] font-bold text-blue-600">Điểm số 90+</span>
+                      <span className="text-[10px] font-bold text-brand">Điểm số 90+</span>
                     </div>
                   </div>
                 </div>
@@ -172,10 +172,10 @@ export default function LandingView() {
             {/* Huy hiệu tròn ghép nối đặt tại trung tâm */}
             <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-auto">
               <div
-                className="w-13 h-13 rounded-full bg-white shadow-xl border border-blue-100 flex items-center justify-center text-blue-600 hover:scale-110 transition-transform cursor-pointer"
+                className="w-13 h-13 rounded-full bg-white shadow-xl border border-blue-100 flex items-center justify-center text-brand hover:scale-110 transition-transform cursor-pointer"
                 title="Ghép nối gia sư và học sinh phù hợp"
               >
-                <svg className="w-5 h-5 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <svg className="w-5 h-5 text-brand" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.2} d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
                 </svg>
               </div>
@@ -223,7 +223,7 @@ export default function LandingView() {
                     </svg>
                   </div>
                   <div className="text-left pt-1">
-                    <h3 className="text-base font-bold text-gray-900 group-hover:text-blue-600 transition-colors">
+                    <h3 className="text-base font-bold text-gray-900 group-hover:text-brand transition-colors">
                       Bước 1: Duyệt gia sư
                     </h3>
                     <p className="text-sm text-gray-900 leading-relaxed mt-1">
@@ -241,7 +241,7 @@ export default function LandingView() {
                     </svg>
                   </div>
                   <div className="text-left pt-1">
-                    <h3 className="text-base font-bold text-gray-900 group-hover:text-blue-600 transition-colors">
+                    <h3 className="text-base font-bold text-gray-900 group-hover:text-brand transition-colors">
                       Bước 2: Gửi yêu cầu mời dạy
                     </h3>
                     <p className="text-sm text-gray-900 leading-relaxed mt-1">
@@ -254,13 +254,13 @@ export default function LandingView() {
 
                 {/* Bước 3: Thương lượng */}
                 <div className="flex items-start gap-4 sm:gap-5 group">
-                  <div className="w-12 h-12 rounded-full text-blue-600 border border-blue-100 flex items-center justify-center shrink-0 shadow-xs z-10 bg-white">
-                    <svg className="w-5 h-5 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <div className="w-12 h-12 rounded-full text-brand border border-blue-100 flex items-center justify-center shrink-0 shadow-xs z-10 bg-white">
+                    <svg className="w-5 h-5 text-brand" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" />
                     </svg>
                   </div>
                   <div className="text-left pt-1">
-                    <h3 className="text-base font-bold text-gray-900 group-hover:text-blue-600 transition-colors">
+                    <h3 className="text-base font-bold text-gray-900 group-hover:text-brand transition-colors">
                       Bước 3: Thương lượng & thống nhất
                     </h3>
                     <p className="text-sm text-gray-900 leading-relaxed mt-1">
@@ -276,7 +276,7 @@ export default function LandingView() {
                     </svg>
                   </div>
                   <div className="text-left pt-1">
-                    <h3 className="text-base font-bold text-gray-900 group-hover:text-blue-600 transition-colors">
+                    <h3 className="text-base font-bold text-gray-900 group-hover:text-brand transition-colors">
                       Bước 4: Bắt đầu đồng hành
                     </h3>
                     <p className="text-sm text-gray-900 leading-relaxed mt-1">
@@ -338,7 +338,7 @@ export default function LandingView() {
                         <span className="text-[9px] text-gray-600 font-medium">T3</span>
                       </div>
                       <div className="flex flex-col items-center gap-1.5 flex-1">
-                        <div className="w-full max-w-3.5 bg-blue-600 rounded-full h-24" />
+                        <div className="w-full max-w-3.5 bg-brand rounded-full h-24" />
                         <span className="text-[9px] text-gray-600 font-medium">T4</span>
                       </div>
                       <div className="flex flex-col items-center gap-1.5 flex-1">
@@ -362,7 +362,7 @@ export default function LandingView() {
 
                   {/* Thẻ Trung bình mỗi ngày */}
                   <div className="bg-white rounded-2xl p-3 border border-gray-100 shadow-2xs flex items-center gap-3">
-                    <div className="w-9 h-9 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center shrink-0">
+                    <div className="w-9 h-9 rounded-xl bg-blue-50 text-brand flex items-center justify-center shrink-0">
                       <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253" />
                       </svg>
@@ -375,7 +375,7 @@ export default function LandingView() {
 
                   {/* Thẻ Thời gian học hôm nay */}
                   <div className="bg-white rounded-2xl p-3 border border-gray-100 shadow-2xs flex items-center gap-3">
-                    <div className="w-9 h-9 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center shrink-0">
+                    <div className="w-9 h-9 rounded-xl bg-blue-50 text-brand flex items-center justify-center shrink-0">
                       <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                       </svg>
@@ -397,7 +397,7 @@ export default function LandingView() {
                         <div className="text-[9px] text-gray-600">Tuần 1 • 10 Nhiệm vụ</div>
                       </div>
                     </div>
-                    <span className="w-2.5 h-2.5 rounded-full bg-blue-600 animate-pulse" />
+                    <span className="w-2.5 h-2.5 rounded-full bg-brand animate-pulse" />
                   </div>
 
                 </div>
@@ -411,7 +411,7 @@ export default function LandingView() {
                   onClick={() => setActiveTab("todo")}
                   className={`px-4 py-1.5 rounded-lg text-xs font-semibold transition ${
                     activeTab === "todo"
-                      ? "bg-blue-600 text-white shadow-xs"
+                      ? "bg-brand text-white shadow-xs"
                       : "bg-white text-gray-600 border border-gray-200 hover:bg-gray-50"
                   }`}
                 >
@@ -422,7 +422,7 @@ export default function LandingView() {
                   onClick={() => setActiveTab("inprogress")}
                   className={`px-4 py-1.5 rounded-lg text-xs font-semibold transition ${
                     activeTab === "inprogress"
-                      ? "bg-blue-600 text-white shadow-xs"
+                      ? "bg-brand text-white shadow-xs"
                       : "bg-white text-gray-600 border border-gray-200 hover:bg-gray-50"
                   }`}
                 >
@@ -433,7 +433,7 @@ export default function LandingView() {
                   onClick={() => setActiveTab("completed")}
                   className={`px-4 py-1.5 rounded-lg text-xs font-semibold transition ${
                     activeTab === "completed"
-                      ? "bg-blue-600 text-white shadow-xs"
+                      ? "bg-brand text-white shadow-xs"
                       : "bg-white text-gray-600 border border-gray-200 hover:bg-gray-50"
                   }`}
                 >
@@ -444,7 +444,7 @@ export default function LandingView() {
                   onClick={() => setActiveTab("archive")}
                   className={`px-4 py-1.5 rounded-lg text-xs font-semibold transition ${
                     activeTab === "archive"
-                      ? "bg-blue-600 text-white shadow-xs"
+                      ? "bg-brand text-white shadow-xs"
                       : "bg-white text-gray-600 border border-gray-200 hover:bg-gray-50"
                   }`}
                 >
@@ -522,7 +522,7 @@ export default function LandingView() {
                       <div className="w-6 h-6 rounded-full bg-amber-200 border-2 border-white overflow-hidden">
                         <img src="https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?auto=format&fit=crop&w=100&q=80" alt="avatar" className="w-full h-full object-cover" />
                       </div>
-                      <div className="w-6 h-6 rounded-full bg-blue-600 text-white border-2 border-white text-[9px] font-bold flex items-center justify-center">
+                      <div className="w-6 h-6 rounded-full bg-brand text-white border-2 border-white text-[9px] font-bold flex items-center justify-center">
                         23
                       </div>
                     </div>

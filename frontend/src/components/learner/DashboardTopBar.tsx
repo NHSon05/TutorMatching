@@ -4,6 +4,7 @@ import * as React from "react";
 import Image from "next/image";
 import { TextField } from "../ui";
 import type { DashboardTopBarProps, DashboardUser } from "./types";
+import { LogoutButton } from "../LogoutButton";
 
 export type * from "./types";
 
@@ -37,7 +38,7 @@ export function DashboardTopBar({ user = DEFAULT_USER }: DashboardTopBarProps) {
         <div
           role="button"
           tabIndex={0}
-          className="bg-linear-to-r from-cyan-500 to-blue-500 hover:bg-brand text-white text-xs font-semibold px-3 py-2 rounded-full flex items-center gap-1.5 shadow-2xs transition-colors cursor-pointer select-none"
+          className="bg-brand hover:bg-brand text-white text-xs font-semibold px-3 py-2 rounded-full flex items-center gap-1.5 shadow-2xs transition-colors cursor-pointer select-none"
         >
           <span className="w-2 h-2 rounded-full bg-white animate-pulse" />
           <span>Thành viên</span>
@@ -101,6 +102,7 @@ export function DashboardTopBar({ user = DEFAULT_USER }: DashboardTopBarProps) {
             className="object-cover"
           />
         </div>
+        <LogoutButton/>
       </div>
     </div>
   );

@@ -1,10 +1,7 @@
 "use client";
 
+import Link from "next/link";
 import * as React from "react";
-
-// ============================================================================
-// CONTEXT
-// ============================================================================
 
 interface NavigationRailContextValue {
   mode: "expanded" | "collapsed";
@@ -150,7 +147,7 @@ const badgeColorMap: Record<NavItemBadgeColor, { primary: string; secondary: str
     secondary: "bg-cyan-100 text-cyan-800 dark:bg-cyan-950/40 dark:text-cyan-300",
   },
   blue: {
-    primary: "bg-blue-600 text-white dark:bg-blue-500",
+    primary: "bg-brand text-white dark:bg-blue-500",
     secondary: "bg-blue-100 text-blue-800 dark:bg-blue-950/40 dark:text-blue-300",
   },
   indigo: {
@@ -417,9 +414,9 @@ export function NavItem({
 
   if (href && !disabled) {
     return (
-      <a href={href} className="block w-full no-underline">
+      <Link href={href} className="block w-full no-underline">
         {itemContent}
-      </a>
+      </Link>
     );
   }
 

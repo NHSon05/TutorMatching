@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import SelectRoleCard from "@/components/auth/SelectRoleCard";
+import { GuestGuard } from "@/components/GuestGuard";
 
 export const metadata: Metadata = {
   title: "Chọn vai trò - TutorMatching",
@@ -7,5 +8,9 @@ export const metadata: Metadata = {
 };
 
 export default function SelectRolePage() {
-  return <SelectRoleCard />;
+  return (
+    <GuestGuard>
+      <SelectRoleCard />
+    </GuestGuard>
+  );
 }

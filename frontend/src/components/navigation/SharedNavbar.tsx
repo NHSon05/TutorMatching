@@ -46,7 +46,7 @@ export default function SharedNavbar() {
 
         <div className="flex items-center gap-4">
           <Link
-            href="/learner/dashboard"
+            href="/"
             className="text-xs text-gray-500 hover:text-gray-800"
           >
             ← Về Dashboard

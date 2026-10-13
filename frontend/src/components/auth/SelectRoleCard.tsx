@@ -32,7 +32,7 @@ export default function SelectRoleCard({ className = "", onRoleSelected }: Selec
       if (userRole === "TUTOR") {
         router.push("/tutor/dashboard");
       } else {
-        router.push("/learner/dashboard");
+        router.push("/");
       }
     }, 300);
   };
@@ -69,8 +69,8 @@ export default function SelectRoleCard({ className = "", onRoleSelected }: Selec
                 onClick={() => setSelectedRole(role.id)}
                 className={`relative border-2 cursor-pointer transition-all duration-200 flex flex-col justify-between ${
                   isSelected
-                    ? "!border-blue-600 bg-blue-50/50 shadow-md ring-2 ring-blue-600/20"
-                    : "!border-gray-200 bg-white hover:!border-gray-300 hover:shadow-sm"
+                    ? "border-brand! bg-blue-50/50 shadow-md ring-2 ring-brand/20"
+                    : "border-gray-200! bg-white hover:border-gray-300! hover:shadow-sm"
                 }`}
               >
                 {/* Active Indicator Radio */}
@@ -78,7 +78,7 @@ export default function SelectRoleCard({ className = "", onRoleSelected }: Selec
                   <span className="text-4xl">{role.icon}</span>
                   <div
                     className={`w-5 h-5 rounded-full border-2 flex items-center justify-center transition-colors ${
-                      isSelected ? "border-blue-600 bg-blue-600" : "border-gray-300 bg-white"
+                      isSelected ? "border-brand bg-brand" : "border-gray-300 bg-white"
                     }`}
                   >
                     {isSelected && <div className="w-2 h-2 rounded-full bg-white" />}
@@ -100,7 +100,7 @@ export default function SelectRoleCard({ className = "", onRoleSelected }: Selec
                   <ul className="space-y-2 border-t border-gray-100 pt-3">
                     {role.highlights.map((item, idx) => (
                       <li key={idx} className="flex items-center gap-2 text-sm text-gray-700">
-                        <svg className="w-4 h-4 text-blue-600 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <svg className="w-4 h-4 text-brand shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M5 13l4 4L19 7" />
                         </svg>
                         <span>{item}</span>
@@ -117,7 +117,7 @@ export default function SelectRoleCard({ className = "", onRoleSelected }: Selec
         <div className="border-t border-gray-100 pt-6 flex flex-col sm:flex-row items-center justify-between gap-4">
           <p className="text-base text-gray-600 text-center sm:text-left">
             Vai trò đã chọn:{" "}
-            <strong className="text-blue-600 font-semibold">
+            <strong className="text-brand font-semibold">
               {ROLE_CARD_OPTIONS.find((r) => r.id === selectedRole)?.title}
             </strong>
           </p>

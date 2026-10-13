@@ -35,7 +35,7 @@ export default function TutorDashboardPage() {
           <span className="text-xs font-semibold text-gray-500 uppercase">
             Lời mời dạy mới
           </span>
-          <p className="text-3xl font-extrabold text-blue-600 mt-2">2</p>
+          <p className="text-3xl font-extrabold text-brand mt-2">2</p>
           <span className="text-xs text-gray-500 mt-1 block">Chờ phản hồi trong 24h</span>
         </div>
 

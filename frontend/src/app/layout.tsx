@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import { QueryProvider } from "@/providers/query-provider";
 
 export const metadata: Metadata = {
   title: "TutorMatching",
@@ -13,7 +14,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="vi" className="h-full antialiased font-sans">
-      <body className="min-h-full flex flex-col font-sans">{children}</body>
+      <body className="min-h-full flex flex-col font-sans"><QueryProvider>{children}</QueryProvider></body>
     </html>
   );
 }

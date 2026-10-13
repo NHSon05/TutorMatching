@@ -1,31 +1,46 @@
-import { API_BASE_URL, getCsrfToken, throwApiProblem, type AccountResponse } from "@/lib/api/auth";
-import { authenticatedFetch } from "@/lib/auth/authenticated-fetch";
+import type { AccountResponse } from "@/lib/api/auth";
+import { ApiError, http } from "@/lib/api/http";
 
-export async function login(email: string, password: string): Promise<AccountResponse> {
-  const csrf = await getCsrfToken();
-  const response = await fetch(`${API_BASE_URL}/auth/login`, {
-    method: "POST", credentials: "include", cache: "no-store",
-    headers: { "Content-Type": "application/json", [csrf.headerName]: csrf.requestToken },
-    body: JSON.stringify({ email: email.trim(), password }),
-  });
-  if (!response.ok) return throwApiProblem(response);
-  return response.json();
+function syncRoleCookie(role: string | null) {
+  if (typeof document === "undefined") return;
+  try {
+    if (role) {
+      document.cookie = `tm_role=${encodeURIComponent(role)}; path=/; max-age=604800; samesite=lax`;
+    } else {
+      document.cookie = "tm_role=; path=/; max-age=0; samesite=lax";
+    }
+  } catch {
+    // Ignore in non-browser or strict sandbox environments
+  }
 }
 
-export async function getSession(): Promise<AccountResponse | null> {
-  const response = await authenticatedFetch(() => fetch(`${API_BASE_URL}/users/me`, {
-    credentials: "include", cache: "no-store",
-  }));
-  if (response.status === 401) return null;
-  if (!response.ok) return throwApiProblem(response);
-  return response.json();
+export async function login(email: string, password: string): Promise<AccountResponse> {
+  const { data } = await http.post<AccountResponse>("/auth/login", { email: email.trim(), password });
+  syncRoleCookie(data?.role ?? null);
+  return data;
+}
+
+export async function getSession(signal?: AbortSignal): Promise<AccountResponse | null> {
+  try {
+    const { data } = await http.get<AccountResponse>("/users/me", { signal });
+    syncRoleCookie(data?.role ?? null);
+    return data;
+  } catch (error) {
+    if (error instanceof ApiError && error.status === 401 && error.path === "/users/me") {
+      syncRoleCookie(null);
+      return null;
+    }
+    throw error;
+  }
 }
 
 export async function logout(): Promise<void> {
-  const csrf = await getCsrfToken();
-  const response = await fetch(`${API_BASE_URL}/auth/logout`, {
-    method: "POST", credentials: "include", headers: { [csrf.headerName]: csrf.requestToken },
-  });
-  if (!response.ok && response.status !== 401) return throwApiProblem(response);
+  try {
+    await http.post("/auth/logout");
+  } catch (error) {
+    if (!(error instanceof ApiError && error.status === 401 && error.path === "/auth/logout")) throw error;
+  } finally {
+    syncRoleCookie(null);
+  }
   window.dispatchEvent(new Event("session-ended"));
 }

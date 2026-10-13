@@ -1,4 +1,5 @@
-import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { fireEvent, screen, waitFor } from "@testing-library/react";
+import { render } from "../query-wrapper";
 import { beforeEach, expect, it, vi } from "vitest";
 import LoginCard from "@/components/auth/LoginCard";
 import { login } from "@/lib/auth/session";
@@ -29,4 +30,10 @@ it("routes using the server role", async () => {
   submit();
   await waitFor(() => expect(push).toHaveBeenCalledWith("/tutor/dashboard"));
   expect(document.cookie).not.toContain("demo_token");
+});
+
+it("routes learner to / upon login", async () => {
+  vi.mocked(login).mockResolvedValue({ id: "id", email: "learner@example.com", fullName: "Learner", role: "LEARNER", status: "ACTIVE" });
+  submit();
+  await waitFor(() => expect(push).toHaveBeenCalledWith("/"));
 });

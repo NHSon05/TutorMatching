@@ -53,18 +53,8 @@ export default function TutorsListClient({ initialTutors }: TutorsListClientProp
   };
 
   return (
-    <div className="min-h-screen bg-[#f8fafc] py-10 px-4 sm:px-6 lg:px-8 font-sans">
+    <div className="min-h-screen bg-[#f8fafc]">
       <div className="max-w-7xl mx-auto">
-        
-        {/* ========================================================================= */}
-        {/* TOP DESCRIPTION SECTION (Khớp mẫu thiết kế)                               */}
-        {/* ========================================================================= */}
-        <div className="mb-6">
-          <p className="text-base text-gray-600 font-medium max-w-2xl leading-relaxed">
-            Tìm gia sư giỏi nhất cho bạn! Đội ngũ gia sư chất lượng cao sẽ đồng hành giúp bạn tìm ra giải pháp tối ưu cho việc học tập!
-          </p>
-        </div>
-
         {/* ========================================================================= */}
         {/* FLOATING FILTER BAR (Khớp card bo tròn trắng trong ảnh mẫu)               */}
         {/* ========================================================================= */}
@@ -175,7 +165,7 @@ export default function TutorsListClient({ initialTutors }: TutorsListClientProp
               <button
                 type="button"
                 onClick={handleSearchClick}
-                className="w-12 h-12 rounded-2xl bg-blue-50 text-blue-600 hover:bg-blue-600 hover:text-white transition-all flex items-center justify-center cursor-pointer shadow-sm group"
+                className="w-12 h-12 rounded-2xl bg-blue-50 text-brand hover:bg-brand hover:text-white transition-all flex items-center justify-center cursor-pointer shadow-sm group"
                 aria-label="Tìm kiếm gia sư"
               >
                 <svg
@@ -202,7 +192,7 @@ export default function TutorsListClient({ initialTutors }: TutorsListClientProp
         {/* ========================================================================= */}
         <div className="flex items-center justify-between mb-8">
           <div className="flex items-center gap-3">
-            <h1 className="text-2xl sm:text-3xl font-extrabold text-gray-900 tracking-tight">
+            <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 tracking-tight">
               Danh Sách Gia Sư
             </h1>
             <span className="text-xs font-bold text-gray-500 bg-gray-200/80 px-2.5 py-0.5 rounded-full">
@@ -212,16 +202,13 @@ export default function TutorsListClient({ initialTutors }: TutorsListClientProp
 
           <Button
             type="button"
-            variant="secondary"
+            variant="tertiary"
             shape="pill"
-            size="small"
+            size="medium"
             onClick={handleReset}
-            className="text-base font-semibold text-gray-700 hover:text-blue-600 flex items-center gap-1.5 px-4"
+            className="text-base font-semibold text-gray-700 hover:text-brand flex items-center gap-1.5 px-4"
           >
             <span>Xem tất cả</span>
-            <svg className="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M9 5l7 7-7 7" />
-            </svg>
           </Button>
         </div>
 
@@ -246,7 +233,7 @@ export default function TutorsListClient({ initialTutors }: TutorsListClientProp
                 key={tutor.id}
                 hoverable
                 padding="large"
-                className="!rounded-3xl border border-gray-100 bg-white shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col justify-between"
+                className="rounded-3xl! border border-gray-100 bg-white shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col justify-between"
               >
                 <div>
                   {/* Top: Avatar + Name & Subtitle */}
@@ -320,7 +307,7 @@ export default function TutorsListClient({ initialTutors }: TutorsListClientProp
                 {/* Bottom Footer: Price & CTA Button */}
                 <div className="pt-4 border-t border-gray-100 flex items-center justify-between gap-3">
                   <div>
-                    <span className="text-lg font-extrabold text-gray-900 block leading-tight">
+                    <span className="text-lg font-bold text-gray-900 block leading-tight">
                       {tutor.priceFormatted}
                     </span>
                     <span className="text-xs text-gray-400">
@@ -375,7 +362,7 @@ export default function TutorsListClient({ initialTutors }: TutorsListClientProp
                   <p className="text-base text-gray-500 font-medium">
                     {selectedTutor.title}
                   </p>
-                  <p className="text-sm text-blue-600 font-semibold mt-1">
+                  <p className="text-sm text-brand font-semibold mt-1">
                     {selectedTutor.priceFormatted} • {selectedTutor.mode}
                   </p>
                 </div>

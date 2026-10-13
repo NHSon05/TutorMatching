@@ -32,8 +32,8 @@ export default function AdminDashboardPage() {
           <span className="text-xs font-semibold text-gray-500 uppercase">
             Lớp học đang diễn ra
           </span>
-          <p className="text-3xl font-extrabold text-blue-600 mt-2">352</p>
-          <span className="text-xs text-blue-600 mt-1 block">Tỷ lệ hoàn thành 98%</span>
+          <p className="text-3xl font-extrabold text-brand mt-2">352</p>
+          <span className="text-xs text-brand mt-1 block">Tỷ lệ hoàn thành 98%</span>
         </div>
 
         <div className="bg-white p-5 rounded-xl border border-gray-200 shadow-2xs">
@@ -75,7 +75,7 @@ export default function AdminDashboardPage() {
                 <td className="py-3 px-3">
                   <Link
                     href="/admin/tutor-approvals"
-                    className="text-xs font-semibold text-blue-600 hover:underline"
+                    className="text-xs font-semibold text-brand hover:underline"
                   >
                     Xem xét duyệt
                   </Link>

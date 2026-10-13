@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
   NavigationRail,
@@ -180,16 +181,16 @@ export function LearnerNavigationRail() {
         header={
           <div className="w-full flex flex-col">
             <div className="w-full flex items-center justify-between py-1 px-2 gap-2">
-              <div className="flex items-center gap-2">
+              <Link href="/" className="flex items-center gap-2">
                 <Logo size={32} />
                 {!isCollapsed && (
                   <div className="flex items-center gap-1.5">
-                    <span className="text-xl bg-linear-to-r from-blue-600 to-sky-400 bg-clip-text text-transparent font-bold">
+                    <span className="text-xl bg-linear-to-r from-brand to-sky-400 bg-clip-text text-transparent font-bold">
                       TutorMatch
                     </span>
                   </div>
                 )}
-              </div>
+              </Link>
               <button
                 type="button"
                 onClick={toggleMode}
@@ -213,7 +214,7 @@ export function LearnerNavigationRail() {
                 </p>
                 <button
                   type="button"
-                  className="w-full py-2 px-3 rounded-xl bg-linear-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-bold text-xs shadow-md transition-all flex items-center justify-center gap-1.5 cursor-pointer"
+                  className="w-full py-2 px-3 rounded-xl bg-linear-to-r from-brand to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-bold text-xs shadow-md transition-all flex items-center justify-center gap-1.5 cursor-pointer"
                 >
                   <span>Upgrade</span>
                   <span>→</span>
@@ -248,9 +249,9 @@ export function LearnerNavigationRail() {
           <NavItem
             id="dashboard"
             label="Trang chủ"
-            href="/learner/dashboard"
+            href="/"
             icon={<DashboardIcon />}
-            selected={pathname === "/learner/dashboard"}
+            selected={pathname === "/"}
           />
           <NavItem
             id="my-tutors"

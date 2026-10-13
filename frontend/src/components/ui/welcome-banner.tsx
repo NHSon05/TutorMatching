@@ -21,7 +21,7 @@ const variantStyles: Record<
   }
 > = {
   brand: {
-    container: "bg-gradient-to-r from-blue-600 to-indigo-700 text-white border-transparent",
+    container: "bg-gradient-to-r from-brand to-indigo-700 text-white border-transparent",
     title: "text-white",
     desc: "text-blue-100",
   },

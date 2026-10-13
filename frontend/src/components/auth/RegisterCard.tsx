@@ -5,7 +5,7 @@ import Link from "next/link";
 import { TextField } from "@/components/ui/text-field";
 import { Button } from "@/components/ui/button";
 import { SegmentedControl } from "@/components/ui/segmented-control";
-import { registerAccount } from "@/lib/api/auth";
+import { useRegister } from "@/hooks/use-auth";
 import Logo from "@assets/logo/Logo";
 import {
   DEFAULT_COUNTRY,
@@ -44,7 +44,7 @@ export default function RegisterCard({ className = "", onSuccess }: RegisterCard
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
   const [generalError, setGeneralError] = useState("");
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const { mutateAsync: registerAccount, isPending: isSubmitting, reset } = useRegister();
   const [isSuccess, setIsSuccess] = useState(false);
 
   const clearFieldError = (field: RegistrationField) => {
@@ -71,7 +71,7 @@ export default function RegisterCard({ className = "", onSuccess }: RegisterCard
       return;
     }
 
-    setIsSubmitting(true);
+    if (isSubmitting) return;
     try {
       await registerAccount({
         fullName: fullName.trim(),
@@ -102,7 +102,7 @@ export default function RegisterCard({ className = "", onSuccess }: RegisterCard
         setGeneralError(apiError.message || "Không thể đăng ký. Vui lòng thử lại.");
       }
     } finally {
-      setIsSubmitting(false);
+      reset();
     }
   };
 
@@ -151,7 +151,7 @@ export default function RegisterCard({ className = "", onSuccess }: RegisterCard
               <div
                 className={
                   s.isActive
-                    ? "w-6 h-6 rounded-full bg-[#2563eb] text-white text-xs font-bold flex items-center justify-center mb-3"
+                    ? "w-6 h-6 rounded-full bg-brand text-white text-xs font-bold flex items-center justify-center mb-3"
                     : "w-6 h-6 rounded-full bg-white/25 text-white text-xs font-medium flex items-center justify-center mb-3"
                 }
               >
@@ -216,7 +216,7 @@ export default function RegisterCard({ className = "", onSuccess }: RegisterCard
             <label className="block text-base font-semibold text-gray-800 mb-1.5">
               Số điện thoại
             </label>
-            <div className="relative flex items-center h-11 bg-white border border-gray-300 hover:border-gray-400 focus-within:border-blue-600 focus-within:ring-2 focus-within:ring-blue-500/20 rounded-xl px-3 transition-all">
+            <div className="relative flex items-center h-11 bg-white border border-gray-300 hover:border-gray-400 focus-within:border-brand focus-within:ring-2 focus-within:ring-blue-500/20 rounded-xl px-3 transition-all">
               {/* Nút chọn quốc gia */}
               <button
                 type="button"

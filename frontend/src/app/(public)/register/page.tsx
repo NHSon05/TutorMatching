@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import RegisterCard from "@/components/auth/RegisterCard";
+import { GuestGuard } from "@/components/GuestGuard";
 
 export const metadata: Metadata = {
   title: "Đăng ký",
@@ -7,5 +8,9 @@ export const metadata: Metadata = {
 };
 
 export default function RegisterPage() {
-  return <RegisterCard />;
+  return (
+    <GuestGuard>
+      <RegisterCard />
+    </GuestGuard>
+  );
 }

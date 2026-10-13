@@ -15,7 +15,7 @@ export function WelcomeBannerCard({
   const [activeSlide, setActiveSlide] = React.useState(0);
 
   return (
-    <div className="relative overflow-hidden rounded-3xl bg-linear-to-r from-cyan-400 via-cyan-500 to-blue-600 text-white p-7 sm:p-9 shadow-sm">
+    <div className="relative overflow-hidden rounded-3xl bg-linear-to-r from-cyan-400 via-cyan-500 to-brand text-white p-7 sm:p-9 shadow-sm">
       {/* Background ambient lighting */}
       <div
         aria-hidden="true"

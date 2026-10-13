@@ -1,5 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { RegisterRequest } from "@/lib/api/auth";
+import { fetchTransport } from "./http-test-transport";
 
 const request: RegisterRequest = {
   fullName: "Test Learner",
@@ -14,7 +15,7 @@ const fetchMock = vi.fn<typeof fetch>();
 beforeEach(() => {
   vi.resetModules();
   fetchMock.mockReset();
-  vi.stubGlobal("fetch", fetchMock);
+  vi.stubGlobal("fetch", fetchTransport(fetchMock));
   vi.stubEnv("NEXT_PUBLIC_API_BASE_URL", "http://localhost:5000/api/v1/");
 });
 
@@ -36,7 +37,7 @@ describe("registration API client", () => {
     }));
     expect(fetchMock).toHaveBeenNthCalledWith(2, "http://localhost:5000/api/v1/auth/register", expect.objectContaining({
       credentials: "include", method: "POST", body: JSON.stringify(request),
-      headers: expect.objectContaining({ "X-CSRF-TOKEN": "test-csrf" }),
+      headers: expect.objectContaining({ "x-csrf-token": "test-csrf" }),
     }));
   });
 
@@ -57,7 +58,7 @@ describe("registration API client", () => {
     fetchMock.mockRejectedValueOnce(failure);
     const { registerAccount } = await import("@/lib/api/auth");
 
-    await expect(registerAccount(request)).rejects.toBe(failure);
+    await expect(registerAccount(request)).rejects.toMatchObject({ cause: failure });
     expect(fetchMock).toHaveBeenCalledTimes(1);
   });
 

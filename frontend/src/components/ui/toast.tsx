@@ -140,7 +140,7 @@ function ToastItem({
     },
     info: {
       border: "border-blue-200 dark:border-blue-800",
-      iconBg: "bg-blue-100 text-blue-600 dark:bg-blue-950/60 dark:text-blue-400",
+      iconBg: "bg-blue-100 text-brand dark:bg-blue-950/60 dark:text-blue-400",
       icon: (
         <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
           <circle cx="12" cy="12" r="10" />

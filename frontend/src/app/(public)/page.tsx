@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
-import LandingView from "@/components/landing/LandingView";
+import { getLearnerDashboardData } from "@/data/mockLearnerDashboard";
+import { HomeClientView } from "@/components/home/HomeClientView";
+import { getServerSessionRole } from "@/lib/auth/server-session";
 
 export const metadata: Metadata = {
   title: "TutorMatching - Nền tảng kết nối Gia sư 1 kèm 1",
@@ -12,7 +14,7 @@ export const metadata: Metadata = {
     siteName: "TutorMatching",
     images: [
       {
-        url: "https://res.cloudinary.com/dmfgqfhga/image/upload/v1791256652/preview_sejjxq.png", // Ảnh preview khi share link
+        url: "https://res.cloudinary.com/dmfgqfhga/image/upload/v1791256652/preview_sejjxq.png",
         width: 1200,
         height: 630,
       },
@@ -22,6 +24,10 @@ export const metadata: Metadata = {
   },
 };
 
-export default function LandingPage() {
-  return <LandingView />;
+export default async function HomePage() {
+  const [initialRole, dashboardData] = await Promise.all([
+    getServerSessionRole(),
+    getLearnerDashboardData(),
+  ]);
+  return <HomeClientView initialRole={initialRole} dashboardData={dashboardData} />;
 }
