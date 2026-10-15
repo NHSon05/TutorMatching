@@ -1,4 +1,5 @@
 using System.Text.Json.Serialization;
+using TutorMatching.Domain.Tutors;
 using TutorMatching.Domain.Users;
 
 namespace TutorMatching.Api.Contracts.Auth;
@@ -14,4 +15,5 @@ public sealed record LoginResponse(
     [property: JsonConverter(typeof(JsonStringEnumConverter<AccountStatus>))] AccountStatus Status,
     string AccessToken,
     string RefreshToken,
-    string? AvatarUrl);
+    string? AvatarUrl,
+    [property: JsonConverter(typeof(JsonStringEnumConverter<TutorProfileStatus>))] TutorProfileStatus? TutorProfileStatus = null);

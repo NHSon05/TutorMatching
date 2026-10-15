@@ -63,6 +63,8 @@ public static class DependencyInjection
         services.AddScoped<IAuditWriter, AuditWriter>();
         services.AddScoped<IAccountService, IdentityAccountService>();
         services.AddScoped<ITokenSessionService, TokenSessionService>();
+        services.AddScoped<IFileStorageService, Storage.LocalFileStorageService>();
+        services.AddScoped<Application.Tutors.ITutorOnboardingService, Tutors.TutorOnboardingService>();
         services.AddHttpContextAccessor();
         services.AddScoped<ICurrentUser, CurrentUser>();
 

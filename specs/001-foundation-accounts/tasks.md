@@ -56,6 +56,14 @@ implementation and must initially fail for the intended reason.
 - [x] JWT-002 Harden JWT-001: require a Base64 signing secret without fallback, serialize refresh/logout and test simultaneous requests against PostgreSQL; integrate frontend single-flight/Web Locks refresh with one retry, CSRF renewal, and transient-error handling. Evidence 2026-10-10: JWT settings tests, 5 real-DB session tests, 83 frontend tests (11 refresh tests), TypeScript and scoped ESLint passed. Multi-tab tests use independent clients with shared lock simulation; browser E2E remains T058.
 - [x] JWT-003 Support the existing timestamp-based token schema recorded as migration `20261009000000_AddTokenSessions`; preserve revocation/consumption and bounded expiry without dropping data. Evidence: `TokenSessionMigrationTests` plus 5 session tests pass on disposable PostgreSQL; the inspected local database was upgraded and full entity queries succeeded. Automatic downgrade is blocked to protect adopted tables.
 
+## Browser transport amendment — 2026-10-11
+
+- [x] HTTP-001 [US2] Add shared Axios client in `frontend/src/lib/api/http.ts`, migrate registration/session services, and replace obsolete fetch coordinator. Preserve US1 errors and US2 coordinated renewal/security behavior. Evidence 2026-10-11: 104 frontend tests passed (41 HTTP/auth/refresh); TypeScript, scoped ESLint, production build and diff check passed. Tests exercise the real Axios fetch adapter, renewed mutation CSRF, cancellation, external URL rejection and simulated multi-tab locks. Browser E2E remains T058 and was not run; no backend changes. npm audit reports 8 high advisories in existing Next/tooling dependencies, none naming Axios; remediation outside this task.
+
+- [x] HTTP-002 [US2] Add TanStack Query provider and account hooks in `frontend/src/providers/`, `frontend/src/hooks/`, and `frontend/src/lib/query/`; migrate AuthGuard, AppNavigation, LoginCard and RegisterCard without UI redesign. Evidence 2026-10-11: 118 tests passed across 13 files, including 11 query/cache lifecycle tests and 5 guard tests; TypeScript, scoped ESLint, production build and diff check passed. Verified deduplication, cancellation/late-response suppression, login/logout/expiry cache cleanup, route/focus revalidation and form regression. Browser smoke/E2E not run; T058 remains pending.
+
+- [ ] NAV-001 [US2] Refactor `AuthGuard.tsx` to provide verified account without navigation UI; compose `LearnerNavbar.tsx` and standalone `LogoutButton.tsx` in learner layout. Preserve refresh/authorization behavior and prevent nested session-query remount loops. Checkpoint: navbar/guard/routing tests, logout pending/failure/success, stable session request count on mount/focus, TypeScript, scoped lint, production build and diff review.
+
 ## Phase 3: User Story 1 - Register an account (Priority: P1) MVP
 
 **Goal**: Visitors can register an active learner or tutor account but cannot self-register Admin.

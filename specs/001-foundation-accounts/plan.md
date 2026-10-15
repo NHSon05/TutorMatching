@@ -120,6 +120,18 @@ Authentication hardening approved 2026-10-10: require Base64 signing keys withou
 
 Existing-database compatibility: some installations have historical migration `20261009000000_AddTokenSessions` with `LastActivityAt`, `RevokedAt`, and `ConsumedAt`. The new migration adopts those tables, renames activity time, copies timestamp state into booleans and backfills refresh expiry with `min(created + 30m, absolute expiry)`. Preserve legacy nullable timestamps and all rows; never reset revoked/consumed state. Test both fresh databases and a populated legacy database. Downgrade is explicitly unsupported for this adoption migration; repairs use forward migrations.
 
+## Shared browser HTTP client — 2026-10-11
+
+Replace frontend fetch call sites with an Axios `http` instance in `frontend/src/lib/api/http.ts`, retaining standard AxiosResponse<T> and get/post/put/patch/delete options. Use Axios's fetch adapter with no-store caching, credentialed cookies, and a private transport for CSRF/probe/refresh. Reject URLs outside the configured backend. Mutations obtain fresh validated CSRF; protected 401s share one renewal promise and Web Lock, probe before rotation, and retry once. Auth routes do not recursively refresh. Preserve the existing Problem Details error shape, getSession null on terminal 401, logout idempotence, cancellation, and form contracts. No token storage in browser JavaScript, backend/API/schema changes, or TanStack dependency. Tests exercise the real Axios adapter and simulated cross-tab coordination; browser E2E remains a separate gate. Constitution pre/post-design check: PASS; existing US1–US3 traceability and security boundaries unchanged.
+
+## TanStack Query hooks — 2026-10-11
+
+Layer domain hooks over the existing Axios services: useSession uses one shared session key and forwards AbortSignal; useLogin/useRegister/useLogout use mutations. A client QueryProvider owns a stable, non-server-global QueryClient in the root server layout. Disable retries for auth and mutations; keep session staleTime zero and explicit focus/route revalidation. Centralize session-ended handling, cancel private queries before removing their cache, preserve the observed session query with null data, and seed the account only after removing old private data on login. Default queries are private unless meta.public is true. No persisted cache, tokens, SSR prefetch, or additional refresh mechanism. Mutation credentials are reset after form handling and unobserved mutations have zero gcTime. Existing component validation, role redirects and transient error behavior remain. Constitution pre/post-design check: PASS; no API/schema change.
+
+## Navbar responsibility refactor — 2026-10-12
+
+AuthGuard owns session/role verification only and provides the verified account through a derived context. LearnerNavbar consumes that context rather than mounting another stale session query, avoiding a refetch/unmount loop. The learner layout mounts the navbar above its dashboard toolbar; LogoutButton is an account-independent control using useLogout, with pending/error feedback inside the navbar. Preserve route/focus revalidation, redirects, cache cleanup and existing dashboard content. No backend or authentication contract changes.
+
 ## Delivery Phases
 
 1. Align project references, configuration, tests, database, error handling, and OpenAPI.

@@ -37,6 +37,6 @@ public sealed class UsersController(ICurrentUser currentUser, IAccountService ac
         var account = await accounts.GetProfileAsync(id, cancellationToken);
         return account is null ? Unauthorized() : Ok(new PersonalProfileResponse(
             account.Id, account.Email, account.FullName, account.Role, account.Status,
-            account.PhoneNumber, account.DateOfBirth, account.AvatarUrl));
+            account.PhoneNumber, account.DateOfBirth, account.AvatarUrl, account.TutorProfileStatus));
     }
 }

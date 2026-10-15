@@ -32,7 +32,7 @@ public sealed class AuthController(RegisterAccountHandler registerHandler,
         if (grant is null) return InvalidSession();
         var accessToken = cookies.Issue(HttpContext, grant);
         return Ok(new LoginResponse(account.Id, account.Email, account.FullName, account.Role, account.Status,
-            accessToken, grant.RefreshToken, account.AvatarUrl));
+            accessToken, grant.RefreshToken, account.AvatarUrl, account.TutorProfileStatus));
     }
 
     [HttpPost("refresh", Name = "refreshSession")]
@@ -102,7 +102,8 @@ public sealed class AuthController(RegisterAccountHandler registerHandler,
             account.Email,
             account.FullName,
             account.Role,
-            account.Status);
+            account.Status,
+            account.TutorProfileStatus);
 
         return StatusCode(StatusCodes.Status201Created, response);
     }

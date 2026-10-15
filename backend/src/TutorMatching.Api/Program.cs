@@ -23,7 +23,13 @@ var app = builder.Build();
 
 app.UseApiErrors();
 
-await app.Services.SeedDevelopmentDataAsync(app.Environment.IsDevelopment());
+await app.Services.SeedDevelopmentDataAsync(app.Environment.IsDevelopment() || args.Contains("--seed-only"));
+
+if (args.Contains("--seed-only"))
+{
+    Console.WriteLine("Development data seeding completed successfully.");
+    return;
+}
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment() || app.Environment.IsEnvironment("Testing"))
@@ -37,6 +43,7 @@ if (app.Environment.IsDevelopment() || app.Environment.IsEnvironment("Testing"))
 }
 
 app.UseHttpsRedirection();
+app.UseStaticFiles();
 app.UseRouting();
 app.UseApiSecurity();
 

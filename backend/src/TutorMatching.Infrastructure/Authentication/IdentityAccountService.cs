@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using Npgsql;
 using TutorMatching.Application.Abstractions;
+using TutorMatching.Domain.Tutors;
 using TutorMatching.Domain.Users;
 using TutorMatching.Infrastructure.Persistence;
 
@@ -80,6 +81,23 @@ public sealed class IdentityAccountService(
                     return AccountOperationResult.Fail(AccountFailure.InvalidInput);
                 }
 
+                TutorProfileStatus? tutorStatus = null;
+                if (role == AccountRole.TUTOR)
+                {
+                    var tutorProfile = new TutorProfile
+                    {
+                        Id = Guid.NewGuid(),
+                        UserId = user.Id,
+                        Status = TutorProfileStatus.DRAFT,
+                        CurrentStep = 1,
+                        CreatedAt = now,
+                        UpdatedAt = now
+                    };
+                    dbContext.TutorProfiles.Add(tutorProfile);
+                    await dbContext.SaveChangesAsync(cancellationToken);
+                    tutorStatus = TutorProfileStatus.DRAFT;
+                }
+
                 await auditWriter.WriteAsync(
                     new AccountAuditEntry(AccountAuditAction.AccountRegistered, user.Id, user.Id),
                     cancellationToken);
@@ -94,7 +112,8 @@ public sealed class IdentityAccountService(
                     user.Status,
                     user.PhoneNumber,
                     user.DateOfBirth,
-                    user.AvatarUrl);
+                    user.AvatarUrl,
+                    tutorStatus);
 
                 return AccountOperationResult.Success(profile);
             }
@@ -154,7 +173,18 @@ public sealed class IdentityAccountService(
         if (user is null || user.Status != AccountStatus.ACTIVE || user.DeletedAt is not null) return null;
         var roles = await userManager.GetRolesAsync(user);
         if (roles.Count != 1 || !Enum.TryParse<AccountRole>(roles[0], out var role) || !Enum.IsDefined(role)) return null;
-        return new(user.Id, user.Email!, user.FullName, role, user.Status, user.PhoneNumber, user.DateOfBirth, user.AvatarUrl);
+
+        TutorProfileStatus? tutorStatus = null;
+        if (role == AccountRole.TUTOR)
+        {
+            tutorStatus = await dbContext.TutorProfiles
+                .Where(t => t.UserId == user.Id)
+                .Select(t => (TutorProfileStatus?)t.Status)
+                .FirstOrDefaultAsync(cancellationToken);
+            tutorStatus ??= TutorProfileStatus.DRAFT;
+        }
+
+        return new(user.Id, user.Email!, user.FullName, role, user.Status, user.PhoneNumber, user.DateOfBirth, user.AvatarUrl, tutorStatus);
     }
 
     public Task<AccountOperationResult> UpdateProfileAsync(Guid userId, ProfileUpdate update, CancellationToken cancellationToken = default) =>

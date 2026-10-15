@@ -211,6 +211,145 @@ namespace TutorMatching.Infrastructure.Persistence.Migrations
                     b.ToTable("asp_net_user_tokens", (string)null);
                 });
 
+            modelBuilder.Entity("TutorMatching.Domain.Tutors.TutorProfile", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<string>("AchievementsAndResults")
+                        .HasMaxLength(4000)
+                        .HasColumnType("character varying(4000)")
+                        .HasColumnName("achievements_and_results");
+
+                    b.Property<DateTimeOffset?>("ApprovedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("approved_at");
+
+                    b.Property<string>("AvatarUrl")
+                        .HasMaxLength(2048)
+                        .HasColumnType("character varying(2048)")
+                        .HasColumnName("avatar_url");
+
+                    b.Property<string>("Bio")
+                        .HasMaxLength(4000)
+                        .HasColumnType("character varying(4000)")
+                        .HasColumnName("bio");
+
+                    b.Property<string>("Certifications")
+                        .IsRequired()
+                        .HasColumnType("jsonb")
+                        .HasColumnName("certifications");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at")
+                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
+
+                    b.Property<int>("CurrentStep")
+                        .HasColumnType("integer")
+                        .HasColumnName("current_step");
+
+                    b.Property<string>("Degree")
+                        .HasMaxLength(256)
+                        .HasColumnType("character varying(256)")
+                        .HasColumnName("degree");
+
+                    b.Property<string>("EducationType")
+                        .HasMaxLength(32)
+                        .HasColumnType("character varying(32)")
+                        .HasColumnName("education_type");
+
+                    b.Property<int?>("ExperienceYears")
+                        .HasColumnType("integer")
+                        .HasColumnName("experience_years");
+
+                    b.Property<bool>("HasCertifications")
+                        .HasColumnType("boolean")
+                        .HasColumnName("has_certifications");
+
+                    b.Property<int?>("HourlyRateVnd")
+                        .HasColumnType("integer")
+                        .HasColumnName("hourly_rate_vnd");
+
+                    b.Property<bool>("IsNegotiable")
+                        .HasColumnType("boolean")
+                        .HasColumnName("is_negotiable");
+
+                    b.Property<string>("Languages")
+                        .IsRequired()
+                        .HasColumnType("jsonb")
+                        .HasColumnName("languages");
+
+                    b.Property<int?>("MonthlyRateVnd")
+                        .HasColumnType("integer")
+                        .HasColumnName("monthly_rate_vnd");
+
+                    b.Property<string>("SchoolName")
+                        .HasMaxLength(256)
+                        .HasColumnType("character varying(256)")
+                        .HasColumnName("school_name");
+
+                    b.Property<int?>("SessionRateVnd")
+                        .HasColumnType("integer")
+                        .HasColumnName("session_rate_vnd");
+
+                    b.Property<string>("Specialization")
+                        .HasMaxLength(256)
+                        .HasColumnType("character varying(256)")
+                        .HasColumnName("specialization");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(32)
+                        .HasColumnType("character varying(32)")
+                        .HasColumnName("status");
+
+                    b.Property<string>("Subjects")
+                        .IsRequired()
+                        .HasColumnType("jsonb")
+                        .HasColumnName("subjects");
+
+                    b.Property<DateTimeOffset?>("SubmittedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("submitted_at");
+
+                    b.Property<string>("TeachingLevels")
+                        .IsRequired()
+                        .HasColumnType("jsonb")
+                        .HasColumnName("teaching_levels");
+
+                    b.Property<string>("TeachingMethodology")
+                        .HasMaxLength(4000)
+                        .HasColumnType("character varying(4000)")
+                        .HasColumnName("teaching_methodology");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at")
+                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("user_id");
+
+                    b.Property<int?>("YearOfStudy")
+                        .HasColumnType("integer")
+                        .HasColumnName("year_of_study");
+
+                    b.HasKey("Id")
+                        .HasName("pk_tutor_profiles");
+
+                    b.HasIndex("UserId")
+                        .IsUnique()
+                        .HasDatabaseName("ix_tutor_profiles_user_id");
+
+                    b.ToTable("tutor_profiles", (string)null);
+                });
+
             modelBuilder.Entity("TutorMatching.Infrastructure.Auditing.AuditEvent", b =>
                 {
                     b.Property<Guid>("Id")
@@ -532,6 +671,16 @@ namespace TutorMatching.Infrastructure.Persistence.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
                         .HasConstraintName("fk_asp_net_user_tokens_user_accounts_user_id");
+                });
+
+            modelBuilder.Entity("TutorMatching.Domain.Tutors.TutorProfile", b =>
+                {
+                    b.HasOne("TutorMatching.Infrastructure.Persistence.ApplicationUser", null)
+                        .WithOne()
+                        .HasForeignKey("TutorMatching.Domain.Tutors.TutorProfile", "UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_tutor_profiles_user_accounts_user_id");
                 });
 
             modelBuilder.Entity("TutorMatching.Infrastructure.Auditing.AuditEvent", b =>

@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
+using TutorMatching.Domain.Tutors;
 using TutorMatching.Domain.Users;
 using TutorMatching.Infrastructure.Auditing;
 using TutorMatching.Infrastructure.Persistence.Configurations;
@@ -18,6 +19,7 @@ public sealed class ApplicationDbContext(
     public DbSet<AuditEvent> AuditEvents => Set<AuditEvent>();
     public DbSet<TokenSession> TokenSessions => Set<TokenSession>();
     public DbSet<SessionRefreshToken> SessionRefreshTokens => Set<SessionRefreshToken>();
+    public DbSet<TutorProfile> TutorProfiles => Set<TutorProfile>();
 
     protected override void OnModelCreating(ModelBuilder builder)
     {
@@ -25,6 +27,7 @@ public sealed class ApplicationDbContext(
 
         builder.ApplyConfiguration(new ApplicationUserConfiguration());
         builder.ApplyConfiguration(new AuditEventConfiguration());
+        builder.ApplyConfiguration(new TutorProfileConfiguration());
         builder.Entity<TokenSession>(entity =>
         {
             entity.ToTable("TokenSessions");
@@ -105,6 +108,20 @@ public sealed class ApplicationDbContext(
 
         foreach (var entry in ChangeTracker.Entries<AuditEvent>())
         {
+            if (entry.State == EntityState.Added && entry.Entity.CreatedAt == default)
+            {
+                entry.Entity.CreatedAt = now;
+            }
+        }
+
+        foreach (var entry in ChangeTracker.Entries<TutorProfile>())
+        {
+            if (entry.State is not (EntityState.Added or EntityState.Modified))
+            {
+                continue;
+            }
+
+            entry.Entity.UpdatedAt = now;
             if (entry.State == EntityState.Added && entry.Entity.CreatedAt == default)
             {
                 entry.Entity.CreatedAt = now;

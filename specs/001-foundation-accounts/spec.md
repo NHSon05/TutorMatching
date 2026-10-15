@@ -197,6 +197,14 @@ then verify that it cannot be reused and the new password permits sign-in.
 - Existing active-account, role, lockout, CSRF, 30-minute inactivity and eight-hour absolute expiry protections remain required (FR-006–FR-011, FR-017, FR-019).
 - LEARNER and TUTOR use the same authentication mechanism. Tutor professional-profile completion and frontend routing remain outside this backend-only change.
 
+### Browser transport compatibility (2026-10-11)
+
+The shared browser API transport MUST preserve registration, sign-in/sign-out, field errors and US2 acceptance scenario 6 when replacing the current transport. Mutations retain CSRF protection, concurrent tabs coordinate renewal, protected requests retry at most once with fresh CSRF, and transient failures do not end sessions. No backend contract or product scope changes are introduced (FR-006–FR-011, FR-017–FR-019).
+
+### Shared client data lifecycle (2026-10-11)
+
+Account UI consumers MUST share session results and expose pending/error/success states without changing US1–US3 behavior. Logout, terminal expiry and switching accounts MUST discard prior private cached data and prevent in-flight responses from restoring it. Transient failures remain recoverable without an authentication redirect. Registration does not establish a session (FR-006–FR-011, FR-017–FR-019).
+
 ### Key Entities
 
 - **User Account**: A person's identity, normalized email, protected password, personal fields,

@@ -81,7 +81,8 @@ public sealed class SnakeCaseSchemaTests(PostgreSqlFixture fixture)
         var objectsBefore = await ObjectIds(db);
         await DatabaseMigrationRunner.MigrateAsync(db);
         var objectsAfter = await ObjectIds(db);
-        Assert.Equal(objectsBefore, objectsAfter); // Tables, constraints, indexes, sequences retain OIDs.
+        var objectsAfterSet = objectsAfter.ToHashSet();
+        Assert.All(objectsBefore, id => Assert.Contains(id, objectsAfterSet)); // Tables, constraints, indexes retain OIDs.
         await AssertSnakeCaseCatalog(db);
         var user = await db.Users.SingleAsync();
         Assert.Equal(userId, user.Id);
@@ -95,7 +96,7 @@ public sealed class SnakeCaseSchemaTests(PostgreSqlFixture fixture)
         Assert.Equal(DateTimeOffset.MinValue, (await db.TokenSessions.SingleAsync()).RevokedAt);
         Assert.Equal(DateTimeOffset.MinValue, (await db.SessionRefreshTokens.SingleAsync()).ConsumedAt);
         var history = (await db.Database.GetAppliedMigrationsAsync()).ToArray();
-        Assert.Equal(4, history.Length);
+        Assert.Equal(5, history.Length);
         await DatabaseMigrationRunner.MigrateAsync(db);
         Assert.Equal(history, await db.Database.GetAppliedMigrationsAsync());
         // Renamed Identity sequences retain their ownership/default and next value.
@@ -114,7 +115,7 @@ public sealed class SnakeCaseSchemaTests(PostgreSqlFixture fixture)
         var tables = await Strings(db, "SELECT table_name FROM information_schema.tables WHERE table_schema = current_schema()");
         Assert.Contains("__EFMigrationsHistory", tables);
         Assert.Contains("ef_migrations_history", tables);
-        Assert.Equal(4, (await db.Database.GetAppliedMigrationsAsync()).Count());
+        Assert.Equal(5, (await db.Database.GetAppliedMigrationsAsync()).Count());
     }
 
     internal static async Task AssertSnakeCaseCatalog(ApplicationDbContext db)

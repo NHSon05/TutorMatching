@@ -62,3 +62,23 @@ Search by ADR ID, subsystem, or keyword. Add only durable decisions; keep each A
 - Decision: Validate exactly one current Identity role matching the session on access and refresh; revoke mismatched sessions on refresh.
 - Consequence: Npgsql infinity conversion stays enabled; unknown times must not be presented as real event dates. Stop old API before forward-only migration.
 - Evidence: 92 backend tests pass, including inconsistent legacy state, timestamp transitions and role changes without stamp changes.
+
+## ADR-007 - Unified root route and persistent learner layout shell
+
+- Date: 2026-10-12
+- Status: Accepted
+- Context: Need unified `/` for guest landing and learner dashboard; eliminate layout remount/full reloads across learner routes.
+- Decision: Reorganize routes under persistent `SiteShell`; guest sees `LandingView` on `/`, authenticated `LEARNER` sees `LearnerDashboardClient` on `/`.
+- Decision: For `LEARNER`, keep persistent `LearnerShell` (`LearnerNavigationRail` + `DashboardTopBar`) across `/`, `/tutors`, `/messages`, `/settings`, and `/learner/*`.
+- Decision: Internal navigation items in `navigation-rail.tsx` use Next.js `<Link>`. Legacy `/learner/dashboard` redirects to `/`. Tutors and Admins retain separate dashboard layouts.
+- Consequence: Layout shells remain mounted without flicker or state wipe. No duplicate headers/footers.
+
+## ADR-008 - Unified registration and progressive tutor onboarding
+
+- Date: 2026-10-13
+- Status: Accepted
+- Context: Need unified identity registration with role-based routing and a multi-step onboarding flow for tutors.
+- Decision: Use unified `POST /api/v1/auth/register` and `POST /api/v1/auth/login`. Response includes `role` and `tutorProfileStatus` (`DRAFT`, `PENDING_REVIEW`, `APPROVED`, `REJECTED`).
+- Decision: Dedicated `TutorOnboarding` API (`/api/v1/tutor/onboarding/*`) supports draft autosave across 6 steps, avatar/cert uploads, and review submission.
+- Consequence: Frontend routes `TUTOR` dynamically: `DRAFT` to `/tutor/onboarding`, `PENDING_REVIEW` to `/tutor/profile-edit`, and `APPROVED` to `/tutor/dashboard`.
+

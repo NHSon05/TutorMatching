@@ -1,3 +1,4 @@
+using TutorMatching.Domain.Tutors;
 using TutorMatching.Domain.Users;
 
 namespace TutorMatching.Application.Abstractions;
@@ -11,7 +12,8 @@ public sealed record AccountProfile(
     AccountStatus Status,
     string? PhoneNumber,
     DateOnly? DateOfBirth,
-    string? AvatarUrl);
+    string? AvatarUrl,
+    TutorProfileStatus? TutorProfileStatus = null);
 
 public sealed record ProfileUpdate(
     string FullName,
