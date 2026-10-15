@@ -30,7 +30,7 @@ export default function SelectRoleCard({ className = "", onRoleSelected }: Selec
     // Hiển thị thông báo và điều hướng theo vai trò
     setTimeout(() => {
       if (userRole === "TUTOR") {
-        router.push("/tutor/dashboard");
+        router.push("/tutor/onboarding");
       } else {
         router.push("/");
       }

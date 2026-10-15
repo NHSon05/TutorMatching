@@ -1,4 +1,5 @@
 import { http } from "@/lib/api/http";
+import type { TutorProfileStatus } from "@/types/user";
 export type { ApiProblemDetails } from "@/types/api";
 
 export interface RegisterRequest {
@@ -15,6 +16,7 @@ export interface AccountResponse {
   fullName: string;
   role: "LEARNER" | "TUTOR" | "ADMIN";
   status: "ACTIVE" | "LOCKED" | "INACTIVE";
+  tutorProfileStatus?: TutorProfileStatus | null;
 }
 
 export async function registerAccount(request: RegisterRequest): Promise<AccountResponse> {

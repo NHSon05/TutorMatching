@@ -32,7 +32,7 @@ export type TutorMode = "Online" | "Offline" | "Online / Offline";
  * Thực thể hồ sơ gia sư trên giao diện danh sách
  */
 export interface Tutor {
-  id: number;
+  id: number | string;
   name: string;
   avatar: string;
   title: string;

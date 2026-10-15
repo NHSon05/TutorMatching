@@ -12,6 +12,7 @@ function normalizeUserProfile(user: UserProfile | AccountResponse): UserProfile 
     status: user.status,
     avatarUrl: (user as UserProfile).avatarUrl,
     phoneNumber: (user as UserProfile).phoneNumber,
+    tutorProfileStatus: (user as UserProfile).tutorProfileStatus ?? (user as AccountResponse).tutorProfileStatus,
   };
 }
 

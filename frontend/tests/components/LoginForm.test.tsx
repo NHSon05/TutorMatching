@@ -26,10 +26,30 @@ it.each([401, 403, 429])("uses a neutral error for denial %s", async status => {
   expect(push).not.toHaveBeenCalled();
 });
 it("routes using the server role", async () => {
-  vi.mocked(login).mockResolvedValue({ id: "id", email: "learner@example.com", fullName: "Tutor", role: "TUTOR", status: "ACTIVE" });
+  vi.mocked(login).mockResolvedValue({
+    id: "id",
+    email: "learner@example.com",
+    fullName: "Tutor",
+    role: "TUTOR",
+    status: "ACTIVE",
+    tutorProfileStatus: "APPROVED",
+  });
   submit();
   await waitFor(() => expect(push).toHaveBeenCalledWith("/tutor/dashboard"));
   expect(document.cookie).not.toContain("demo_token");
+});
+
+it("routes unverified tutor to /tutor/onboarding upon login", async () => {
+  vi.mocked(login).mockResolvedValue({
+    id: "id",
+    email: "learner@example.com",
+    fullName: "Tutor",
+    role: "TUTOR",
+    status: "ACTIVE",
+    tutorProfileStatus: "PENDING_REVIEW",
+  });
+  submit();
+  await waitFor(() => expect(push).toHaveBeenCalledWith("/tutor/onboarding"));
 });
 
 it("routes learner to / upon login", async () => {

@@ -101,10 +101,26 @@ describe("TutorMatching Routing & Role Architecture", () => {
       email: "t@example.com",
       role: "TUTOR",
       status: "ACTIVE",
+      tutorProfileStatus: "APPROVED",
     });
 
     render(<LoginPage />);
     await waitFor(() => expect(router.replace).toHaveBeenCalledWith("/tutor/dashboard"));
+    expect(screen.queryByRole("heading", { name: "Đăng Nhập" })).not.toBeInTheDocument();
+  });
+
+  it("blocks unverified tutor from /login and redirects to /tutor/onboarding", async () => {
+    vi.mocked(getSession).mockResolvedValue({
+      id: "tutor-test",
+      fullName: "Tutor",
+      email: "t@example.com",
+      role: "TUTOR",
+      status: "ACTIVE",
+      tutorProfileStatus: "DRAFT",
+    });
+
+    render(<LoginPage />);
+    await waitFor(() => expect(router.replace).toHaveBeenCalledWith("/tutor/onboarding"));
     expect(screen.queryByRole("heading", { name: "Đăng Nhập" })).not.toBeInTheDocument();
   });
 

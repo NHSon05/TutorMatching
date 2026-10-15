@@ -9,6 +9,11 @@ export type UserRole = "ADMIN" | "LEARNER" | "TUTOR";
 export type AccountStatus = "ACTIVE" | "LOCKED" | "INACTIVE";
 
 /**
+ * Trạng thái hồ sơ gia sư trong quy trình onboarding/xét duyệt
+ */
+export type TutorProfileStatus = "DRAFT" | "PENDING_REVIEW" | "APPROVED" | "REJECTED";
+
+/**
  * Thông tin tài khoản người dùng cơ bản
  */
 export interface UserProfile {
@@ -19,4 +24,5 @@ export interface UserProfile {
   status: AccountStatus;
   avatarUrl?: string;
   phoneNumber?: string;
+  tutorProfileStatus?: TutorProfileStatus | null;
 }

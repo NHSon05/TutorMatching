@@ -1,6 +1,5 @@
 "use client";
 
-import * as React from "react";
 import Link from "next/link";
 import Image from "next/image";
 import type { YourCoursesSectionProps } from "./types";
@@ -191,6 +190,7 @@ export function YourCoursesSection({ courses, className = "" }: YourCoursesSecti
                       src={course.avatar}
                       alt={course.tutorName}
                       fill
+                      sizes="40px"
                       className="object-cover"
                     />
                   </div>

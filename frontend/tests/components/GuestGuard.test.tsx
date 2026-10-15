@@ -68,6 +68,7 @@ describe("GuestGuard", () => {
       fullName: "Tutor User",
       role: "TUTOR",
       status: "ACTIVE",
+      tutorProfileStatus: "APPROVED",
     });
 
     render(
@@ -79,6 +80,28 @@ describe("GuestGuard", () => {
     );
 
     await waitFor(() => expect(replace).toHaveBeenCalledWith("/tutor/dashboard"));
+    expect(screen.queryByText("Login Form Content")).not.toBeInTheDocument();
+  });
+
+  it("blocks and redirects unverified TUTOR to /tutor/onboarding", async () => {
+    vi.mocked(getSession).mockResolvedValue({
+      id: "tutor-1",
+      email: "tutor@example.com",
+      fullName: "Tutor User",
+      role: "TUTOR",
+      status: "ACTIVE",
+      tutorProfileStatus: "PENDING_REVIEW",
+    });
+
+    render(
+      <QueryProvider>
+        <GuestGuard>
+          <p>Login Form Content</p>
+        </GuestGuard>
+      </QueryProvider>
+    );
+
+    await waitFor(() => expect(replace).toHaveBeenCalledWith("/tutor/onboarding"));
     expect(screen.queryByText("Login Form Content")).not.toBeInTheDocument();
   });
 

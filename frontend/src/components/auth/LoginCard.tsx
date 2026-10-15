@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 import { TextField } from "@/components/ui/text-field";
 import { Button } from "@/components/ui/button";
 import Logo from "@assets/logo/Logo";
-import type { UserRole } from "@/types";
+import type { TutorProfileStatus, UserRole } from "@/types";
 import { useLogin } from "@/hooks/use-auth";
 import type { LoginCardProps } from "./LoginCard.types";
 
@@ -21,13 +21,17 @@ export default function LoginCard({ className = "", onSuccess }: LoginCardProps 
   const [errorMsg, setErrorMsg] = useState("");
   const { mutateAsync: login, isPending: isSubmitting, reset } = useLogin();
 
-  const navigateToWorkspace = (role: UserRole) => {
-    onSuccess?.(role);
+  const navigateToWorkspace = (role: UserRole, tutorProfileStatus?: TutorProfileStatus | null) => {
+    onSuccess?.(role, tutorProfileStatus);
 
     if (role === "ADMIN") {
       router.push("/admin/dashboard");
     } else if (role === "TUTOR") {
-      router.push("/tutor/dashboard");
+      if (tutorProfileStatus !== "APPROVED") {
+        router.push("/tutor/onboarding");
+      } else {
+        router.push("/tutor/dashboard");
+      }
     } else {
       router.push("/");
     }
@@ -44,7 +48,7 @@ export default function LoginCard({ className = "", onSuccess }: LoginCardProps 
 
     try {
       const account = await login({ email, password });
-      navigateToWorkspace(account.role);
+      navigateToWorkspace(account.role, account.tutorProfileStatus);
     } catch {
       setErrorMsg("Không thể đăng nhập. Kiểm tra thông tin hoặc thử lại sau.");
     } finally {

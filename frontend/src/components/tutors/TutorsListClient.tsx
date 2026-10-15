@@ -1,14 +1,54 @@
 "use client";
 
-import React, { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { getMockTutors } from "@/data/mockTutors";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Avatar } from "@/components/ui/avatar";
-import type { Tutor, TutorFilter, TutorsListClientProps } from "./types";
+import { getTutors, type TutorListItemResponse } from "@/lib/api/tutors";
+import type { Tutor, TutorCategory, TutorCity, TutorFilter, TutorsListClientProps } from "./types";
 
 export type * from "./types";
+
+function mapResponseToTutor(item: TutorListItemResponse): Tutor {
+  const cityKey: TutorCity =
+    item.schoolName?.toLowerCase().includes("hà nội") || item.schoolName?.toLowerCase().includes("hanoi")
+      ? "hanoi"
+      : item.schoolName?.toLowerCase().includes("đà nẵng") || item.schoolName?.toLowerCase().includes("danang")
+      ? "danang"
+      : "hcm";
+
+  const primarySubject = item.subjects[0] || "Gia sư";
+  let category: TutorCategory = "math";
+  const s = primarySubject.toLowerCase();
+  if (s.includes("toán")) category = "math";
+  else if (s.includes("anh") || s.includes("tiếng anh")) category = "english";
+  else if (s.includes("vật lý") || s.includes("lý")) category = "physics";
+  else if (s.includes("hóa")) category = "chemistry";
+  else if (s.includes("văn")) category = "literature";
+  else if (s.includes("tin") || s.includes("lập trình")) category = "it";
+
+  const tags = [...item.subjects, ...item.certifications.map((c) => c.name)];
+  if (item.degree) tags.push(item.degree);
+
+  return {
+    id: item.id,
+    name: item.fullName,
+    avatar: item.avatarUrl || "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=256",
+    title: `Gia sư ${primarySubject} • ${item.schoolName || "Đại học"}`,
+    rating: item.rating || 5.0,
+    location: item.schoolName || (cityKey === "hanoi" ? "Hà Nội" : cityKey === "danang" ? "Đà Nẵng" : "TP. Hồ Chí Minh"),
+    experience: `${item.experienceYears} năm kinh nghiệm`,
+    sessionsCount: "Đã xác thực",
+    tags: tags.slice(0, 4),
+    priceFormatted: `${(item.hourlyRateVnd || 150000).toLocaleString("vi-VN")}đ/h`,
+    pricePerHour: item.hourlyRateVnd || 150000,
+    mode: "Online / Offline",
+    category,
+    city: cityKey,
+    level: "highschool",
+  };
+}
 
 export default function TutorsListClient({ initialTutors }: TutorsListClientProps) {
   const router = useRouter();
@@ -21,18 +61,56 @@ export default function TutorsListClient({ initialTutors }: TutorsListClientProp
     search: "",
   });
 
+  const [allTutors, setAllTutors] = useState<Tutor[]>(initialTutors);
   const [tutors, setTutors] = useState<Tutor[]>(initialTutors);
   const [selectedTutor, setSelectedTutor] = useState<Tutor | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
+  useEffect(() => {
+    let isMounted = true;
+    async function loadRealTutors() {
+      try {
+        const res = await getTutors();
+        if (isMounted && res.items.length > 0) {
+          const mapped = res.items.map(mapResponseToTutor);
+          setAllTutors(mapped);
+          setTutors(mapped);
+        }
+      } catch {
+        // Giữ fallback mock tutors nếu chưa kết nối được
+      }
+    }
+    loadRealTutors();
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  const applyFilter = (filterState: TutorFilter, sourceList: Tutor[]) => {
+    return sourceList.filter((item) => {
+      if (filterState.category !== "all" && item.category !== filterState.category) return false;
+      if (filterState.city !== "all" && item.city !== filterState.city) return false;
+      if (filterState.level !== "all" && item.level !== filterState.level) return false;
+      if (filterState.mode !== "all" && item.mode !== filterState.mode) return false;
+      if (
+        filterState.search &&
+        !item.name.toLowerCase().includes(filterState.search.toLowerCase()) &&
+        !item.title.toLowerCase().includes(filterState.search.toLowerCase())
+      ) {
+        return false;
+      }
+      return true;
+    });
+  };
+
   const handleFilterChange = (key: keyof TutorFilter, value: string) => {
     const updated = { ...filter, [key]: value };
     setFilter(updated);
-    setTutors(getMockTutors(updated));
+    setTutors(applyFilter(updated, allTutors));
   };
 
   const handleSearchClick = () => {
-    setTutors(getMockTutors(filter));
+    setTutors(applyFilter(filter, allTutors));
   };
 
   const handleReset = () => {
@@ -44,7 +122,7 @@ export default function TutorsListClient({ initialTutors }: TutorsListClientProp
       search: "",
     };
     setFilter(resetFilter);
-    setTutors(getMockTutors(resetFilter));
+    setTutors(applyFilter(resetFilter, allTutors));
   };
 
   const handleBook = (tutor: Tutor) => {
