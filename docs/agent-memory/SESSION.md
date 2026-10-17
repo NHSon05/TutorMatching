@@ -1,21 +1,33 @@
 # Current Session Handoff
 
-Status: TUTOR ONBOARDING & PHONE DUPLICATION HANDLING COMPLETE
-Updated: 2026-10-15
+Status: US4 FRONTEND PROFILE MANAGEMENT IMPLEMENTED & VERIFIED
+Updated: 2026-10-17
 
-## Completed scope
+## Scope and current changes
 
-- **Xử lý triệt để lỗi trùng số điện thoại (`ux_user_accounts_phone_number`) khi Onboarding**:
-  - `TutorOnboardingService.cs`: Bổ sung kiểm tra trùng số điện thoại (`AnyAsync(u => u.Id != userId && u.PhoneNumber == trimmedPhone)`) trước khi lưu và bắt ngoại lệ `DbUpdateException` (`IsPhoneNumberUniqueViolation`), trả về `SaveDraftResult.Fail(AccountFailure.DuplicatePhoneNumber)`.
-  - `TutorOnboardingController.cs`: Cập nhật `PUT /api/v1/tutor/onboarding/draft` xử lý `SaveDraftResult`, trả về mã lỗi chuẩn `409 Conflict ProblemDetails` kèm thông tin field `phoneNumber`.
-  - `TutorOnboardingWizard.tsx`: Bắt lỗi `ApiError` từ backend khi lưu nháp/chuyển bước, hiển thị lỗi trực tiếp lên input số điện thoại ở Bước 1 và ngăn chặn crash/500 lỗi hệ thống.
-- **Khóa hoàn toàn route authenticated đối với Gia sư chưa duyệt**:
-  - Duy trì bảo vệ nghiêm ngặt qua `TutorGuard`, `LoginCard`, `GuestGuard`, `HomeClientView`, `SiteShell`.
+- Implemented role-aware Profile UI for TUTOR and LEARNER at `frontend/src/app/(public)/profile/page.tsx` and consolidated `/settings` and `/tutor/profile-edit` onto the shared client.
+- Added authenticated API client in `frontend/src/lib/api/profile.ts` for PUT `/api/v1/users/me` (allowlisted fields only: fullName, phoneNumber, dateOfBirth, avatarUrl; email/role/status read-only).
+- Built reusable `ProfileForm` with optimistic session/Zustand cache updates, CSRF handling, field validation, and error states (401, 403, 409, 422, 429).
+- Built `TutorProfessionalForm` to load and draft-save professional tutor profile fields through existing `/tutor/onboarding` endpoints.
+- Provided explicit sample learning preferences ("Dữ liệu mẫu") for learners with clear disclaimer that backend persistence is not yet available.
+- Updated navigation and SiteShell guards to support `/profile` alongside existing routes.
+- Updated spec and plan artifacts: `specs/001-foundation-accounts/spec.md`, `plan.md`, and marked T040/T043 in `tasks.md`.
 
-## Verification
+## Verification evidence
 
-- `dotnet build backend/TutorMatching.slnx`: Succeeded (0 warnings, 0 errors).
-- `dotnet test backend/TutorMatching.slnx`: 93 passed (75 integration tests, 18 unit tests), 0 failed.
-- `npm --prefix frontend test -- --run`: 17 test files passed (148 tests), 0 failed.
-- `npm --prefix frontend run lint`: 0 errors, 0 warnings.
-- `npm --prefix frontend run build`: Compiled successfully without errors.
+- Frontend component tests:
+  - `ProfileForm.test.tsx`: 18 passed.
+  - `TutorProfessionalForm.test.tsx`: 3 passed.
+  - `profile-api.test.ts`: 4 passed.
+  - Full suite: 21 test files, 179 tests passing.
+- TypeScript check (`tsc --noEmit`): 0 errors.
+- ESLint: 0 errors on modified/created profile modules.
+
+## Next steps
+
+- T044: Playwright profile journey (`profile.spec.ts`) against live backend environment.
+- Phase 7 (US5 - Password reset) remains pending.
+
+## Pre-existing work preserved
+
+- Pre-existing uncommitted changes across backend controllers, OpenAPI, tutor hiring dialog, and integration tests remain intact.
