@@ -26,6 +26,7 @@ export default function SelectRoleCard({ className = "", onRoleSelected }: Selec
     const userRole = selectedRole === "TUTOR" ? "TUTOR" : "LEARNER";
     document.cookie = `auth_token=oauth_google_verified; path=/; max-age=86400`;
     document.cookie = `user_role=${userRole}; path=/; max-age=86400`;
+    document.cookie = `tm_role=${userRole}; path=/; max-age=86400; samesite=lax`;
 
     // Hiển thị thông báo và điều hướng theo vai trò
     setTimeout(() => {
@@ -39,7 +40,7 @@ export default function SelectRoleCard({ className = "", onRoleSelected }: Selec
 
   return (
     <div className={`min-h-screen bg-[#18181b] flex items-center justify-center p-3 sm:p-6 lg:p-8 font-sans ${className}`.trim()}>
-      <div className="bg-white rounded-[32px] shadow-2xl max-w-4xl w-full p-6 sm:p-10 border border-gray-100">
+      <div className="bg-white rounded-4xl shadow-2xl max-w-4xl w-full p-6 sm:p-10 border border-gray-100">
         
         {/* Header Section */}
         <div className="text-center max-w-xl mx-auto mb-8 sm:mb-10">

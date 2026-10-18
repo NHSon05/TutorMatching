@@ -12,7 +12,7 @@ public sealed class OpenApiContractTests(PostgreSqlFixture fixture)
     private static readonly HashSet<string> PendingOperations =
     [
         "POST /api/v1/auth/forgot-password", "POST /api/v1/auth/reset-password",
-        "PUT /api/v1/users/me", "POST /api/v1/auth/login", "POST /api/v1/auth/register", "GET /api/v1/users/me"
+        "POST /api/v1/auth/login", "POST /api/v1/auth/register"
     ];
 
     [Fact]
@@ -106,7 +106,7 @@ public sealed class OpenApiContractTests(PostgreSqlFixture fixture)
             if (expected[key] is { } constraint)
                 Assert.True(
                     ConstraintEquals(constraint, actual[key]),
-                    $"Schema constraint drift: {key}; expected {constraint.ToJsonString()}, actual {actual[key]?.ToJsonString() ?? "<missing>"}");
+                    $"Schema constraint drift at {actual.GetPath()}: {key}; expected {constraint.ToJsonString()}, actual {actual[key]?.ToJsonString() ?? "<missing>"}; schema {actual.ToJsonString()}");
         if (expected["required"] is JsonArray required)
             Assert.Equal(required.Select(x => x!.GetValue<string>()).Order(),
                 actual["required"]!.AsArray().Select(x => x!.GetValue<string>()).Order());

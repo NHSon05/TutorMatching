@@ -110,6 +110,13 @@ and confirm the changes while verifying that another account cannot read or alte
    is reported and the previous valid data remains unchanged.
 4. **Given** an expired session, **When** a profile change is submitted, **Then** the change is not
    saved and the user is asked to sign in again.
+5. **Given** a learner or tutor opens `/profile` or the existing `/settings` entry, **Then** the
+   responsive profile UI uses their real account fields, keeps email read-only, and distinguishes
+   any sample learner learning preferences from persisted personal data. Network/authentication
+   errors must never be replaced with sample account data.
+6. **Given** a tutor opens the existing `/tutor/profile-edit` entry, **Then** the personal form and
+   professional information returned by the existing onboarding API are available; missing values
+   remain empty, and professional changes use the existing draft API independently of personal changes.
 
 ---
 

@@ -58,6 +58,15 @@ public sealed class JwtCookieTokens(JwtSettings settings, TimeProvider clock)
             Expires = grant.ExpiresAt
         });
 
+        context.Response.Cookies.Append("tm_role", grant.Role, new CookieOptions
+        {
+            Path = "/",
+            HttpOnly = false,
+            Secure = isSecure,
+            SameSite = SameSiteMode.Lax,
+            Expires = grant.ExpiresAt
+        });
+
         return accessToken;
     }
 
@@ -77,6 +86,14 @@ public sealed class JwtCookieTokens(JwtSettings settings, TimeProvider clock)
         {
             Path = RefreshPath,
             HttpOnly = true,
+            Secure = isSecure,
+            SameSite = SameSiteMode.Lax
+        });
+
+        context.Response.Cookies.Delete("tm_role", new CookieOptions
+        {
+            Path = "/",
+            HttpOnly = false,
             Secure = isSecure,
             SameSite = SameSiteMode.Lax
         });

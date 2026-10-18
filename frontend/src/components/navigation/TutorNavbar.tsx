@@ -57,7 +57,7 @@ export default function TutorNavbar() {
         <div className="flex items-center gap-4">
           {!isOnboarding && (
             <Link
-              href="/settings"
+              href="/profile"
               className="text-xs font-medium text-gray-600 hover:text-gray-900"
             >
               Tài khoản

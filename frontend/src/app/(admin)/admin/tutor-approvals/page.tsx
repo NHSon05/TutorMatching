@@ -4,7 +4,7 @@ export default function AdminTutorApprovalsPage() {
   const pendingTutors = [
     {
       id: 1,
-      name: "Phạm Bảo Trân",
+      name: "Võ Đức Hoàng",
       school: "Đại học Luật Hà Nội",
       major: "Luật",
       subjects: "Toán, Tiếng Việt, Tiếng Anh",

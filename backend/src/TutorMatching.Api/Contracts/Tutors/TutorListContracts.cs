@@ -6,8 +6,6 @@ public sealed record TutorListItemResponse(
     Guid Id,
     Guid UserId,
     string FullName,
-    string Email,
-    string? PhoneNumber,
     string? AvatarUrl,
     string Status,
     List<string> Subjects,

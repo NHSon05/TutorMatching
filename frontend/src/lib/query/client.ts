@@ -28,6 +28,14 @@ export function replaceSession(client: QueryClient, account: AccountResponse | n
     }
   }
 
+  if (typeof document !== "undefined" && !account) {
+    try {
+      document.cookie = "tm_role=; path=/; max-age=0; samesite=lax";
+    } catch {
+      // Ignore
+    }
+  }
+
   // Đồng bộ trạng thái xác thực người dùng vào Zustand store
   if (account) {
     useAuthStore.getState().setAuth({ user: account });

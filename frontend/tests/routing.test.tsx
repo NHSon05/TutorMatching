@@ -183,9 +183,16 @@ describe("TutorMatching Routing & Role Architecture", () => {
     expect(screen.getAllByText("Lê Phương Diệu").length).toBeGreaterThan(0);
   });
 
-  it("renders Settings page", () => {
+  it("renders Settings page", async () => {
+    vi.mocked(getSession).mockResolvedValue({
+      id: "learner-1",
+      fullName: "Học viên thử nghiệm",
+      email: "learner@example.com",
+      role: "LEARNER",
+      status: "ACTIVE",
+    });
     render(<SettingsPage />);
-    expect(screen.getByText("Cài Đặt Tài Khoản")).toBeInTheDocument();
+    expect(await screen.findByText("Hồ sơ của tôi")).toBeInTheDocument();
   });
 
   it("renders Learner Shell with persistent NavigationRail and TopBar", () => {

@@ -78,8 +78,8 @@ export interface SubmitOnboardingResponse {
 /**
  * Lấy dữ liệu hồ sơ Onboarding hiện tại của Gia sư
  */
-export async function getTutorOnboarding(): Promise<TutorOnboardingResponse> {
-  const { data } = await http.get<TutorOnboardingResponse>("/tutor/onboarding/me");
+export async function getTutorOnboarding(signal?: AbortSignal): Promise<TutorOnboardingResponse> {
+  const { data } = await http.get<TutorOnboardingResponse>("/tutor/onboarding/me", { signal });
   return data;
 }
 

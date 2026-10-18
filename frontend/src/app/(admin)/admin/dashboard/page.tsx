@@ -69,7 +69,7 @@ export default function AdminDashboardPage() {
             </thead>
             <tbody className="divide-y divide-gray-100">
               <tr>
-                <td className="py-3 px-3 font-semibold text-gray-900">Phạm Bảo Trân</td>
+                <td className="py-3 px-3 font-semibold text-gray-900">Võ Đức Hoàng</td>
                 <td className="py-3 px-3 text-gray-600">Đại học Luật Hà Nội</td>
                 <td className="py-3 px-3 text-gray-600">Toán, Tiếng Anh Cấp 1</td>
                 <td className="py-3 px-3">

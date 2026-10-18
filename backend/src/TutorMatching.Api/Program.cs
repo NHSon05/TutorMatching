@@ -14,6 +14,7 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllers();
 builder.Services.AddApiErrors();
 builder.Services.AddScoped<RegisterAccountHandler>();
+builder.Services.AddScoped<TutorMatching.Application.Users.Profile.CurrentProfileHandler>();
 builder.Services.AddScoped<TutorMatching.Application.Authentication.Sessions.SessionHandler>();
 builder.Services.AddInfrastructure(builder.Configuration);
 builder.Services.AddApiSecurity(builder.Configuration, builder.Environment);

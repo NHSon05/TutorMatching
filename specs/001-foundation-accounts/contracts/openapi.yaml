@@ -215,7 +215,8 @@ paths:
           $ref: '#/components/responses/Unauthorized'
     put:
       operationId: updateCurrentProfile
-      summary: Replace allowed fields on the authenticated user's private profile
+      summary: Replace allowed personal fields for the authenticated LEARNER or TUTOR
+      description: Email, role, status and owner identifiers are read-only. Omitted optional fields are cleared. Phone values are trimmed; birth date must precede today; avatar accepts HTTP(S) URLs or local /uploads/avatars/ paths.
       security:
         - cookieAuth: []
           csrfHeader: []
@@ -239,6 +240,8 @@ paths:
                 $ref: '#/components/schemas/PersonalProfileResponse'
         '401':
           $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
         '409':
           $ref: '#/components/responses/Conflict'
         '422':
@@ -338,6 +341,7 @@ components:
           maxLength: 100
         phoneNumber:
           type: [string, 'null']
+          maxLength: 32
         dateOfBirth:
           type: [string, 'null']
           format: date
@@ -363,18 +367,32 @@ components:
           type: string
           enum: [ACTIVE, LOCKED, INACTIVE]
     PersonalProfileResponse:
-      allOf:
-        - $ref: '#/components/schemas/AccountResponse'
-        - type: object
-          additionalProperties: false
-          properties:
-            phoneNumber:
-              type: [string, 'null']
-            dateOfBirth:
-              type: [string, 'null']
-              format: date
-            avatarUrl:
-              type: [string, 'null']
+      type: object
+      additionalProperties: false
+      required: [id, email, fullName, role, status, phoneNumber, dateOfBirth, avatarUrl, tutorProfileStatus]
+      properties:
+        id:
+          type: string
+          format: uuid
+        email:
+          type: string
+          format: email
+        fullName:
+          type: string
+        role:
+          $ref: '#/components/schemas/AccountRole'
+        status:
+          type: string
+          enum: [ACTIVE, LOCKED, INACTIVE]
+        phoneNumber:
+          type: [string, 'null']
+        dateOfBirth:
+          type: [string, 'null']
+          format: date
+        avatarUrl:
+          type: [string, 'null']
+        tutorProfileStatus:
+          type: [string, 'null']
     Problem:
       type: object
       properties:

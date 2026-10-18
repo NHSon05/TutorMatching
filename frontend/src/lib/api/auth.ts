@@ -17,6 +17,9 @@ export interface AccountResponse {
   role: "LEARNER" | "TUTOR" | "ADMIN";
   status: "ACTIVE" | "LOCKED" | "INACTIVE";
   tutorProfileStatus?: TutorProfileStatus | null;
+  phoneNumber?: string | null;
+  dateOfBirth?: string | null;
+  avatarUrl?: string | null;
 }
 
 export async function registerAccount(request: RegisterRequest): Promise<AccountResponse> {

@@ -33,7 +33,8 @@ export function SiteShell({
     pathname === "/messages" ||
     pathname?.startsWith("/messages/") ||
     pathname === "/settings" ||
-    pathname?.startsWith("/settings/");
+    pathname?.startsWith("/settings/") ||
+    pathname === "/profile";
 
   // Chặn gia sư chưa được phê duyệt truy cập vào các route dùng chung đã xác thực
   React.useEffect(() => {

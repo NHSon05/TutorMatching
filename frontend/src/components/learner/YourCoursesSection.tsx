@@ -82,7 +82,7 @@ function GraduationBannerIllustration({
 
   return (
     <div
-      className={`w-full h-28 rounded-t-2xl bg-gradient-to-br ${bgGradient} relative overflow-hidden flex items-center justify-center p-2`}
+      className={`w-full h-28 rounded-t-2xl bg-linear-to-br ${bgGradient} relative overflow-hidden flex items-center justify-center p-2`}
     >
       {/* Background ambient ring */}
       <div className="absolute inset-0 bg-white/10 backdrop-blur-3xs" />

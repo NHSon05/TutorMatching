@@ -143,18 +143,20 @@ invalid data, expired session, and another user's access.
 
 ### Tests
 
-- [ ] T038 [P] [US4] Add application tests for `FullName trimmed 2-100 characters`, `PhoneNumber unique when present`, `DateOfBirth in the past`, and `AvatarUrl maximum 2,048 characters` in `backend/tests/TutorMatching.Application.UnitTests/Users/UpdateProfileTests.cs`
-- [ ] T039 [P] [US4] Add API integration tests for `GET/PUT /api/v1/users/me`, conflict atomicity, expired session, and cross-owner denial in `backend/tests/TutorMatching.Api.IntegrationTests/Users/CurrentProfileEndpointTests.cs`
+- [x] T038 [P] [US4] Add application tests for `FullName trimmed 2-100 characters`, `PhoneNumber unique when present`, `DateOfBirth in the past`, and `AvatarUrl maximum 2,048 characters` in `backend/tests/TutorMatching.Application.UnitTests/Users/UpdateProfileTests.cs`
+- [x] T039 [P] [US4] Add API integration tests for `GET/PUT /api/v1/users/me`, conflict atomicity, expired session, and cross-owner denial in `backend/tests/TutorMatching.Api.IntegrationTests/Users/CurrentProfileEndpointTests.cs`
 - [ ] T040 [P] [US4] Add profile form tests for loading, populated, validation, saving, conflict, success, and unauthorized states in `frontend/tests/components/ProfileForm.test.tsx`
 
 ### Implementation
 
-- [ ] T041 [US4] Implement get/update current-profile queries and atomic conflict handling in `backend/src/TutorMatching.Application/Users/Profile/`
-- [ ] T042 [US4] Add current-profile endpoints and private response contracts in `backend/src/TutorMatching.Api/Controllers/UsersController.cs` and `backend/src/TutorMatching.Api/Contracts/Users/ProfileContracts.cs`
-- [ ] T043 [P] [US4] Implement authenticated profile page and profile API client in `frontend/src/app/profile/page.tsx` and `frontend/src/lib/api/profile.ts`
+- [x] T041 [US4] Implement get/update current-profile queries and atomic conflict handling in `backend/src/TutorMatching.Application/Users/Profile/`
+- [x] T042 [US4] Add current-profile endpoints and private response contracts in `backend/src/TutorMatching.Api/Controllers/UsersController.cs` and `backend/src/TutorMatching.Api/Contracts/Users/ProfileContracts.cs`
+- [ ] T043 [P] [US4] Implement authenticated role-aware profile page and profile API client in `frontend/src/app/(public)/profile/page.tsx` and `frontend/src/lib/api/profile.ts`; reuse it from settings and tutor profile-edit, connect real personal/professional data, and label unsupported learner preferences as read-only samples.
 - [ ] T044 [US4] Add Playwright profile journey for persistence, conflict, expired session, and privacy in `frontend/tests/e2e/profile.spec.ts`
 
-**Checkpoint**: US4 passes independently with no private profile exposed publicly.
+**Backend progress (2026-10-16)**: T038, T039, T041, T042 completed and verified. 29 Application unit tests and 15 PostgreSQL API integration tests in `CurrentProfileEndpointTests` passed against Testcontainers Docker Desktop. GET keeps session-probe behavior; PUT permits only LEARNER/TUTOR and the 4 contract fields (email is read-only). Public tutor responses no longer leak email/phone (FR-014). T040, T043 and T044 are excluded from this backend-only request; no frontend changes made for US4.
+
+**Checkpoint**: Backend US4 passes independently with no private profile exposed publicly. **Pending**: Excluded frontend tasks (T040, T043, T044).
 
 ---
 

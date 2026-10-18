@@ -139,8 +139,6 @@ public sealed class TutorsController(ApplicationDbContext dbContext) : Controlle
             Id: profile.Id,
             UserId: profile.UserId,
             FullName: user.FullName,
-            Email: user.Email ?? string.Empty,
-            PhoneNumber: user.PhoneNumber,
             AvatarUrl: profile.AvatarUrl ?? user.AvatarUrl,
             Status: profile.Status.ToString(),
             Subjects: profile.Subjects,

@@ -38,6 +38,9 @@ public static class OpenApiExtensions
             });
             options.AddSchemaTransformer((schema, context, _) =>
             {
+                if (context.JsonTypeInfo.Type == typeof(TutorMatching.Domain.Users.AccountRole) ||
+                    context.JsonTypeInfo.Type == typeof(TutorMatching.Domain.Users.AccountStatus))
+                    schema.Type = JsonSchemaType.String;
                 if (context.JsonTypeInfo.Type == typeof(LoginRequest))
                 {
                     schema.AdditionalPropertiesAllowed = false;
@@ -82,6 +85,45 @@ public static class OpenApiExtensions
                         accountRole.Type = JsonSchemaType.String;
                     if (schema.Properties?["status"] is OpenApiSchema accountStatus)
                         accountStatus.Type = JsonSchemaType.String;
+                }
+                if (context.JsonTypeInfo.Type == typeof(TutorMatching.Api.Contracts.Users.UpdateProfileRequest))
+                {
+                    schema.AdditionalPropertiesAllowed = false;
+                    schema.Required = new HashSet<string> { "fullName" };
+                    if (schema.Properties?["fullName"] is OpenApiSchema name)
+                    {
+                        name.Type = JsonSchemaType.String;
+                        name.MinLength = 2;
+                        name.MaxLength = 100;
+                    }
+                    if (schema.Properties?["phoneNumber"] is OpenApiSchema phone) phone.MaxLength = 32;
+                    if (schema.Properties?["avatarUrl"] is OpenApiSchema avatar) avatar.MaxLength = 2048;
+                }
+                if (context.JsonTypeInfo.Type == typeof(PersonalProfileResponse))
+                {
+                    schema.AdditionalPropertiesAllowed = false;
+                    schema.Required = new HashSet<string>
+                    {
+                        "id", "email", "fullName", "role", "status", "phoneNumber", "dateOfBirth", "avatarUrl", "tutorProfileStatus"
+                    };
+                    if (schema.Properties?["email"] is OpenApiSchema email) email.Format = "email";
+                    if (schema.Properties?["role"] is OpenApiSchema role)
+                    {
+                        role.Type = JsonSchemaType.String;
+                        role.Enum = ["LEARNER", "TUTOR", "ADMIN"];
+                    }
+                    if (schema.Properties?["status"] is OpenApiSchema status)
+                    {
+                        status.Type = JsonSchemaType.String;
+                        status.Enum = ["ACTIVE", "LOCKED", "INACTIVE"];
+                    }
+                    if (schema.Properties?.ContainsKey("tutorProfileStatus") == true)
+                    {
+                        schema.Properties["tutorProfileStatus"] = new OpenApiSchema
+                        {
+                            Type = JsonSchemaType.String | JsonSchemaType.Null
+                        };
+                    }
                 }
                 if (context.JsonTypeInfo.Type == typeof(CsrfTokenResponse) && schema.Properties is not null)
                     schema.Properties["headerName"] = new OpenApiSchema

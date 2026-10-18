@@ -187,8 +187,63 @@ public sealed class IdentityAccountService(
         return new(user.Id, user.Email!, user.FullName, role, user.Status, user.PhoneNumber, user.DateOfBirth, user.AvatarUrl, tutorStatus);
     }
 
-    public Task<AccountOperationResult> UpdateProfileAsync(Guid userId, ProfileUpdate update, CancellationToken cancellationToken = default) =>
-        throw new NotImplementedException();
+    public async Task<AccountOperationResult> UpdateProfileAsync(Guid userId, ProfileUpdate update,
+        CancellationToken cancellationToken = default)
+    {
+        var strategy = dbContext.Database.CreateExecutionStrategy();
+        return await strategy.ExecuteAsync(async () =>
+        {
+            await using var transaction = await dbContext.Database.BeginTransactionAsync(cancellationToken);
+            try
+            {
+                var account = await GetProfileAsync(userId, cancellationToken);
+                if (account is null) return AccountOperationResult.Fail(AccountFailure.InvalidCredentials);
+                if (account.Role is not (AccountRole.LEARNER or AccountRole.TUTOR))
+                    return AccountOperationResult.Fail(AccountFailure.Forbidden);
+
+                if (update.PhoneNumber is not null && await dbContext.Users.AnyAsync(
+                        user => user.Id != userId && user.PhoneNumber == update.PhoneNumber, cancellationToken))
+                    return AccountOperationResult.Fail(AccountFailure.DuplicatePhoneNumber);
+
+                // Update only the allowed fields; do not overwrite Identity credentials or session state.
+                var updated = await dbContext.Users.Where(user => user.Id == userId &&
+                        user.Status == AccountStatus.ACTIVE && user.DeletedAt == null)
+                    .ExecuteUpdateAsync(setters => setters
+                        .SetProperty(user => user.FullName, update.FullName)
+                        .SetProperty(user => user.PhoneNumber, update.PhoneNumber)
+                        .SetProperty(user => user.PhoneNumberConfirmed,
+                            user => user.PhoneNumber == update.PhoneNumber && user.PhoneNumberConfirmed)
+                        .SetProperty(user => user.DateOfBirth, update.DateOfBirth)
+                        .SetProperty(user => user.AvatarUrl, update.AvatarUrl)
+                        .SetProperty(user => user.UpdatedAt, clock.UtcNow), cancellationToken);
+                if (updated != 1) return AccountOperationResult.Fail(AccountFailure.InvalidCredentials);
+                // GetProfileAsync may have tracked this user before the set-based update.
+                var tracked = dbContext.ChangeTracker.Entries<ApplicationUser>()
+                    .FirstOrDefault(entry => entry.Entity.Id == userId);
+                if (tracked is not null) await tracked.ReloadAsync(cancellationToken);
+                await auditWriter.WriteAsync(new(AccountAuditAction.ProfileUpdated, userId, userId), cancellationToken);
+                await transaction.CommitAsync(cancellationToken);
+                return AccountOperationResult.Success(account with
+                {
+                    FullName = update.FullName, PhoneNumber = update.PhoneNumber,
+                    DateOfBirth = update.DateOfBirth, AvatarUrl = update.AvatarUrl
+                });
+            }
+            catch (PostgresException ex) when (ex.SqlState == PostgresErrorCodes.UniqueViolation &&
+                ex.ConstraintName == "ux_user_accounts_phone_number")
+            {
+                await transaction.RollbackAsync(CancellationToken.None);
+                dbContext.ChangeTracker.Clear();
+                return AccountOperationResult.Fail(AccountFailure.DuplicatePhoneNumber);
+            }
+            catch
+            {
+                await transaction.RollbackAsync(CancellationToken.None);
+                dbContext.ChangeTracker.Clear();
+                throw;
+            }
+        });
+    }
 
     public Task RequestPasswordResetAsync(string email, CancellationToken cancellationToken = default) =>
         throw new NotImplementedException();

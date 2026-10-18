@@ -5,7 +5,11 @@ import { useRouter } from "next/navigation";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Avatar } from "@/components/ui/avatar";
+import { TextField } from "@/components/ui/text-field";
+import { useSession } from "@/hooks/use-session";
+import { useAuthStore } from "@/stores/use-auth-store";
 import { getTutors, type TutorListItemResponse } from "@/lib/api/tutors";
+import { HireTutorDialog } from "./HireTutorDialog";
 import type { Tutor, TutorCategory, TutorCity, TutorFilter, TutorsListClientProps } from "./types";
 
 export type * from "./types";
@@ -52,6 +56,9 @@ function mapResponseToTutor(item: TutorListItemResponse): Tutor {
 
 export default function TutorsListClient({ initialTutors }: TutorsListClientProps) {
   const router = useRouter();
+  const { data: sessionAccount } = useSession();
+  const storeUser = useAuthStore((s) => s.user);
+  const isAuthenticated = Boolean(sessionAccount || storeUser);
 
   const [filter, setFilter] = useState<TutorFilter>({
     category: "all",
@@ -65,6 +72,7 @@ export default function TutorsListClient({ initialTutors }: TutorsListClientProp
   const [tutors, setTutors] = useState<Tutor[]>(initialTutors);
   const [selectedTutor, setSelectedTutor] = useState<Tutor | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isHireDialogOpen, setIsHireDialogOpen] = useState(false);
 
   useEffect(() => {
     let isMounted = true;
@@ -109,10 +117,6 @@ export default function TutorsListClient({ initialTutors }: TutorsListClientProp
     setTutors(applyFilter(updated, allTutors));
   };
 
-  const handleSearchClick = () => {
-    setTutors(applyFilter(filter, allTutors));
-  };
-
   const handleReset = () => {
     const resetFilter: TutorFilter = {
       category: "all",
@@ -131,32 +135,75 @@ export default function TutorsListClient({ initialTutors }: TutorsListClientProp
   };
 
   return (
-    <div className="min-h-screen bg-[#f8fafc]">
-      <div className="max-w-7xl mx-auto">
+    <div className="min-h-screen bg-slate-50/70 dark:bg-gray-950">
+      <div className="max-w-7xl mx-auto space-y-4">
+
         {/* ========================================================================= */}
-        {/* FLOATING FILTER BAR (Khớp card bo tròn trắng trong ảnh mẫu)               */}
+        {/* PAGE HEADER                                                               */}
         {/* ========================================================================= */}
-        <div className="bg-white rounded-3xl p-4 sm:p-5 shadow-xl shadow-blue-900/5 border border-gray-100 mb-10">
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-12 gap-4 items-center">
-            
-            {/* Filter 1: Môn học (Type of counseling) */}
-            <div className="lg:col-span-3 px-2 border-b sm:border-b-0 sm:border-r border-gray-100 pb-3 sm:pb-0">
-              <label className="block text-xs font-medium text-gray-400 mb-1">
+        <div className="">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+            <div>
+              <div className="flex items-center gap-3">
+                <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white tracking-tight">
+                  Danh Sách Gia Sư
+                </h1>
+                <span className="text-sm font-bold text-brand bg-blue-50 dark:bg-blue-950/60 dark:text-blue-300 border border-blue-100 dark:border-blue-900 px-3 py-1 rounded-full">
+                  {tutors.length} gia sư
+                </span>
+              </div>
+              <p className="text-sm text-gray-500 dark:text-gray-400 mt-1.5">
+                Tìm kiếm và kết nối 1 kèm 1 với gia sư giỏi, giàu kinh nghiệm và phù hợp nhất với bạn
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {/* ========================================================================= */}
+        {/* FLOATING FILTER BAR                                                       */}
+        {/* ========================================================================= */}
+        <div className="bg-white dark:bg-gray-900 rounded-3xl p-5 sm:p-6 shadow-xl shadow-blue-900/5 border border-gray-100 dark:border-gray-800 transition-all">
+
+          {/* Row 1: Search keyword input */}
+          <div className="mb-4">
+            <TextField
+              size="large"
+              variant="filled"
+              value={filter.search ?? ""}
+              onChange={(e) => handleFilterChange("search", e.target.value)}
+              placeholder="Tìm theo tên gia sư, trường đại học, môn nhận dạy..."
+              isClearable
+              onClear={() => handleFilterChange("search", "")}
+              leadingIcon={
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                </svg>
+              }
+              className="w-full"
+            />
+          </div>
+
+          {/* Row 2: 4 Bộ lọc chi tiết */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5">
+
+            {/* Filter 1: Môn học */}
+            <div className="bg-gray-50 dark:bg-gray-800/40 p-3.5 rounded-2xl border border-gray-100 dark:border-gray-800">
+              <label className="block text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-1.5">
                 Môn học
               </label>
               <div className="relative">
                 <select
                   value={filter.category}
                   onChange={(e) => handleFilterChange("category", e.target.value)}
-                  className="w-full text-base font-semibold text-gray-800 bg-transparent pr-6 focus:outline-none cursor-pointer appearance-none"
+                  className="w-full text-sm font-semibold text-gray-800 dark:text-gray-100 bg-transparent pr-6 focus:outline-none cursor-pointer appearance-none"
                 >
-                  <option value="all">Tất cả môn học</option>
-                  <option value="math">Toán học</option>
-                  <option value="english">Tiếng Anh</option>
-                  <option value="physics">Vật lý</option>
-                  <option value="chemistry">Hóa học</option>
-                  <option value="literature">Ngữ văn</option>
-                  <option value="it">Tin học</option>
+                  <option value="all" className="bg-white dark:bg-gray-900 text-gray-800 dark:text-gray-100">Tất cả môn học</option>
+                  <option value="math" className="bg-white dark:bg-gray-900 text-gray-800 dark:text-gray-100">Toán học</option>
+                  <option value="english" className="bg-white dark:bg-gray-900 text-gray-800 dark:text-gray-100">Tiếng Anh</option>
+                  <option value="physics" className="bg-white dark:bg-gray-900 text-gray-800 dark:text-gray-100">Vật lý</option>
+                  <option value="chemistry" className="bg-white dark:bg-gray-900 text-gray-800 dark:text-gray-100">Hóa học</option>
+                  <option value="literature" className="bg-white dark:bg-gray-900 text-gray-800 dark:text-gray-100">Ngữ văn</option>
+                  <option value="it" className="bg-white dark:bg-gray-900 text-gray-800 dark:text-gray-100">Tin học</option>
                 </select>
                 <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center text-gray-400">
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -166,21 +213,21 @@ export default function TutorsListClient({ initialTutors }: TutorsListClientProp
               </div>
             </div>
 
-            {/* Filter 2: Thành phố (City) */}
-            <div className="lg:col-span-3 px-2 border-b sm:border-b-0 sm:border-r border-gray-100 pb-3 sm:pb-0">
-              <label className="block text-xs font-medium text-gray-400 mb-1">
+            {/* Filter 2: Thành phố */}
+            <div className="bg-gray-50 dark:bg-gray-800/40 p-3.5 rounded-2xl border border-gray-100 dark:border-gray-800">
+              <label className="block text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-1.5">
                 Tỉnh / Thành phố
               </label>
               <div className="relative">
                 <select
                   value={filter.city}
                   onChange={(e) => handleFilterChange("city", e.target.value)}
-                  className="w-full text-base font-semibold text-gray-800 bg-transparent pr-6 focus:outline-none cursor-pointer appearance-none"
+                  className="w-full text-sm font-semibold text-gray-800 dark:text-gray-100 bg-transparent pr-6 focus:outline-none cursor-pointer appearance-none"
                 >
-                  <option value="all">Tất cả thành phố</option>
-                  <option value="hanoi">Hà Nội</option>
-                  <option value="danang">Đà Nẵng</option>
-                  <option value="hcm">TP. Hồ Chí Minh</option>
+                  <option value="all" className="bg-white dark:bg-gray-900 text-gray-800 dark:text-gray-100">Tất cả thành phố</option>
+                  <option value="hanoi" className="bg-white dark:bg-gray-900 text-gray-800 dark:text-gray-100">Hà Nội</option>
+                  <option value="danang" className="bg-white dark:bg-gray-900 text-gray-800 dark:text-gray-100">Đà Nẵng</option>
+                  <option value="hcm" className="bg-white dark:bg-gray-900 text-gray-800 dark:text-gray-100">TP. Hồ Chí Minh</option>
                 </select>
                 <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center text-gray-400">
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -190,22 +237,22 @@ export default function TutorsListClient({ initialTutors }: TutorsListClientProp
               </div>
             </div>
 
-            {/* Filter 3: Cấp học (Age / Level) */}
-            <div className="lg:col-span-2 px-2 border-b sm:border-b-0 sm:border-r border-gray-100 pb-3 sm:pb-0">
-              <label className="block text-xs font-medium text-gray-400 mb-1">
+            {/* Filter 3: Cấp học */}
+            <div className="bg-gray-50 dark:bg-gray-800/40 p-3.5 rounded-2xl border border-gray-100 dark:border-gray-800">
+              <label className="block text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-1.5">
                 Cấp học
               </label>
               <div className="relative">
                 <select
                   value={filter.level}
                   onChange={(e) => handleFilterChange("level", e.target.value)}
-                  className="w-full text-base font-semibold text-gray-800 bg-transparent pr-6 focus:outline-none cursor-pointer appearance-none"
+                  className="w-full text-sm font-semibold text-gray-800 dark:text-gray-100 bg-transparent pr-6 focus:outline-none cursor-pointer appearance-none"
                 >
-                  <option value="all">Tất cả cấp học</option>
-                  <option value="primary">Tiểu học</option>
-                  <option value="secondary">THCS</option>
-                  <option value="highschool">THPT</option>
-                  <option value="university">Đại học</option>
+                  <option value="all" className="bg-white dark:bg-gray-900 text-gray-800 dark:text-gray-100">Tất cả cấp học</option>
+                  <option value="primary" className="bg-white dark:bg-gray-900 text-gray-800 dark:text-gray-100">Tiểu học</option>
+                  <option value="secondary" className="bg-white dark:bg-gray-900 text-gray-800 dark:text-gray-100">THCS</option>
+                  <option value="highschool" className="bg-white dark:bg-gray-900 text-gray-800 dark:text-gray-100">THPT</option>
+                  <option value="university" className="bg-white dark:bg-gray-900 text-gray-800 dark:text-gray-100">Đại học</option>
                 </select>
                 <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center text-gray-400">
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -215,20 +262,20 @@ export default function TutorsListClient({ initialTutors }: TutorsListClientProp
               </div>
             </div>
 
-            {/* Filter 4: Hình thức học (Gender / Mode) */}
-            <div className="lg:col-span-3 px-2 pb-3 sm:pb-0">
-              <label className="block text-xs font-medium text-gray-400 mb-1">
+            {/* Filter 4: Hình thức học */}
+            <div className="bg-gray-50 dark:bg-gray-800/40 p-3.5 rounded-2xl border border-gray-100 dark:border-gray-800">
+              <label className="block text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-1.5">
                 Hình thức học
               </label>
               <div className="relative">
                 <select
                   value={filter.mode}
                   onChange={(e) => handleFilterChange("mode", e.target.value)}
-                  className="w-full text-base font-semibold text-gray-800 bg-transparent pr-6 focus:outline-none cursor-pointer appearance-none"
+                  className="w-full text-sm font-semibold text-gray-800 dark:text-gray-100 bg-transparent pr-6 focus:outline-none cursor-pointer appearance-none"
                 >
-                  <option value="all">Tất cả hình thức</option>
-                  <option value="online">Online</option>
-                  <option value="offline">Offline</option>
+                  <option value="all" className="bg-white dark:bg-gray-900 text-gray-800 dark:text-gray-100">Tất cả hình thức</option>
+                  <option value="online" className="bg-white dark:bg-gray-900 text-gray-800 dark:text-gray-100">Online</option>
+                  <option value="offline" className="bg-white dark:bg-gray-900 text-gray-800 dark:text-gray-100">Offline</option>
                 </select>
                 <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center text-gray-400">
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -238,66 +285,17 @@ export default function TutorsListClient({ initialTutors }: TutorsListClientProp
               </div>
             </div>
 
-            {/* Filter Search Button Icon */}
-            <div className="lg:col-span-1 flex justify-end">
-              <button
-                type="button"
-                onClick={handleSearchClick}
-                className="w-12 h-12 rounded-2xl bg-blue-50 text-brand hover:bg-brand hover:text-white transition-all flex items-center justify-center cursor-pointer shadow-sm group"
-                aria-label="Tìm kiếm gia sư"
-              >
-                <svg
-                  className="w-5 h-5 transition-transform group-hover:scale-110"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth="2.5"
-                    d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-                  />
-                </svg>
-              </button>
-            </div>
-
           </div>
         </div>
 
         {/* ========================================================================= */}
-        {/* SECTION HEADER: "Best for you" + Counter Pill + "See all >"                */}
-        {/* ========================================================================= */}
-        <div className="flex items-center justify-between mb-8">
-          <div className="flex items-center gap-3">
-            <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 tracking-tight">
-              Danh Sách Gia Sư
-            </h1>
-            <span className="text-xs font-bold text-gray-500 bg-gray-200/80 px-2.5 py-0.5 rounded-full">
-              {tutors.length}
-            </span>
-          </div>
-
-          <Button
-            type="button"
-            variant="tertiary"
-            shape="pill"
-            size="medium"
-            onClick={handleReset}
-            className="text-base font-semibold text-gray-700 hover:text-brand flex items-center gap-1.5 px-4"
-          >
-            <span>Xem tất cả</span>
-          </Button>
-        </div>
-
-        {/* ========================================================================= */}
-        {/* TUTORS GRID (3 Cột chuẩn thiết kế)                                        */}
+        {/* TUTORS GRID                                                               */}
         {/* ========================================================================= */}
         {tutors.length === 0 ? (
-          <div className="bg-white rounded-3xl p-12 text-center border border-gray-100 shadow-sm">
+          <div className="bg-white dark:bg-gray-900 rounded-3xl p-12 text-center border border-gray-100 dark:border-gray-800 shadow-sm">
             <div className="text-5xl mb-4">🔍</div>
-            <h3 className="text-xl font-bold text-gray-900 mb-2">Không tìm thấy gia sư phù hợp</h3>
-            <p className="text-base text-gray-500 mb-6">
+            <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">Không tìm thấy gia sư phù hợp</h3>
+            <p className="text-base text-gray-500 dark:text-gray-400 mb-6">
               Vui lòng thử chọn bộ lọc khác hoặc nhấn xem tất cả để tải lại danh sách.
             </p>
             <Button variant="brand" shape="pill" size="medium" onClick={handleReset}>
@@ -305,13 +303,13 @@ export default function TutorsListClient({ initialTutors }: TutorsListClientProp
             </Button>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-7">
             {tutors.map((tutor) => (
               <Card
                 key={tutor.id}
                 hoverable
                 padding="large"
-                className="rounded-3xl! border border-gray-100 bg-white shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col justify-between"
+                className="rounded-3xl! border border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-900 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 flex flex-col justify-between"
               >
                 <div>
                   {/* Top: Avatar + Name & Subtitle */}
@@ -322,22 +320,22 @@ export default function TutorsListClient({ initialTutors }: TutorsListClientProp
                       alt={tutor.name}
                       fallbackText={tutor.name}
                       shape="circle"
-                      className="border border-gray-100 shadow-xs"
+                      className="border border-gray-100 dark:border-gray-800 shadow-xs shrink-0"
                     />
-                    <div className="min-w-0">
-                      <h2 className="text-lg font-bold text-gray-900 leading-snug truncate">
+                    <div className="min-w-0 flex-1">
+                      <h2 className="text-lg font-bold text-gray-900 dark:text-white leading-snug truncate">
                         {tutor.name}
                       </h2>
-                      <p className="text-sm text-gray-500 font-medium truncate">
+                      <p className="text-sm text-gray-500 dark:text-gray-400 font-medium truncate">
                         {tutor.title}
                       </p>
                     </div>
                   </div>
 
                   {/* Rating Badge & Location */}
-                  <div className="flex items-center gap-3 mb-4">
+                  <div className="flex items-center gap-3 mb-3.5">
                     <div
-                      className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold text-white ${
+                      className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold text-white shrink-0 ${
                         tutor.rating >= 4.8 ? "bg-emerald-600" : "bg-amber-500"
                       }`}
                     >
@@ -345,28 +343,40 @@ export default function TutorsListClient({ initialTutors }: TutorsListClientProp
                       <span>{tutor.rating.toFixed(1)}</span>
                     </div>
 
-                    <div className="flex items-center gap-1.5 text-sm text-gray-500 truncate">
+                    <div className="flex items-center gap-1 text-sm text-gray-500 dark:text-gray-400 truncate">
                       <svg
                         className="w-4 h-4 text-gray-400 shrink-0"
                         fill="none"
                         viewBox="0 0 24 24"
                         stroke="currentColor"
                       >
-                        <circle cx="12" cy="12" r="3" strokeWidth="2" />
-                        <circle cx="12" cy="12" r="8" strokeWidth="2" />
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth="2"
+                          d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
+                        />
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth="2"
+                          d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
+                        />
                       </svg>
                       <span className="truncate">{tutor.location}</span>
                     </div>
                   </div>
 
                   {/* Stats (Experience & Sessions) */}
-                  <div className="space-y-0.5 mb-4">
-                    <p className="text-sm text-gray-700 font-medium">
-                      {tutor.experience}
-                    </p>
-                    <p className="text-sm text-gray-500">
-                      {tutor.sessionsCount}
-                    </p>
+                  <div className="space-y-1 mb-4">
+                    <div className="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300 font-medium">
+                      <span className="text-gray-400">💼</span>
+                      <span>{tutor.experience}</span>
+                    </div>
+                    <div className="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400">
+                      <span className="text-emerald-500 font-bold">✓</span>
+                      <span>{tutor.sessionsCount}</span>
+                    </div>
                   </div>
 
                   {/* Tag Pills */}
@@ -374,7 +384,7 @@ export default function TutorsListClient({ initialTutors }: TutorsListClientProp
                     {tutor.tags.map((tag, idx) => (
                       <span
                         key={idx}
-                        className="px-3 py-1 bg-gray-100 text-gray-600 rounded-full text-xs font-medium"
+                        className="px-2.5 py-1 bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 rounded-full text-xs font-medium"
                       >
                         {tag}
                       </span>
@@ -383,12 +393,12 @@ export default function TutorsListClient({ initialTutors }: TutorsListClientProp
                 </div>
 
                 {/* Bottom Footer: Price & CTA Button */}
-                <div className="pt-4 border-t border-gray-100 flex items-center justify-between gap-3">
+                <div className="pt-4 border-t border-gray-100 dark:border-gray-800 flex items-center justify-between gap-3">
                   <div>
-                    <span className="text-lg font-bold text-gray-900 block leading-tight">
+                    <span className="text-lg font-bold text-gray-900 dark:text-white block leading-tight">
                       {tutor.priceFormatted}
                     </span>
-                    <span className="text-xs text-gray-400">
+                    <span className="text-xs text-gray-400 dark:text-gray-500">
                       {tutor.mode}
                     </span>
                   </div>
@@ -397,7 +407,7 @@ export default function TutorsListClient({ initialTutors }: TutorsListClientProp
                     variant="brand"
                     shape="pill"
                     size="medium"
-                    className="text-base font-semibold px-5 shadow-sm hover:shadow-md transition-shadow"
+                    className="text-sm font-semibold px-5 shadow-xs hover:shadow-md transition-shadow"
                     onClick={() => handleBook(tutor)}
                   >
                     Đặt lịch học
@@ -409,17 +419,17 @@ export default function TutorsListClient({ initialTutors }: TutorsListClientProp
         )}
 
         {/* ========================================================================= */}
-        {/* MODAL CHI TIẾT GIA SƯ / ĐẶT LỊCH HỌC                                      */}
+        {/* MODAL                                                                     */}
         {/* ========================================================================= */}
         {isModalOpen && selectedTutor && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-xs animate-in fade-in">
-            <div className="bg-white rounded-3xl max-w-lg w-full p-6 sm:p-8 shadow-2xl border border-gray-100 relative">
-              
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-xs animate-in fade-in">
+            <div className="bg-white dark:bg-gray-900 rounded-3xl max-w-lg w-full p-6 sm:p-8 shadow-2xl border border-gray-100 dark:border-gray-800 relative">
+
               {/* Close Button */}
               <button
                 type="button"
                 onClick={() => setIsModalOpen(false)}
-                className="absolute top-5 right-5 text-gray-400 hover:text-gray-600 p-2 rounded-full hover:bg-gray-100 transition-colors cursor-pointer"
+                className="absolute top-5 right-5 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors cursor-pointer"
                 aria-label="Đóng"
               >
                 ✕
@@ -432,12 +442,13 @@ export default function TutorsListClient({ initialTutors }: TutorsListClientProp
                   alt={selectedTutor.name}
                   fallbackText={selectedTutor.name}
                   shape="circle"
+                  className="border border-gray-100 dark:border-gray-800 shadow-sm shrink-0"
                 />
-                <div>
-                  <h3 className="text-xl font-bold text-gray-900">
+                <div className="min-w-0">
+                  <h3 className="text-xl font-bold text-gray-900 dark:text-white truncate">
                     {selectedTutor.name}
                   </h3>
-                  <p className="text-base text-gray-500 font-medium">
+                  <p className="text-sm text-gray-500 dark:text-gray-400 font-medium truncate">
                     {selectedTutor.title}
                   </p>
                   <p className="text-sm text-brand font-semibold mt-1">
@@ -446,7 +457,7 @@ export default function TutorsListClient({ initialTutors }: TutorsListClientProp
                 </div>
               </div>
 
-              <div className="bg-blue-50/60 rounded-2xl p-4 mb-6 text-sm text-blue-900 space-y-1">
+              <div className="bg-blue-50/70 dark:bg-blue-950/40 rounded-2xl p-4 mb-6 text-sm text-blue-950 dark:text-blue-200 space-y-1.5 border border-blue-100/60 dark:border-blue-900/60">
                 <p>📍 <strong>Khu vực:</strong> {selectedTutor.location}</p>
                 <p>🎓 <strong>Kinh nghiệm:</strong> {selectedTutor.experience}</p>
                 <p>⏱️ <strong>Đã hoàn thành:</strong> {selectedTutor.sessionsCount}</p>
@@ -468,17 +479,34 @@ export default function TutorsListClient({ initialTutors }: TutorsListClientProp
                   size="large"
                   onClick={() => {
                     setIsModalOpen(false);
-                    router.push("/login");
+                    if (isAuthenticated) {
+                      setIsHireDialogOpen(true);
+                    } else {
+                      router.push("/login");
+                    }
                   }}
                   className="text-base font-semibold"
                 >
-                  Đăng nhập để kết nối
+                  {isAuthenticated ? "Thuê gia sư" : "Đăng nhập để kết nối"}
                 </Button>
               </div>
 
             </div>
           </div>
         )}
+
+        {/* ========================================================================= */}
+        {/* DIALOG                                                                    */}
+        {/* ========================================================================= */}
+        <HireTutorDialog
+          isOpen={isHireDialogOpen}
+          onClose={() => setIsHireDialogOpen(false)}
+          onBackToDetail={() => {
+            setIsHireDialogOpen(false);
+            setIsModalOpen(true);
+          }}
+          tutor={selectedTutor}
+        />
 
       </div>
     </div>

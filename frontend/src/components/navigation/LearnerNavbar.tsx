@@ -56,8 +56,8 @@ export default function LearnerNavbar() {
           <Link href="/tutors" className="hidden 2xl:inline-flex rounded-md bg-brand-50 px-3 py-1.5 text-xs font-medium text-brand hover:bg-brand-100">
             + Tìm gia sư mới
           </Link>
-          <Link href="/settings" className="hidden lg:inline text-xs font-medium text-content-secondary hover:text-content-primary">
-            Cài đặt
+          <Link href="/profile" className="text-xs font-medium text-content-secondary hover:text-content-primary">
+            Hồ sơ
           </Link>
           <span className="hidden md:block max-w-24 truncate text-sm" title={account.fullName}>{account.fullName}</span>
           <LogoutButton />
