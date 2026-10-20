@@ -19,6 +19,9 @@ public sealed class ApplicationUserConfiguration : IEntityTypeConfiguration<Appl
             table.HasCheckConstraint(
                 "ck_user_accounts_status_canonical",
                 "status IN ('ACTIVE', 'LOCKED', 'INACTIVE')");
+            table.HasCheckConstraint(
+                "ck_user_accounts_role_canonical",
+                "role IN ('ADMIN', 'LEARNER', 'TUTOR')");
         });
 
         builder.Property(user => user.Email)
@@ -50,6 +53,11 @@ public sealed class ApplicationUserConfiguration : IEntityTypeConfiguration<Appl
 
         builder.Property(user => user.AvatarUrl)
             .HasMaxLength(2048);
+
+        builder.Property(user => user.Role)
+            .HasConversion<string>()
+            .HasMaxLength(16)
+            .IsRequired();
 
         builder.Property(user => user.Status)
             .HasConversion<string>()

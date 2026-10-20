@@ -170,7 +170,6 @@ public sealed class RegisterEndpointTests(PostgreSqlFixture fixture)
         await using var verification = factory.Services.CreateAsyncScope();
         var db = verification.ServiceProvider.GetRequiredService<ApplicationDbContext>();
         Assert.Empty(await db.Users.ToListAsync());
-        Assert.Empty(await db.UserRoles.ToListAsync());
         Assert.Empty(await db.AuditEvents.ToListAsync());
     }
 

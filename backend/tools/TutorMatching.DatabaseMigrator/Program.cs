@@ -15,6 +15,6 @@ try
 catch (Exception ex)
 {
     // Do not print connection strings or stack traces containing configuration.
-    Console.Error.WriteLine($"Migration failed ({ex.GetType().Name}). Check target/configuration and schema conflicts.");
+    Console.Error.WriteLine($"Migration failed ({ex.GetType().Name}): {ex.Message}");
     Environment.ExitCode = 1;
 }

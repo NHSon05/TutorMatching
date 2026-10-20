@@ -11,6 +11,8 @@ public sealed class ApplicationUser : IdentityUser<Guid>
 
     public string? AvatarUrl { get; set; }
 
+    public AccountRole Role { get; set; } = AccountRole.LEARNER;
+
     public AccountStatus Status { get; set; } = AccountStatus.ACTIVE;
 
     public DateTimeOffset? LastLoginAt { get; set; }

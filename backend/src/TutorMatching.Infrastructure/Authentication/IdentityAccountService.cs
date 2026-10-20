@@ -52,6 +52,7 @@ public sealed class IdentityAccountService(
             Email = trimmedEmail,
             PhoneNumber = normalizedPhoneNumber,
             FullName = fullName.Trim(),
+            Role = role,
             Status = AccountStatus.ACTIVE,
             CreatedAt = now,
             UpdatedAt = now
@@ -171,8 +172,8 @@ public sealed class IdentityAccountService(
     {
         var user = await userManager.FindByIdAsync(userId.ToString());
         if (user is null || user.Status != AccountStatus.ACTIVE || user.DeletedAt is not null) return null;
-        var roles = await userManager.GetRolesAsync(user);
-        if (roles.Count != 1 || !Enum.TryParse<AccountRole>(roles[0], out var role) || !Enum.IsDefined(role)) return null;
+        var role = user.Role;
+        if (!Enum.IsDefined(role)) return null;
 
         TutorProfileStatus? tutorStatus = null;
         if (role == AccountRole.TUTOR)

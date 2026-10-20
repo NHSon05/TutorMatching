@@ -31,7 +31,8 @@ public sealed class SnakeCaseSchemaTests(PostgreSqlFixture fixture)
 
         var tables = db.Model.GetEntityTypes().Select(e => e.GetTableName()).ToArray();
         Assert.Contains("user_accounts", tables);
-        Assert.Contains("asp_net_user_roles", tables);
+        Assert.DoesNotContain("asp_net_user_roles", tables);
+        Assert.DoesNotContain("asp_net_roles", tables);
         var constraintNames = await Strings(db, "SELECT conname FROM pg_constraint WHERE connamespace = current_schema()::regnamespace");
         foreach (var entity in db.GetService<IDesignTimeModel>().Model.GetEntityTypes())
         {
@@ -45,9 +46,9 @@ public sealed class SnakeCaseSchemaTests(PostgreSqlFixture fixture)
         var checkFailure = await Assert.ThrowsAsync<PostgresException>(() =>
             db.Database.ExecuteSqlRawAsync("UPDATE user_accounts SET full_name = ' x '"));
         Assert.Equal(PostgresErrorCodes.CheckViolation, checkFailure.SqlState);
-        var uniqueFailure = await Assert.ThrowsAsync<PostgresException>(() =>
-            db.Database.ExecuteSqlRawAsync("INSERT INTO asp_net_roles (id, name, normalized_name) VALUES (gen_random_uuid(), 'Other', 'LEARNER')"));
-        Assert.Equal(PostgresErrorCodes.UniqueViolation, uniqueFailure.SqlState);
+        var roleCheckFailure = await Assert.ThrowsAsync<PostgresException>(() =>
+            db.Database.ExecuteSqlRawAsync("UPDATE user_accounts SET role = 'INVALID'"));
+        Assert.Equal(PostgresErrorCodes.CheckViolation, roleCheckFailure.SqlState);
     }
 
     [Fact]
@@ -88,15 +89,14 @@ public sealed class SnakeCaseSchemaTests(PostgreSqlFixture fixture)
         Assert.Equal(userId, user.Id);
         Assert.Equal("synthetic-hash", user.PasswordHash);
         Assert.Equal("synthetic-stamp", user.SecurityStamp);
-        Assert.Single(await db.UserRoles.ToListAsync());
+        Assert.Equal(TutorMatching.Domain.Users.AccountRole.LEARNER, user.Role);
         Assert.Single(await db.UserLogins.ToListAsync());
         Assert.Single(await db.UserTokens.ToListAsync());
         Assert.Single(await db.UserClaims.ToListAsync());
-        Assert.Single(await db.RoleClaims.ToListAsync());
         Assert.Equal(DateTimeOffset.MinValue, (await db.TokenSessions.SingleAsync()).RevokedAt);
         Assert.Equal(DateTimeOffset.MinValue, (await db.SessionRefreshTokens.SingleAsync()).ConsumedAt);
         var history = (await db.Database.GetAppliedMigrationsAsync()).ToArray();
-        Assert.Equal(5, history.Length);
+        Assert.Equal(7, history.Length);
         await DatabaseMigrationRunner.MigrateAsync(db);
         Assert.Equal(history, await db.Database.GetAppliedMigrationsAsync());
         // Renamed Identity sequences retain their ownership/default and next value.
@@ -115,7 +115,7 @@ public sealed class SnakeCaseSchemaTests(PostgreSqlFixture fixture)
         var tables = await Strings(db, "SELECT table_name FROM information_schema.tables WHERE table_schema = current_schema()");
         Assert.Contains("__EFMigrationsHistory", tables);
         Assert.Contains("ef_migrations_history", tables);
-        Assert.Equal(5, (await db.Database.GetAppliedMigrationsAsync()).Count());
+        Assert.Equal(7, (await db.Database.GetAppliedMigrationsAsync()).Count());
     }
 
     internal static async Task AssertSnakeCaseCatalog(ApplicationDbContext db)

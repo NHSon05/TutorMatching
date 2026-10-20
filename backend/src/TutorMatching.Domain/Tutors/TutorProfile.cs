@@ -33,6 +33,10 @@ public sealed class TutorProfile
     public string? TeachingMethodology { get; set; }
     public string? AchievementsAndResults { get; set; }
 
+    // Location
+    public string? ProvinceCode { get; set; }
+    public string? DistrictCode { get; set; }
+
     // Step 6: Pricing
     public int? HourlyRateVnd { get; set; }
     public int? SessionRateVnd { get; set; }

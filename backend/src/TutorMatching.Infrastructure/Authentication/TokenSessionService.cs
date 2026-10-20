@@ -19,9 +19,8 @@ public sealed class TokenSessionService(
         if (user is null || user.Status != AccountStatus.ACTIVE || user.DeletedAt is not null)
             return null;
 
-        var roles = await userManager.GetRolesAsync(user);
-        if (roles.Count != 1) return null;
-        var role = roles[0];
+        if (!Enum.IsDefined(user.Role)) return null;
+        var role = user.Role.ToString();
 
         var now = clock.UtcNow;
         var sessionId = Guid.NewGuid();
@@ -157,10 +156,9 @@ public sealed class TokenSessionService(
         return true;
     }
 
-    private async Task<bool> HasCurrentRoleAsync(ApplicationUser user, string sessionRole)
+    private static Task<bool> HasCurrentRoleAsync(ApplicationUser user, string sessionRole)
     {
-        var roles = await userManager.GetRolesAsync(user);
-        return roles.Count == 1 && string.Equals(roles[0], sessionRole, StringComparison.OrdinalIgnoreCase);
+        return Task.FromResult(string.Equals(user.Role.ToString(), sessionRole, StringComparison.OrdinalIgnoreCase));
     }
 
     private async Task<TokenSession?> LockSessionAsync(string hash, CancellationToken cancellationToken)

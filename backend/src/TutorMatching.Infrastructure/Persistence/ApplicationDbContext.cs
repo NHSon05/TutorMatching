@@ -1,6 +1,13 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
+using TutorMatching.Domain.Catalog;
+using TutorMatching.Domain.Content;
+using TutorMatching.Domain.Courses;
+using TutorMatching.Domain.Hiring;
+using TutorMatching.Domain.Locations;
+using TutorMatching.Domain.Messaging;
+using TutorMatching.Domain.Notifications;
 using TutorMatching.Domain.Tutors;
 using TutorMatching.Domain.Users;
 using TutorMatching.Infrastructure.Auditing;
@@ -10,16 +17,29 @@ namespace TutorMatching.Infrastructure.Persistence;
 
 public sealed class ApplicationDbContext(
     DbContextOptions<ApplicationDbContext> options)
-    : IdentityDbContext<ApplicationUser, IdentityRole<Guid>, Guid>(options)
+    : IdentityUserContext<ApplicationUser, Guid>(options)
 {
-    private static readonly Guid AdminRoleId = Guid.Parse("11111111-1111-1111-1111-111111111111");
-    private static readonly Guid LearnerRoleId = Guid.Parse("22222222-2222-2222-2222-222222222222");
-    private static readonly Guid TutorRoleId = Guid.Parse("33333333-3333-3333-3333-333333333333");
-
     public DbSet<AuditEvent> AuditEvents => Set<AuditEvent>();
     public DbSet<TokenSession> TokenSessions => Set<TokenSession>();
     public DbSet<SessionRefreshToken> SessionRefreshTokens => Set<SessionRefreshToken>();
     public DbSet<TutorProfile> TutorProfiles => Set<TutorProfile>();
+    public DbSet<Province> Provinces => Set<Province>();
+    public DbSet<District> Districts => Set<District>();
+    public DbSet<Subject> Subjects => Set<Subject>();
+    public DbSet<TutorSubject> TutorSubjects => Set<TutorSubject>();
+    public DbSet<AvailabilitySlot> AvailabilitySlots => Set<AvailabilitySlot>();
+    public DbSet<Course> Courses => Set<Course>();
+    public DbSet<TutorProfileReview> TutorProfileReviews => Set<TutorProfileReview>();
+    public DbSet<HireRequest> HireRequests => Set<HireRequest>();
+    public DbSet<RequestSchedule> RequestSchedules => Set<RequestSchedule>();
+    public DbSet<Negotiation> Negotiations => Set<Negotiation>();
+    public DbSet<NegotiationSchedule> NegotiationSchedules => Set<NegotiationSchedule>();
+    public DbSet<RequestStatusHistory> RequestStatusHistories => Set<RequestStatusHistory>();
+    public DbSet<Conversation> Conversations => Set<Conversation>();
+    public DbSet<Message> Messages => Set<Message>();
+    public DbSet<Notification> Notifications => Set<Notification>();
+    public DbSet<Article> Articles => Set<Article>();
+    public DbSet<PasswordResetToken> PasswordResetTokens => Set<PasswordResetToken>();
 
     protected override void OnModelCreating(ModelBuilder builder)
     {
@@ -28,6 +48,23 @@ public sealed class ApplicationDbContext(
         builder.ApplyConfiguration(new ApplicationUserConfiguration());
         builder.ApplyConfiguration(new AuditEventConfiguration());
         builder.ApplyConfiguration(new TutorProfileConfiguration());
+        builder.ApplyConfiguration(new ProvinceConfiguration());
+        builder.ApplyConfiguration(new DistrictConfiguration());
+        builder.ApplyConfiguration(new SubjectConfiguration());
+        builder.ApplyConfiguration(new TutorSubjectConfiguration());
+        builder.ApplyConfiguration(new AvailabilitySlotConfiguration());
+        builder.ApplyConfiguration(new CourseConfiguration());
+        builder.ApplyConfiguration(new TutorProfileReviewConfiguration());
+        builder.ApplyConfiguration(new HireRequestConfiguration());
+        builder.ApplyConfiguration(new RequestScheduleConfiguration());
+        builder.ApplyConfiguration(new NegotiationConfiguration());
+        builder.ApplyConfiguration(new NegotiationScheduleConfiguration());
+        builder.ApplyConfiguration(new RequestStatusHistoryConfiguration());
+        builder.ApplyConfiguration(new ConversationConfiguration());
+        builder.ApplyConfiguration(new MessageConfiguration());
+        builder.ApplyConfiguration(new NotificationConfiguration());
+        builder.ApplyConfiguration(new ArticleConfiguration());
+        builder.ApplyConfiguration(new PasswordResetTokenConfiguration());
         builder.Entity<TokenSession>(entity =>
         {
             entity.ToTable("TokenSessions");
@@ -44,16 +81,6 @@ public sealed class ApplicationDbContext(
             entity.HasOne<TokenSession>().WithMany().HasForeignKey(x => x.SessionId).OnDelete(DeleteBehavior.Cascade);
         });
 
-        builder.Entity<IdentityUserRole<Guid>>()
-            .HasIndex(userRole => userRole.UserId)
-            .IsUnique()
-            .HasDatabaseName("UX_AspNetUserRoles_UserId");
-
-        builder.Entity<IdentityRole<Guid>>().HasData(
-            CreateRole(AdminRoleId, AccountRole.ADMIN),
-            CreateRole(LearnerRoleId, AccountRole.LEARNER),
-            CreateRole(TutorRoleId, AccountRole.TUTOR));
-
         SnakeCaseNaming.Apply(builder);
     }
 
@@ -69,18 +96,6 @@ public sealed class ApplicationDbContext(
     {
         ApplyAccountInvariants();
         return base.SaveChangesAsync(acceptAllChangesOnSuccess, cancellationToken);
-    }
-
-    private static IdentityRole<Guid> CreateRole(Guid id, AccountRole role)
-    {
-        var name = role.ToString();
-        return new IdentityRole<Guid>
-        {
-            Id = id,
-            Name = name,
-            NormalizedName = name,
-            ConcurrencyStamp = id.ToString("N"),
-        };
     }
 
     private void ApplyAccountInvariants()

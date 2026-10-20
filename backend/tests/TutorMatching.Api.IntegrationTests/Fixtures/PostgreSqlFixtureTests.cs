@@ -25,7 +25,7 @@ public sealed class PostgreSqlFixtureTests(PostgreSqlFixture fixture)
         await using var scope = factory.Services.CreateAsyncScope();
         var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
         Assert.Contains("20261003070401_InitialIdentityProfileAudit", await db.Database.GetAppliedMigrationsAsync());
-        Assert.Equal(new[] { "ADMIN", "LEARNER", "TUTOR" }, await db.Roles.OrderBy(role => role.Name).Select(role => role.Name).ToArrayAsync());
+        Assert.Equal(new[] { "ADMIN", "LEARNER", "TUTOR" }, Enum.GetNames<TutorMatching.Domain.Users.AccountRole>().OrderBy(name => name).ToArray());
         Assert.Empty(await db.Users.ToListAsync());
     }
 

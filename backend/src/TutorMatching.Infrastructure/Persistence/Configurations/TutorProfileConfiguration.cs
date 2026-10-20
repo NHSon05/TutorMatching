@@ -82,6 +82,19 @@ public sealed class TutorProfileConfiguration : IEntityTypeConfiguration<TutorPr
         builder.Property(x => x.ApprovedAt)
             .HasColumnType("timestamp with time zone");
 
+        builder.Property(x => x.ProvinceCode).HasMaxLength(32);
+        builder.Property(x => x.DistrictCode).HasMaxLength(32);
+
+        builder.HasOne<TutorMatching.Domain.Locations.Province>()
+            .WithMany()
+            .HasForeignKey(x => x.ProvinceCode)
+            .OnDelete(DeleteBehavior.SetNull);
+
+        builder.HasOne<TutorMatching.Domain.Locations.District>()
+            .WithMany()
+            .HasForeignKey(x => x.DistrictCode)
+            .OnDelete(DeleteBehavior.SetNull);
+
         builder.HasOne<ApplicationUser>()
             .WithOne()
             .HasForeignKey<TutorProfile>(x => x.UserId)

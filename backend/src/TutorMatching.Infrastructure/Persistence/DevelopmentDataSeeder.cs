@@ -7,24 +7,12 @@ using TutorMatching.Domain.Users;
 namespace TutorMatching.Infrastructure.Persistence;
 
 public sealed class DevelopmentDataSeeder(
-    RoleManager<IdentityRole<Guid>> roleManager,
     UserManager<ApplicationUser> userManager,
     ApplicationDbContext dbContext,
     IConfiguration configuration)
 {
     public async Task SeedAsync()
     {
-        foreach (var role in Enum.GetValues<AccountRole>())
-        {
-            var roleName = role.ToString();
-            if (!await roleManager.RoleExistsAsync(roleName))
-            {
-                EnsureSucceeded(
-                    await roleManager.CreateAsync(new IdentityRole<Guid>(roleName)),
-                    $"create the canonical {roleName} role");
-            }
-        }
-
         await SeedAdminAsync();
         await SeedTutorsAsync();
     }
@@ -48,7 +36,7 @@ public sealed class DevelopmentDataSeeder(
         var existingUser = await userManager.FindByEmailAsync(email);
         if (existingUser is not null)
         {
-            if (!await userManager.IsInRoleAsync(existingUser, AccountRole.ADMIN.ToString()))
+            if (existingUser.Role != AccountRole.ADMIN)
             {
                 throw new InvalidOperationException(
                     "The configured seed email already belongs to a non-Admin account.");
@@ -63,6 +51,7 @@ public sealed class DevelopmentDataSeeder(
             Email = email,
             UserName = email,
             FullName = fullName,
+            Role = AccountRole.ADMIN,
             EmailConfirmed = true,
             Status = AccountStatus.ACTIVE,
         };
@@ -70,9 +59,6 @@ public sealed class DevelopmentDataSeeder(
         EnsureSucceeded(
             await userManager.CreateAsync(user, password),
             "create the controlled Admin demo account");
-        EnsureSucceeded(
-            await userManager.AddToRoleAsync(user, AccountRole.ADMIN.ToString()),
-            "assign the Admin role to the controlled demo account");
     }
 
     private async Task SeedTutorsAsync()
@@ -99,6 +85,7 @@ public sealed class DevelopmentDataSeeder(
                 PhoneNumber = item.PhoneNumber,
                 DateOfBirth = item.DateOfBirth,
                 AvatarUrl = item.AvatarUrl,
+                Role = AccountRole.TUTOR,
                 EmailConfirmed = true,
                 Status = AccountStatus.ACTIVE,
                 CreatedAt = DateTimeOffset.UtcNow,
@@ -107,9 +94,6 @@ public sealed class DevelopmentDataSeeder(
 
             var createResult = await userManager.CreateAsync(user, defaultPassword);
             EnsureSucceeded(createResult, $"create tutor user account {item.Email}");
-
-            var roleResult = await userManager.AddToRoleAsync(user, AccountRole.TUTOR.ToString());
-            EnsureSucceeded(roleResult, $"assign TUTOR role to {item.Email}");
 
             var now = DateTimeOffset.UtcNow;
             var profile = new TutorProfile
