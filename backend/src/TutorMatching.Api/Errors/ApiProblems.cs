@@ -36,6 +36,7 @@ public static class ApiProblems
             AccountFailure.DuplicatePhoneNumber => (409, "Điện thoại đã được sử dụng"),
             AccountFailure.InvalidCredentials => (401, "Thông tin đăng nhập không hợp lệ"),
             AccountFailure.Forbidden => (403, "Bạn không có quyền thực hiện thao tác này"),
+            AccountFailure.Conflict => (409, "Hồ sơ đã thay đổi hoặc đang chờ duyệt."),
             AccountFailure.NotFound => (404, "Không tìm thấy dữ liệu"),
             AccountFailure.InvalidResetCredential => (400, "Yêu cầu đặt lại mật khẩu không hợp lệ hoặc đã hết hạn."),
             _ => (500, "Đã xảy ra lỗi hệ thống.")

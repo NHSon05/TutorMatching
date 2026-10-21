@@ -1,3 +1,5 @@
+using TutorMatching.Domain.Catalog;
+using System.Text.Json;
 using Microsoft.EntityFrameworkCore;
 using Npgsql;
 using TutorMatching.Application.Abstractions;
@@ -22,7 +24,18 @@ public sealed class TutorOnboardingService(
         return MapToData(user, profile);
     }
 
-    public async Task<SaveDraftResult> SaveDraftAsync(
+    public Task<SaveDraftResult> SaveDraftAsync(Guid userId, SaveDraftCommand command, CancellationToken cancellationToken = default) =>
+        dbContext.Database.CreateExecutionStrategy().ExecuteAsync(async () =>
+        {
+            await using var tx = await dbContext.Database.BeginTransactionAsync(cancellationToken);
+            await dbContext.Database.ExecuteSqlInterpolatedAsync($"SELECT id FROM tutor_profiles WHERE user_id={userId} FOR UPDATE", cancellationToken);
+            var result = await SaveDraftCoreAsync(userId, command, cancellationToken);
+            if (result.Succeeded) await tx.CommitAsync(cancellationToken);
+            else dbContext.ChangeTracker.Clear();
+            return result;
+        });
+
+    private async Task<SaveDraftResult> SaveDraftCoreAsync(
         Guid userId,
         SaveDraftCommand command,
         CancellationToken cancellationToken = default)
@@ -32,6 +45,22 @@ public sealed class TutorOnboardingService(
 
         var profile = await GetOrCreateProfileAsync(user, cancellationToken);
         var now = clock.UtcNow;
+        if (!profile.CanEdit(command.ExpectedVersion))
+            return SaveDraftResult.Fail(AccountFailure.Conflict);
+        if (command.Discovery?.Subjects is null && ReadSelections(profile.Id).Count > 0 && (command.About?.Subjects is not null || command.About?.TeachingLevels is not null))
+            return SaveDraftResult.Fail(AccountFailure.InvalidInput, new Dictionary<string,string[]> { ["subjects"]=["Vui lòng sửa môn/lớp từ danh mục chuẩn."] });
+        if (command.Pricing is { } rates && new[] { rates.HourlyRateVnd, rates.SessionRateVnd, rates.MonthlyRateVnd }.Any(x => x is <= 0))
+            return SaveDraftResult.Fail(AccountFailure.InvalidInput, new Dictionary<string,string[]> { ["sessionRateVnd"] = ["Học phí phải là số nguyên dương."] });
+        if (command.About?.DateOfBirth > DateOnly.FromDateTime(clock.UtcNow.UtcDateTime) || (command.About?.PhoneNumber?.Length??0)>32 || (command.AvatarUrl?.Length??0)>2048)
+            return SaveDraftResult.Fail(AccountFailure.InvalidInput);
+        if (command.Description?.ExperienceYears is < 0)
+            return SaveDraftResult.Fail(AccountFailure.InvalidInput);
+        var before = JsonSerializer.Serialize(MapToData(user, profile) with { CurrentStep = 0, Version = Guid.Empty });
+        if (command.Discovery is { } discovery)
+        {
+            var validation = await ApplyDiscoveryAsync(profile, discovery, cancellationToken);
+            if (validation is not null) return SaveDraftResult.Fail(AccountFailure.InvalidInput, validation);
+        }
 
         if (command.CurrentStep is { } step)
         {
@@ -129,6 +158,13 @@ public sealed class TutorOnboardingService(
             profile.IsNegotiable = pricing.IsNegotiable;
         }
 
+        if (profile.Status == TutorProfileStatus.APPROVED && before != JsonSerializer.Serialize(MapToData(user, profile) with { CurrentStep = 0, Version = Guid.Empty }))
+        {
+            var validation = await SubmissionErrorsAsync(user, profile, cancellationToken);
+            profile.ReconsiderApproval(validation.Count == 0, now);
+        }
+        if (user.FullName.Length>100 || (profile.Bio?.Length??0)>4000 || (profile.TeachingMethodology?.Length??0)>4000 || (profile.AchievementsAndResults?.Length??0)>4000 || (profile.Degree?.Length??0)>256 || (profile.SchoolName?.Length??0)>256 || (profile.Specialization?.Length??0)>256)
+            return SaveDraftResult.Fail(AccountFailure.InvalidInput);
         user.UpdatedAt = now;
         profile.UpdatedAt = now;
 
@@ -154,60 +190,29 @@ public sealed class TutorOnboardingService(
             && string.Equals(pg.ConstraintName, "ux_user_accounts_phone_number", StringComparison.Ordinal);
     }
 
-    public async Task<SubmitResult> SubmitAsync(
-        Guid userId,
-        CancellationToken cancellationToken = default)
+    public Task<SubmitResult> SubmitAsync(Guid userId, CancellationToken cancellationToken = default, Guid? expectedVersion = null) =>
+        dbContext.Database.CreateExecutionStrategy().ExecuteAsync(async () =>
+        {
+            await using var tx = await dbContext.Database.BeginTransactionAsync(cancellationToken);
+            await dbContext.Database.ExecuteSqlInterpolatedAsync($"SELECT id FROM tutor_profiles WHERE user_id={userId} FOR UPDATE", cancellationToken);
+            var result = await SubmitCoreAsync(userId, cancellationToken, expectedVersion);
+            if (result.Succeeded) await tx.CommitAsync(cancellationToken);
+            return result;
+        });
+    private async Task<SubmitResult> SubmitCoreAsync(Guid userId, CancellationToken cancellationToken, Guid? expectedVersion)
     {
         var user = await dbContext.Users.FirstOrDefaultAsync(u => u.Id == userId, cancellationToken)
             ?? throw new InvalidOperationException($"User {userId} not found.");
 
         var profile = await GetOrCreateProfileAsync(user, cancellationToken);
-        var errors = new Dictionary<string, List<string>>(StringComparer.OrdinalIgnoreCase);
-
-        // Step 1: About validation
-        if (string.IsNullOrWhiteSpace(user.FullName) || user.FullName.Trim().Length < 2)
-            AddError(errors, "fullName", "Họ và tên phải có ít nhất 2 ký tự.");
-        if (user.DateOfBirth is null)
-            AddError(errors, "dateOfBirth", "Vui lòng chọn ngày sinh.");
-        if (string.IsNullOrWhiteSpace(user.PhoneNumber))
-            AddError(errors, "phoneNumber", "Vui lòng nhập số điện thoại.");
-        if (profile.Subjects.Count == 0)
-            AddError(errors, "subjects", "Vui lòng chọn ít nhất một môn học nhận dạy.");
-        if (profile.Languages.Count == 0)
-            AddError(errors, "languages", "Vui lòng chọn ít nhất một ngôn ngữ giảng dạy.");
-        if (profile.TeachingLevels.Count == 0)
-            AddError(errors, "teachingLevels", "Vui lòng chọn ít nhất một trình độ học sinh.");
-
-        // Step 2: Photo validation
-        if (string.IsNullOrWhiteSpace(profile.AvatarUrl) && string.IsNullOrWhiteSpace(user.AvatarUrl))
-            AddError(errors, "avatarUrl", "Vui lòng tải lên ảnh đại diện.");
-
-        // Step 3: Certifications validation
-        if (profile.HasCertifications && profile.Certifications.Count == 0)
-            AddError(errors, "certifications", "Vui lòng tải lên thông tin chứng chỉ hoặc bỏ chọn nếu chưa có.");
-
-        // Step 4: Education validation
-        if (string.IsNullOrWhiteSpace(profile.EducationType))
-            AddError(errors, "educationType", "Vui lòng chọn thông tin học vấn.");
-
-        // Step 5: Description validation
-        if (string.IsNullOrWhiteSpace(profile.Bio))
-            AddError(errors, "bio", "Vui lòng nhập giới thiệu bản thân (Bio).");
-        if (profile.ExperienceYears is null or < 0)
-            AddError(errors, "experienceYears", "Vui lòng nhập số năm kinh nghiệm hợp lệ.");
-
-        // Step 6: Pricing validation
-        var hasValidRate = (profile.HourlyRateVnd is > 0) ||
-                           (profile.SessionRateVnd is > 0) ||
-                           (profile.MonthlyRateVnd is > 0);
-        if (!hasValidRate)
-            AddError(errors, "pricing", "Vui lòng thiết lập ít nhất một mức giá học phí hợp lệ (theo giờ, buổi hoặc tháng).");
-
+        if (!profile.CanSubmit(expectedVersion)) return new(false, Conflict: true);
+        var errors = await SubmissionErrorsAsync(user, profile, cancellationToken);
         if (errors.Count > 0)
         {
             return SubmitResult.Fail(errors.ToDictionary(k => k.Key, v => v.Value.ToArray()));
         }
 
+        if (!expectedVersion.HasValue) return new(false, Conflict: true);
         var now = clock.UtcNow;
         profile.Status = TutorProfileStatus.PENDING_REVIEW;
         profile.SubmittedAt = now;
@@ -259,7 +264,7 @@ public sealed class TutorOnboardingService(
         return profile;
     }
 
-    private static TutorOnboardingData MapToData(ApplicationUser user, TutorProfile profile)
+    private TutorOnboardingData MapToData(ApplicationUser user, TutorProfile profile)
     {
         return new TutorOnboardingData(
             profile.Status,
@@ -291,9 +296,104 @@ public sealed class TutorOnboardingService(
                 profile.MonthlyRateVnd,
                 profile.IsNegotiable),
             profile.SubmittedAt,
-            profile.ApprovedAt);
+            profile.ApprovedAt, profile.Version,
+            new TutorDiscoveryData(ReadSelections(profile.Id), profile.TeachingModes, profile.ProvinceCode, profile.DistrictCode));
     }
 
+    private async Task<Dictionary<string,List<string>>> SubmissionErrorsAsync(ApplicationUser user, TutorProfile profile, CancellationToken token)
+    {
+        var errors = new Dictionary<string, List<string>>(StringComparer.OrdinalIgnoreCase);
+
+        // Step 1: About validation
+        if (string.IsNullOrWhiteSpace(user.FullName) || user.FullName.Trim().Length < 2)
+            AddError(errors, "fullName", "Họ và tên phải có ít nhất 2 ký tự.");
+        if (user.DateOfBirth is null)
+            AddError(errors, "dateOfBirth", "Vui lòng chọn ngày sinh.");
+        if (string.IsNullOrWhiteSpace(user.PhoneNumber))
+            AddError(errors, "phoneNumber", "Vui lòng nhập số điện thoại.");
+        if (profile.Subjects.Count == 0)
+            AddError(errors, "subjects", "Vui lòng chọn ít nhất một môn học nhận dạy.");
+        if (profile.Languages.Count == 0)
+            AddError(errors, "languages", "Vui lòng chọn ít nhất một ngôn ngữ giảng dạy.");
+        if (profile.TeachingLevels.Count == 0)
+            AddError(errors, "teachingLevels", "Vui lòng chọn ít nhất một trình độ học sinh.");
+
+        // Step 2: Photo validation
+        if (string.IsNullOrWhiteSpace(profile.AvatarUrl) && string.IsNullOrWhiteSpace(user.AvatarUrl))
+            AddError(errors, "avatarUrl", "Vui lòng tải lên ảnh đại diện.");
+
+        // Step 3: Certifications validation
+        if (profile.HasCertifications && profile.Certifications.Count == 0)
+            AddError(errors, "certifications", "Vui lòng tải lên thông tin chứng chỉ hoặc bỏ chọn nếu chưa có.");
+
+        // Step 4: Education validation
+        if (string.IsNullOrWhiteSpace(profile.EducationType))
+            AddError(errors, "educationType", "Vui lòng chọn thông tin học vấn.");
+
+        // Step 5: Description validation
+        if (string.IsNullOrWhiteSpace(profile.Bio))
+            AddError(errors, "bio", "Vui lòng nhập giới thiệu bản thân (Bio).");
+        if (profile.ExperienceYears is null or < 0)
+            AddError(errors, "experienceYears", "Vui lòng nhập số năm kinh nghiệm hợp lệ.");
+
+        // Step 6: Pricing validation
+        if (profile.SessionRateVnd is not > 0)
+            AddError(errors, "sessionRateVnd", "Vui lòng nhập giá theo buổi dương.");
+        if (string.IsNullOrWhiteSpace(profile.Degree)) AddError(errors,"qualification","Vui lòng nhập trình độ chuyên môn.");
+        if (profile.TeachingModes.Count == 0) AddError(errors,"teachingModes","Chọn hình thức dạy.");
+        if (profile.TeachingModes.Any(m => m != "ONLINE") && !await dbContext.Districts.AnyAsync(d => d.DistrictCode == profile.DistrictCode && d.ProvinceCode == profile.ProvinceCode && d.IsActive && d.Province!.IsActive, token))
+            AddError(errors,"districtCode","Chọn khu vực hợp lệ.");
+        var selected = dbContext.ChangeTracker.Entries<TutorSubjectLevel>().Where(e => e.State != EntityState.Deleted && e.Entity.TutorProfileId == profile.Id).Select(e => e.Entity).ToList();
+        if (selected.Count == 0) selected = await dbContext.Set<TutorSubjectLevel>().Where(t => t.TutorProfileId == profile.Id).ToListAsync(token);
+        if (selected.Count == 0 || await dbContext.Set<TutorSubject>().AnyAsync(s=>s.TutorProfileId==profile.Id && !dbContext.Set<TutorSubjectLevel>().Any(t=>t.TutorProfileId==s.TutorProfileId && t.SubjectId==s.SubjectId),token)) AddError(errors,"subjects","Chọn môn và lớp đang hoạt động.");
+        foreach (var entry in selected)
+            if (!await dbContext.Subjects.AnyAsync(x=>x.Id==entry.SubjectId && x.IsActive,token) || !await dbContext.Set<TeachingLevel>().AnyAsync(x=>x.Code==entry.LevelCode && x.IsActive,token))
+                AddError(errors,"subjects","Môn hoặc lớp đã ngừng sử dụng.");
+        return errors;
+    }
+    private List<TutorSubjectSelection> ReadSelections(Guid id)
+    {
+        var rows = dbContext.Set<TutorSubjectLevel>().AsNoTracking().Where(t=>t.TutorProfileId==id).ToList();
+        var subjects = dbContext.Set<TutorSubject>().AsNoTracking().Where(t=>t.TutorProfileId==id).OrderBy(t=>t.SubjectId).Select(t=>t.SubjectId).ToList();
+        return subjects.Select(subject=>new TutorSubjectSelection(subject,rows.Where(t=>t.SubjectId==subject).Select(t=>t.LevelCode).Order().ToList())).ToList();
+    }
+    private async Task<IReadOnlyDictionary<string,string[]>?> ApplyDiscoveryAsync(TutorProfile profile, TutorDiscoveryData data, CancellationToken token)
+    {
+        var errors = new Dictionary<string,string[]>();
+        if (data.TeachingModes is { } modes && (modes.Distinct().Count()!=modes.Count || modes.Any(m=>m is not ("ONLINE" or "OFFLINE" or "HYBRID")))) errors["teachingModes"]=["Hình thức dạy không hợp lệ."];
+        if (data.Subjects is { } selections)
+        {
+            if (selections.Any(x=>x is null) || selections.Count>100) return new Dictionary<string,string[]> { ["subjects"]=["Danh sách môn không hợp lệ."] };
+            if (selections.Select(x=>x.SubjectId).Distinct().Count()!=selections.Count) errors["subjects"]=["Môn học bị trùng."];
+            foreach(var entry in selections)
+            {
+                if (entry.LevelCodes is null || entry.LevelCodes.Distinct().Count()!=entry.LevelCodes.Count || !await dbContext.Subjects.AnyAsync(x=>x.Id==entry.SubjectId && x.IsActive,token)) {errors["subjects"]=["Môn/lớp không hợp lệ."];continue;}
+                if (await dbContext.Set<TeachingLevel>().CountAsync(x=>entry.LevelCodes.Contains(x.Code)&&x.IsActive,token)!=entry.LevelCodes.Count) errors["subjects"]=["Lớp đã ngừng sử dụng hoặc không tồn tại."];
+            }
+        }
+        if ((data.ProvinceCode?.Length??0)>32 || (data.DistrictCode?.Length??0)>32) errors["districtCode"]=["Mã khu vực quá dài."];
+        if (!string.IsNullOrWhiteSpace(data.ProvinceCode) && !await dbContext.Provinces.AnyAsync(p=>p.ProvinceCode==data.ProvinceCode&&p.IsActive,token)) errors["provinceCode"]=["Tỉnh/thành không hợp lệ."];
+        if (!string.IsNullOrWhiteSpace(data.DistrictCode) && !await dbContext.Districts.AnyAsync(d=>d.DistrictCode==data.DistrictCode&&d.ProvinceCode==data.ProvinceCode&&d.IsActive,token)) errors["districtCode"]=["Quận/huyện không hợp lệ."];
+        if(errors.Count>0)return errors;
+        if(data.TeachingModes is not null)profile.TeachingModes=data.TeachingModes;
+        profile.ProvinceCode=string.IsNullOrWhiteSpace(data.ProvinceCode)?null:data.ProvinceCode;
+        profile.DistrictCode=string.IsNullOrWhiteSpace(data.DistrictCode)?null:data.DistrictCode;
+        if(data.Subjects is { } subjects)
+        {
+            dbContext.RemoveRange(await dbContext.Set<TutorSubjectLevel>().Where(t=>t.TutorProfileId==profile.Id).ToListAsync(token));
+            dbContext.RemoveRange(await dbContext.Set<TutorSubject>().Where(t=>t.TutorProfileId==profile.Id).ToListAsync(token));
+            await dbContext.SaveChangesAsync(token);
+            foreach(var selection in subjects)
+            {
+                dbContext.Add(new TutorSubject {TutorProfileId=profile.Id,SubjectId=selection.SubjectId,CreatedAt=clock.UtcNow});
+                foreach(var code in selection.LevelCodes)dbContext.Add(new TutorSubjectLevel {TutorProfileId=profile.Id,SubjectId=selection.SubjectId,LevelCode=code});
+            }
+            profile.Subjects=await dbContext.Subjects.Where(x=>subjects.Select(t=>t.SubjectId).Contains(x.Id)).Select(x=>x.Name).ToListAsync(token);
+            profile.TeachingLevels=subjects.SelectMany(t=>t.LevelCodes).Distinct().ToList();
+        }
+        await dbContext.SaveChangesAsync(token);
+        return null;
+    }
     private static void AddError(Dictionary<string, List<string>> errors, string key, string message)
     {
         if (!errors.TryGetValue(key, out var list))

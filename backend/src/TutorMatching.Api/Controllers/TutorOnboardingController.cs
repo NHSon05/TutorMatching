@@ -71,7 +71,7 @@ public sealed class TutorOnboardingController(
                 request.Pricing.HourlyRateVnd,
                 request.Pricing.SessionRateVnd,
                 request.Pricing.MonthlyRateVnd,
-                request.Pricing.IsNegotiable));
+                request.Pricing.IsNegotiable), request.ExpectedVersion, request.Discovery);
 
         var result = await onboardingService.SaveDraftAsync(userId, command, cancellationToken);
         if (!result.Succeeded)
@@ -159,12 +159,13 @@ public sealed class TutorOnboardingController(
     [ProducesResponseType(typeof(SubmitOnboardingResponse), StatusCodes.Status200OK, "application/json")]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status401Unauthorized, "application/problem+json")]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status422UnprocessableEntity, "application/problem+json")]
-    public async Task<IActionResult> SubmitAsync(CancellationToken cancellationToken)
+    public async Task<IActionResult> SubmitAsync(CancellationToken cancellationToken, [FromBody(EmptyBodyBehavior = Microsoft.AspNetCore.Mvc.ModelBinding.EmptyBodyBehavior.Allow)] SubmitTutorRequest? request = null)
     {
         Response.Headers.CacheControl = "no-store";
         if (currentUser.UserId is not { } userId) return Unauthorized();
 
-        var result = await onboardingService.SubmitAsync(userId, cancellationToken);
+        var result = await onboardingService.SubmitAsync(userId, cancellationToken, request?.ExpectedVersion);
+        if (result.Conflict) return Conflict(new { message = "Hồ sơ đã thay đổi hoặc đang chờ duyệt." });
         if (!result.Succeeded)
         {
             var problem = ApiProblems.Create(HttpContext, StatusCodes.Status422UnprocessableEntity, "Hồ sơ chưa đủ điều kiện để nộp duyệt.");
@@ -213,6 +214,6 @@ public sealed class TutorOnboardingController(
                 data.Pricing.MonthlyRateVnd,
                 data.Pricing.IsNegotiable),
             data.SubmittedAt,
-            data.ApprovedAt);
+            data.ApprovedAt, data.Version, data.Discovery);
     }
 }

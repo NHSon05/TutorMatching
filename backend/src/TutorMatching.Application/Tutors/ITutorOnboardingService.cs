@@ -2,6 +2,8 @@ using TutorMatching.Application.Abstractions;
 using TutorMatching.Domain.Tutors;
 
 namespace TutorMatching.Application.Tutors;
+public sealed record TutorSubjectSelection(Guid SubjectId, List<string> LevelCodes);
+public sealed record TutorDiscoveryData(List<TutorSubjectSelection>? Subjects, List<string>? TeachingModes, string? ProvinceCode, string? DistrictCode);
 
 public sealed record TutorCertificationData(
     string Name,
@@ -47,7 +49,8 @@ public sealed record TutorOnboardingData(
     TutorDescriptionData Description,
     TutorPricingData Pricing,
     DateTimeOffset? SubmittedAt,
-    DateTimeOffset? ApprovedAt);
+    DateTimeOffset? ApprovedAt,
+    Guid Version, TutorDiscoveryData? Discovery = null);
 
 public sealed record SaveDraftCommand(
     int? CurrentStep,
@@ -57,13 +60,14 @@ public sealed record SaveDraftCommand(
     List<TutorCertificationData>? Certifications,
     TutorEducationData? Education,
     TutorDescriptionData? Description,
-    TutorPricingData? Pricing);
+    TutorPricingData? Pricing,
+    Guid? ExpectedVersion = null, TutorDiscoveryData? Discovery = null);
 
 public sealed record SubmitResult(
     bool Succeeded,
     TutorProfileStatus? Status = null,
     DateTimeOffset? SubmittedAt = null,
-    IReadOnlyDictionary<string, string[]>? Errors = null)
+    IReadOnlyDictionary<string, string[]>? Errors = null, bool Conflict = false)
 {
     public static SubmitResult Success(TutorProfileStatus status, DateTimeOffset submittedAt) =>
         new(true, status, submittedAt);
@@ -89,6 +93,6 @@ public interface ITutorOnboardingService
 {
     Task<TutorOnboardingData?> GetOnboardingAsync(Guid userId, CancellationToken cancellationToken = default);
     Task<SaveDraftResult> SaveDraftAsync(Guid userId, SaveDraftCommand command, CancellationToken cancellationToken = default);
-    Task<SubmitResult> SubmitAsync(Guid userId, CancellationToken cancellationToken = default);
+    Task<SubmitResult> SubmitAsync(Guid userId, CancellationToken cancellationToken = default, Guid? expectedVersion = null);
     Task<string> UpdateAvatarAsync(Guid userId, string avatarUrl, CancellationToken cancellationToken = default);
 }

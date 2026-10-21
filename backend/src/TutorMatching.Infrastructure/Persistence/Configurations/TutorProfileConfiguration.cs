@@ -12,6 +12,9 @@ public sealed class TutorProfileConfiguration : IEntityTypeConfiguration<TutorPr
         builder.ToTable("TutorProfiles");
         builder.HasKey(x => x.Id);
 
+        builder.Property(x => x.TeachingModes).HasConversion(
+            v => JsonSerializer.Serialize(v, (JsonSerializerOptions?)null),
+            v => JsonSerializer.Deserialize<List<string>>(v, (JsonSerializerOptions?)null) ?? new List<string>()).HasColumnType("jsonb");
         builder.Property(x => x.UserId).IsRequired();
         builder.HasIndex(x => x.UserId).IsUnique();
 

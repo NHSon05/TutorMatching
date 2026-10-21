@@ -4,6 +4,7 @@ namespace TutorMatching.Application.Abstractions;
 public enum AccountFailure
 {
     InvalidInput = 1,
+    Conflict,
     DuplicateEmail,
     DuplicatePhoneNumber,
     InvalidCredentials,

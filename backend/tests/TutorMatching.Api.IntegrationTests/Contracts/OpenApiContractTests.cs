@@ -30,6 +30,17 @@ public sealed class OpenApiContractTests(PostgreSqlFixture fixture)
         Assert.Equal(expected["info"]!["title"]!.GetValue<string>(), actual["info"]!["title"]!.GetValue<string>());
         Assert.StartsWith("3.1", actual["openapi"]!.GetValue<string>());
 
+        var extension = JsonNode.Parse(await File.ReadAllTextAsync(Path.Combine(AppContext.BaseDirectory, "Contracts", "admin-catalog.json")))!;
+        var expectedPrefix = expected["servers"]![0]!["url"]!.GetValue<string>().TrimEnd('/');
+        foreach (var path in extension["paths"]!.AsObject())
+        {
+            var relativePath = path.Key.StartsWith(expectedPrefix + "/", StringComparison.Ordinal)
+                ? path.Key[expectedPrefix.Length..] : path.Key;
+            expected["paths"]![relativePath] = path.Value!.DeepClone();
+        }
+        foreach (var schema in extension["components"]!["schemas"]!.AsObject())
+            if (expected["components"]!["schemas"]![schema.Key] is null)
+                expected["components"]!["schemas"]![schema.Key] = schema.Value!.DeepClone();
         var actualOps = Operations(actual);
         var expectedOps = Operations(expected);
         Assert.NotEmpty(actualOps);

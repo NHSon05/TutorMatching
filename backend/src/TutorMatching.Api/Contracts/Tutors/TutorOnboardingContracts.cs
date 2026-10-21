@@ -1,3 +1,4 @@
+using TutorMatching.Application.Tutors;
 using System.Text.Json.Serialization;
 using TutorMatching.Domain.Tutors;
 
@@ -48,7 +49,8 @@ public sealed record TutorOnboardingResponse(
     TutorDescriptionDto Description,
     TutorPricingDto Pricing,
     DateTimeOffset? SubmittedAt,
-    DateTimeOffset? ApprovedAt);
+    DateTimeOffset? ApprovedAt,
+    Guid Version, TutorDiscoveryData? Discovery = null);
 
 public sealed record SaveOnboardingDraftRequest(
     int? CurrentStep,
@@ -58,7 +60,8 @@ public sealed record SaveOnboardingDraftRequest(
     List<TutorCertificationDto>? Certifications,
     TutorEducationDto? Education,
     TutorDescriptionDto? Description,
-    TutorPricingDto? Pricing);
+    TutorPricingDto? Pricing,
+    Guid? ExpectedVersion = null, TutorDiscoveryData? Discovery = null);
 
 public sealed record UploadFileResponse(
     string FileUrl,
@@ -69,3 +72,5 @@ public sealed record SubmitOnboardingResponse(
     TutorProfileStatus Status,
     DateTimeOffset SubmittedAt,
     string Message);
+
+public sealed record SubmitTutorRequest(Guid? ExpectedVersion);

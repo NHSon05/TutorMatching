@@ -24,7 +24,7 @@ public sealed record TutorListItemResponse(
     int? SessionRateVnd,
     int? MonthlyRateVnd,
     bool IsNegotiable,
-    double Rating,
+    double? Rating,
     List<TutorCertificationDto> Certifications,
     DateTimeOffset CreatedAt,
     DateTimeOffset? ApprovedAt);

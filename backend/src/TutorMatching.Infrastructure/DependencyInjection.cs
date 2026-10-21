@@ -66,6 +66,8 @@ public static class DependencyInjection
         services.AddScoped<Application.Tutors.ITutorOnboardingService, Tutors.TutorOnboardingService>();
         services.AddHttpContextAccessor();
         services.AddScoped<ICurrentUser, CurrentUser>();
+        services.AddScoped<Application.Tutors.ITutorOfferService, Tutors.TutorOfferService>();
+        services.AddScoped<Application.Catalog.ICatalogService, Catalog.CatalogService>();
         services.AddScoped<Application.Administration.IAdminService, Administration.AdminService>();
 
         return services;

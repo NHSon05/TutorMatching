@@ -23,7 +23,7 @@ public sealed class ApplicationUserStore(ApplicationDbContext context, IdentityE
 
     public Task RemoveFromRoleAsync(ApplicationUser user, string roleName, CancellationToken cancellationToken = default)
     {
-        return Task.CompletedTask;
+        throw new InvalidOperationException("An account must retain a canonical role. Replace its role or deactivate the account instead.");
     }
 
     public Task<IList<string>> GetRolesAsync(ApplicationUser user, CancellationToken cancellationToken = default)

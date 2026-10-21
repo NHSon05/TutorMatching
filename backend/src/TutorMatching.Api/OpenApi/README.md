@@ -11,15 +11,17 @@ Cookie names follow configuration. Public operations override default cookie sec
 unsafe operations require the CSRF cookie/header pair in the generated document.
 
 `OpenApiContractTests` reads the checked-in `specs/001-foundation-accounts/contracts/openapi.yaml`
-and compares it with the document fetched from the real API host. It normalizes server/path
+plus `admin-catalog-implemented.openapi.json` from the same contract directory, and compares their combined surface with the document fetched from the real API host. It normalizes server/path
 prefixes, then checks operation IDs, response codes, media types, declared schema constraints,
 required fields, headers and security schemes. Unexpected generated operations fail the test.
 
 Only `GET /api/v1/auth/csrf` is implemented at this foundation checkpoint. Seven planned
-account operations are explicitly listed as pending in the test; no fake endpoints are added.
+account operations were initially listed as pending in the test; no fake endpoints are added.
 When implementing a story, remove its operation from `PendingOperations` so removal/missing
 implementation becomes a failure. Extend schema comparisons for new constructs (e.g. allOf)
 as those contracts become executable. T052 verifies the full completed feature surface.
 
 Run: `dotnet test backend/tests/TutorMatching.Api.IntegrationTests/TutorMatching.Api.IntegrationTests.csproj --filter FullyQualifiedName~OpenApiContractTests`
 Docker is required because this uses the PostgreSQL-backed API fixture.
+
+Admin/catalog operations use a checked-in contract delta with explicit inherited cookie security and CSRF on mutations. Unnamed HTTP operations receive a deterministic method/route operation ID; existing named operations retain their IDs.

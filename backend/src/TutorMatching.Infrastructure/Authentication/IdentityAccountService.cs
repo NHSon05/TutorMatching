@@ -75,13 +75,7 @@ public sealed class IdentityAccountService(
                     return AccountOperationResult.Fail(AccountFailure.InvalidInput);
                 }
 
-                var roleResult = await userManager.AddToRoleAsync(user, role.ToString());
-                if (!roleResult.Succeeded)
-                {
-                    await transaction.RollbackAsync(CancellationToken.None);
-                    return AccountOperationResult.Fail(AccountFailure.InvalidInput);
-                }
-
+                // Role is persisted directly on the newly created account by ApplicationUserStore.
                 TutorProfileStatus? tutorStatus = null;
                 if (role == AccountRole.TUTOR)
                 {
@@ -206,6 +200,18 @@ public sealed class IdentityAccountService(
                         user => user.Id != userId && user.PhoneNumber == update.PhoneNumber, cancellationToken))
                     return AccountOperationResult.Fail(AccountFailure.DuplicatePhoneNumber);
 
+                TutorProfile? professional = null;
+                if (account.Role == AccountRole.TUTOR && account.FullName != update.FullName)
+                {
+                    await dbContext.Database.ExecuteSqlInterpolatedAsync($"SELECT id FROM tutor_profiles WHERE user_id={userId} FOR UPDATE", cancellationToken);
+                    professional = await dbContext.TutorProfiles.SingleOrDefaultAsync(p=>p.UserId==userId,cancellationToken);
+                    if (professional?.Status == TutorProfileStatus.PENDING_REVIEW) return AccountOperationResult.Fail(AccountFailure.Conflict);
+                    if (professional?.Status == TutorProfileStatus.APPROVED)
+                    {
+                        professional.ReconsiderApproval(true, clock.UtcNow);
+                    }
+                    if(professional is not null) professional.NormalizedDisplayName=ApplicationDbContext.NormalizeSearchName(update.FullName);
+                }
                 // Update only the allowed fields; do not overwrite Identity credentials or session state.
                 var updated = await dbContext.Users.Where(user => user.Id == userId &&
                         user.Status == AccountStatus.ACTIVE && user.DeletedAt == null)
@@ -222,12 +228,13 @@ public sealed class IdentityAccountService(
                 var tracked = dbContext.ChangeTracker.Entries<ApplicationUser>()
                     .FirstOrDefault(entry => entry.Entity.Id == userId);
                 if (tracked is not null) await tracked.ReloadAsync(cancellationToken);
+                if (professional is not null) await dbContext.SaveChangesAsync(cancellationToken);
                 await auditWriter.WriteAsync(new(AccountAuditAction.ProfileUpdated, userId, userId), cancellationToken);
                 await transaction.CommitAsync(cancellationToken);
                 return AccountOperationResult.Success(account with
                 {
                     FullName = update.FullName, PhoneNumber = update.PhoneNumber,
-                    DateOfBirth = update.DateOfBirth, AvatarUrl = update.AvatarUrl
+                    DateOfBirth = update.DateOfBirth, AvatarUrl = update.AvatarUrl, TutorProfileStatus = professional?.Status ?? account.TutorProfileStatus
                 });
             }
             catch (PostgresException ex) when (ex.SqlState == PostgresErrorCodes.UniqueViolation &&

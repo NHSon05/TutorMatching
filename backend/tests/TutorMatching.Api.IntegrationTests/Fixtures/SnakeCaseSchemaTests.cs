@@ -80,11 +80,12 @@ public sealed class SnakeCaseSchemaTests(PostgreSqlFixture fixture)
             ALTER TABLE "__EFMigrationsHistory" RENAME CONSTRAINT pk_ef_migrations_history TO "PK___EFMigrationsHistory";
             """);
         var objectsBefore = await ObjectIds(db);
-        await DatabaseMigrationRunner.MigrateAsync(db);
+        await DatabaseMigrationRunner.MigrateAsync(db, "20261010034332_UseSnakeCaseDatabaseNames");
         var objectsAfter = await ObjectIds(db);
         var objectsAfterSet = objectsAfter.ToHashSet();
         Assert.All(objectsBefore, id => Assert.Contains(id, objectsAfterSet)); // Tables, constraints, indexes retain OIDs.
         await AssertSnakeCaseCatalog(db);
+        await DatabaseMigrationRunner.MigrateAsync(db);
         var user = await db.Users.SingleAsync();
         Assert.Equal(userId, user.Id);
         Assert.Equal("synthetic-hash", user.PasswordHash);
@@ -96,7 +97,7 @@ public sealed class SnakeCaseSchemaTests(PostgreSqlFixture fixture)
         Assert.Equal(DateTimeOffset.MinValue, (await db.TokenSessions.SingleAsync()).RevokedAt);
         Assert.Equal(DateTimeOffset.MinValue, (await db.SessionRefreshTokens.SingleAsync()).ConsumedAt);
         var history = (await db.Database.GetAppliedMigrationsAsync()).ToArray();
-        Assert.Equal(7, history.Length);
+        Assert.Equal(db.Database.GetMigrations().Count(), history.Length);
         await DatabaseMigrationRunner.MigrateAsync(db);
         Assert.Equal(history, await db.Database.GetAppliedMigrationsAsync());
         // Renamed Identity sequences retain their ownership/default and next value.
@@ -115,7 +116,7 @@ public sealed class SnakeCaseSchemaTests(PostgreSqlFixture fixture)
         var tables = await Strings(db, "SELECT table_name FROM information_schema.tables WHERE table_schema = current_schema()");
         Assert.Contains("__EFMigrationsHistory", tables);
         Assert.Contains("ef_migrations_history", tables);
-        Assert.Equal(7, (await db.Database.GetAppliedMigrationsAsync()).Count());
+        Assert.Equal(db.Database.GetMigrations().Count(), (await db.Database.GetAppliedMigrationsAsync()).Count());
     }
 
     internal static async Task AssertSnakeCaseCatalog(ApplicationDbContext db)

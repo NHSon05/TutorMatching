@@ -3,6 +3,9 @@ namespace TutorMatching.Domain.Tutors;
 public sealed class TutorProfile
 {
     public Guid Id { get; set; }
+    public Guid Version { get; set; } = Guid.NewGuid();
+    public string NormalizedDisplayName { get; set; } = string.Empty;
+
     public Guid UserId { get; set; }
 
     public TutorProfileStatus Status { get; set; } = TutorProfileStatus.DRAFT;
@@ -33,6 +36,8 @@ public sealed class TutorProfile
     public string? TeachingMethodology { get; set; }
     public string? AchievementsAndResults { get; set; }
 
+    public List<string> TeachingModes { get; set; } = [];
+
     // Location
     public string? ProvinceCode { get; set; }
     public string? DistrictCode { get; set; }
@@ -48,4 +53,19 @@ public sealed class TutorProfile
     public DateTimeOffset UpdatedAt { get; set; }
     public DateTimeOffset? SubmittedAt { get; set; }
     public DateTimeOffset? ApprovedAt { get; set; }
+    public bool CanEdit(Guid? expectedVersion) => Status != TutorProfileStatus.PENDING_REVIEW &&
+        (!expectedVersion.HasValue || expectedVersion == Version) &&
+        (Status != TutorProfileStatus.APPROVED || expectedVersion.HasValue);
+
+    public bool CanSubmit(Guid? expectedVersion) => Status is TutorProfileStatus.DRAFT or TutorProfileStatus.REJECTED &&
+        (!expectedVersion.HasValue || expectedVersion == Version);
+
+    public void ReconsiderApproval(bool complete, DateTimeOffset now)
+    {
+        if (Status != TutorProfileStatus.APPROVED) return;
+        Status = complete ? TutorProfileStatus.PENDING_REVIEW : TutorProfileStatus.DRAFT;
+        ApprovedAt = null;
+        SubmittedAt = complete ? now : null;
+    }
+
 }

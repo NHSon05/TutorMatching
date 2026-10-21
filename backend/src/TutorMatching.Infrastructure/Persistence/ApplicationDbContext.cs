@@ -81,6 +81,22 @@ public sealed class ApplicationDbContext(
             entity.HasOne<TokenSession>().WithMany().HasForeignKey(x => x.SessionId).OnDelete(DeleteBehavior.Cascade);
         });
 
+        builder.Entity<TeachingLevel>(e =>
+        {
+            e.ToTable("TeachingLevels"); e.HasKey(x => x.Code);
+            e.Property(x => x.Code).HasMaxLength(32);
+            e.Property(x => x.Name).HasMaxLength(100).IsRequired();
+        });
+        builder.Entity<TutorSubjectLevel>(e =>
+        {
+            e.ToTable("TutorSubjectLevels");
+            e.HasKey(x => new { x.TutorProfileId, x.SubjectId, x.LevelCode });
+            e.Property(x => x.LevelCode).HasMaxLength(32);
+            e.HasOne<TutorSubject>().WithMany().HasForeignKey(x => new { x.TutorProfileId, x.SubjectId }).HasConstraintName("fk_tutor_subject_levels_tutor_subjects").OnDelete(DeleteBehavior.Cascade);
+            e.HasOne<TeachingLevel>().WithMany().HasForeignKey(x => x.LevelCode).OnDelete(DeleteBehavior.Restrict);
+        });
+        builder.Entity<TutorProfile>().Property(x => x.Version).IsConcurrencyToken();
+        builder.Entity<TutorProfile>().Property(x => x.NormalizedDisplayName).HasMaxLength(100);
         SnakeCaseNaming.Apply(builder);
     }
 
@@ -136,6 +152,9 @@ public sealed class ApplicationDbContext(
                 continue;
             }
 
+            entry.Entity.Version = Guid.NewGuid();
+            var name = ChangeTracker.Entries<ApplicationUser>().FirstOrDefault(u => u.Entity.Id == entry.Entity.UserId)?.Entity.FullName;
+            if (name is not null) entry.Entity.NormalizedDisplayName = NormalizeSearchName(name);
             entry.Entity.UpdatedAt = now;
             if (entry.State == EntityState.Added && entry.Entity.CreatedAt == default)
             {
@@ -143,4 +162,11 @@ public sealed class ApplicationDbContext(
             }
         }
     }
+    public static string NormalizeSearchName(string value)
+    {
+        var decomposed = value.Trim().ToLowerInvariant().Replace('đ', 'd').Normalize(System.Text.NormalizationForm.FormD);
+        return string.Concat(decomposed.Where(c => System.Globalization.CharUnicodeInfo.GetUnicodeCategory(c) != System.Globalization.UnicodeCategory.NonSpacingMark))
+            .Normalize(System.Text.NormalizationForm.FormC);
+    }
+
 }

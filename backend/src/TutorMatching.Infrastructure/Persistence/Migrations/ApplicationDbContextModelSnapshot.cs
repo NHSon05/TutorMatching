@@ -103,6 +103,771 @@ namespace TutorMatching.Infrastructure.Persistence.Migrations
                     b.ToTable("asp_net_user_tokens", (string)null);
                 });
 
+            modelBuilder.Entity("TutorMatching.Domain.Catalog.Subject", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at")
+                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
+
+                    b.Property<string>("Description")
+                        .HasMaxLength(1000)
+                        .HasColumnType("character varying(1000)")
+                        .HasColumnName("description");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("boolean")
+                        .HasColumnName("is_active");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("name");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at")
+                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
+
+                    b.HasKey("Id")
+                        .HasName("pk_subjects");
+
+                    b.HasIndex("Name")
+                        .IsUnique()
+                        .HasDatabaseName("ix_subjects_name");
+
+                    b.ToTable("subjects", (string)null);
+                });
+
+            modelBuilder.Entity("TutorMatching.Domain.Catalog.TeachingLevel", b =>
+                {
+                    b.Property<string>("Code")
+                        .HasMaxLength(32)
+                        .HasColumnType("character varying(32)")
+                        .HasColumnName("code");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("boolean")
+                        .HasColumnName("is_active");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("name");
+
+                    b.HasKey("Code")
+                        .HasName("pk_teaching_levels");
+
+                    b.ToTable("teaching_levels", (string)null);
+                });
+
+            modelBuilder.Entity("TutorMatching.Domain.Content.Article", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<Guid>("AuthorUserId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("author_user_id");
+
+                    b.Property<string>("Content")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("content");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at")
+                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
+
+                    b.Property<DateTimeOffset?>("PublishedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("published_at");
+
+                    b.Property<string>("Slug")
+                        .IsRequired()
+                        .HasMaxLength(256)
+                        .HasColumnType("character varying(256)")
+                        .HasColumnName("slug");
+
+                    b.Property<string>("StatusCode")
+                        .IsRequired()
+                        .HasMaxLength(32)
+                        .HasColumnType("character varying(32)")
+                        .HasColumnName("status_code");
+
+                    b.Property<string>("Summary")
+                        .HasMaxLength(1000)
+                        .HasColumnType("character varying(1000)")
+                        .HasColumnName("summary");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasMaxLength(256)
+                        .HasColumnType("character varying(256)")
+                        .HasColumnName("title");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at")
+                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
+
+                    b.HasKey("Id")
+                        .HasName("pk_articles");
+
+                    b.HasIndex("AuthorUserId")
+                        .HasDatabaseName("ix_articles_author_user_id");
+
+                    b.HasIndex("Slug")
+                        .IsUnique()
+                        .HasDatabaseName("ix_articles_slug");
+
+                    b.ToTable("articles", (string)null);
+                });
+
+            modelBuilder.Entity("TutorMatching.Domain.Courses.Course", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at")
+                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
+
+                    b.Property<DateTimeOffset?>("DeletedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("deleted_at");
+
+                    b.Property<string>("Description")
+                        .HasMaxLength(4000)
+                        .HasColumnType("character varying(4000)")
+                        .HasColumnName("description");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)")
+                        .HasColumnName("name");
+
+                    b.Property<int?>("PricePerSessionVnd")
+                        .HasColumnType("integer")
+                        .HasColumnName("price_per_session_vnd");
+
+                    b.Property<int?>("SessionCount")
+                        .HasColumnType("integer")
+                        .HasColumnName("session_count");
+
+                    b.Property<string>("StatusCode")
+                        .IsRequired()
+                        .HasMaxLength(32)
+                        .HasColumnType("character varying(32)")
+                        .HasColumnName("status_code");
+
+                    b.Property<Guid>("SubjectId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("subject_id");
+
+                    b.Property<Guid>("TutorProfileId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("tutor_profile_id");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at")
+                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
+
+                    b.HasKey("Id")
+                        .HasName("pk_courses");
+
+                    b.HasIndex("SubjectId")
+                        .HasDatabaseName("ix_courses_subject_id");
+
+                    b.HasIndex("TutorProfileId")
+                        .HasDatabaseName("ix_courses_tutor_profile_id");
+
+                    b.ToTable("courses", (string)null);
+                });
+
+            modelBuilder.Entity("TutorMatching.Domain.Hiring.HireRequest", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<DateTimeOffset?>("AcceptedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("accepted_at");
+
+                    b.Property<int?>("AgreedPriceVnd")
+                        .HasColumnType("integer")
+                        .HasColumnName("agreed_price_vnd");
+
+                    b.Property<string>("CancelReason")
+                        .HasMaxLength(1000)
+                        .HasColumnType("character varying(1000)")
+                        .HasColumnName("cancel_reason");
+
+                    b.Property<DateTimeOffset?>("CompletedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("completed_at");
+
+                    b.Property<Guid?>("CourseId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("course_id");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at")
+                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
+
+                    b.Property<string>("DistrictCode")
+                        .HasMaxLength(32)
+                        .HasColumnType("character varying(32)")
+                        .HasColumnName("district_code");
+
+                    b.Property<int>("DurationMinutes")
+                        .HasColumnType("integer")
+                        .HasColumnName("duration_minutes");
+
+                    b.Property<string>("LocationDetail")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)")
+                        .HasColumnName("location_detail");
+
+                    b.Property<string>("Note")
+                        .HasMaxLength(2000)
+                        .HasColumnType("character varying(2000)")
+                        .HasColumnName("note");
+
+                    b.Property<int>("ProposedPriceVnd")
+                        .HasColumnType("integer")
+                        .HasColumnName("proposed_price_vnd");
+
+                    b.Property<string>("ProvinceCode")
+                        .HasMaxLength(32)
+                        .HasColumnType("character varying(32)")
+                        .HasColumnName("province_code");
+
+                    b.Property<Guid>("RequesterUserId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("requester_user_id");
+
+                    b.Property<int>("SessionsPerWeek")
+                        .HasColumnType("integer")
+                        .HasColumnName("sessions_per_week");
+
+                    b.Property<DateOnly>("StartDate")
+                        .HasColumnType("date")
+                        .HasColumnName("start_date");
+
+                    b.Property<string>("StatusCode")
+                        .IsRequired()
+                        .HasMaxLength(32)
+                        .HasColumnType("character varying(32)")
+                        .HasColumnName("status_code");
+
+                    b.Property<Guid>("SubjectId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("subject_id");
+
+                    b.Property<string>("TeachingModeCode")
+                        .IsRequired()
+                        .HasMaxLength(32)
+                        .HasColumnType("character varying(32)")
+                        .HasColumnName("teaching_mode_code");
+
+                    b.Property<Guid>("TutorProfileId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("tutor_profile_id");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at")
+                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
+
+                    b.HasKey("Id")
+                        .HasName("pk_hire_requests");
+
+                    b.HasIndex("CourseId")
+                        .HasDatabaseName("ix_hire_requests_course_id");
+
+                    b.HasIndex("DistrictCode")
+                        .HasDatabaseName("ix_hire_requests_district_code");
+
+                    b.HasIndex("ProvinceCode")
+                        .HasDatabaseName("ix_hire_requests_province_code");
+
+                    b.HasIndex("RequesterUserId")
+                        .HasDatabaseName("ix_hire_requests_requester_user_id");
+
+                    b.HasIndex("SubjectId")
+                        .HasDatabaseName("ix_hire_requests_subject_id");
+
+                    b.HasIndex("TutorProfileId")
+                        .HasDatabaseName("ix_hire_requests_tutor_profile_id");
+
+                    b.ToTable("hire_requests", (string)null);
+                });
+
+            modelBuilder.Entity("TutorMatching.Domain.Hiring.Negotiation", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at")
+                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
+
+                    b.Property<Guid>("HireRequestId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("hire_request_id");
+
+                    b.Property<string>("Note")
+                        .HasMaxLength(2000)
+                        .HasColumnType("character varying(2000)")
+                        .HasColumnName("note");
+
+                    b.Property<int?>("ProposedPriceVnd")
+                        .HasColumnType("integer")
+                        .HasColumnName("proposed_price_vnd");
+
+                    b.Property<DateTimeOffset?>("RespondedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("responded_at");
+
+                    b.Property<string>("ResponseStatusCode")
+                        .IsRequired()
+                        .HasMaxLength(32)
+                        .HasColumnType("character varying(32)")
+                        .HasColumnName("response_status_code");
+
+                    b.Property<Guid>("SenderUserId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("sender_user_id");
+
+                    b.HasKey("Id")
+                        .HasName("pk_negotiations");
+
+                    b.HasIndex("HireRequestId")
+                        .HasDatabaseName("ix_negotiations_hire_request_id");
+
+                    b.HasIndex("SenderUserId")
+                        .HasDatabaseName("ix_negotiations_sender_user_id");
+
+                    b.ToTable("negotiations", (string)null);
+                });
+
+            modelBuilder.Entity("TutorMatching.Domain.Hiring.NegotiationSchedule", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<int>("DayOfWeek")
+                        .HasColumnType("integer")
+                        .HasColumnName("day_of_week");
+
+                    b.Property<TimeOnly>("EndTime")
+                        .HasColumnType("time without time zone")
+                        .HasColumnName("end_time");
+
+                    b.Property<Guid>("NegotiationId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("negotiation_id");
+
+                    b.Property<TimeOnly>("StartTime")
+                        .HasColumnType("time without time zone")
+                        .HasColumnName("start_time");
+
+                    b.HasKey("Id")
+                        .HasName("pk_negotiation_schedules");
+
+                    b.HasIndex("NegotiationId")
+                        .HasDatabaseName("ix_negotiation_schedules_negotiation_id");
+
+                    b.ToTable("negotiation_schedules", (string)null);
+                });
+
+            modelBuilder.Entity("TutorMatching.Domain.Hiring.RequestSchedule", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at")
+                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
+
+                    b.Property<int>("DayOfWeek")
+                        .HasColumnType("integer")
+                        .HasColumnName("day_of_week");
+
+                    b.Property<TimeOnly>("EndTime")
+                        .HasColumnType("time without time zone")
+                        .HasColumnName("end_time");
+
+                    b.Property<Guid>("HireRequestId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("hire_request_id");
+
+                    b.Property<TimeOnly>("StartTime")
+                        .HasColumnType("time without time zone")
+                        .HasColumnName("start_time");
+
+                    b.HasKey("Id")
+                        .HasName("pk_request_schedules");
+
+                    b.HasIndex("HireRequestId")
+                        .HasDatabaseName("ix_request_schedules_hire_request_id");
+
+                    b.ToTable("request_schedules", (string)null);
+                });
+
+            modelBuilder.Entity("TutorMatching.Domain.Hiring.RequestStatusHistory", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<Guid?>("ActorUserId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("actor_user_id");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at")
+                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
+
+                    b.Property<string>("FromStatusCode")
+                        .HasMaxLength(32)
+                        .HasColumnType("character varying(32)")
+                        .HasColumnName("from_status_code");
+
+                    b.Property<Guid>("HireRequestId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("hire_request_id");
+
+                    b.Property<string>("Reason")
+                        .HasMaxLength(1000)
+                        .HasColumnType("character varying(1000)")
+                        .HasColumnName("reason");
+
+                    b.Property<string>("ToStatusCode")
+                        .IsRequired()
+                        .HasMaxLength(32)
+                        .HasColumnType("character varying(32)")
+                        .HasColumnName("to_status_code");
+
+                    b.HasKey("Id")
+                        .HasName("pk_request_status_history");
+
+                    b.HasIndex("ActorUserId")
+                        .HasDatabaseName("ix_request_status_history_actor_user_id");
+
+                    b.HasIndex("HireRequestId")
+                        .HasDatabaseName("ix_request_status_history_hire_request_id");
+
+                    b.ToTable("request_status_history", (string)null);
+                });
+
+            modelBuilder.Entity("TutorMatching.Domain.Locations.District", b =>
+                {
+                    b.Property<string>("DistrictCode")
+                        .HasMaxLength(32)
+                        .HasColumnType("character varying(32)")
+                        .HasColumnName("district_code");
+
+                    b.Property<string>("DistrictName")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("district_name");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("boolean")
+                        .HasColumnName("is_active");
+
+                    b.Property<string>("ProvinceCode")
+                        .IsRequired()
+                        .HasMaxLength(32)
+                        .HasColumnType("character varying(32)")
+                        .HasColumnName("province_code");
+
+                    b.HasKey("DistrictCode")
+                        .HasName("pk_districts");
+
+                    b.HasIndex("ProvinceCode", "DistrictName")
+                        .HasDatabaseName("ix_districts_province_code_district_name");
+
+                    b.ToTable("districts", (string)null);
+                });
+
+            modelBuilder.Entity("TutorMatching.Domain.Locations.Province", b =>
+                {
+                    b.Property<string>("ProvinceCode")
+                        .HasMaxLength(32)
+                        .HasColumnType("character varying(32)")
+                        .HasColumnName("province_code");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("boolean")
+                        .HasColumnName("is_active");
+
+                    b.Property<string>("ProvinceName")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("province_name");
+
+                    b.HasKey("ProvinceCode")
+                        .HasName("pk_provinces");
+
+                    b.HasIndex("ProvinceName")
+                        .IsUnique()
+                        .HasDatabaseName("ix_provinces_province_name");
+
+                    b.ToTable("provinces", (string)null);
+                });
+
+            modelBuilder.Entity("TutorMatching.Domain.Messaging.Conversation", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<DateTimeOffset?>("ClosedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("closed_at");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at")
+                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
+
+                    b.Property<Guid>("HireRequestId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("hire_request_id");
+
+                    b.HasKey("Id")
+                        .HasName("pk_conversations");
+
+                    b.HasIndex("HireRequestId")
+                        .IsUnique()
+                        .HasDatabaseName("ix_conversations_hire_request_id");
+
+                    b.ToTable("conversations", (string)null);
+                });
+
+            modelBuilder.Entity("TutorMatching.Domain.Messaging.Message", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<string>("Content")
+                        .IsRequired()
+                        .HasMaxLength(4000)
+                        .HasColumnType("character varying(4000)")
+                        .HasColumnName("content");
+
+                    b.Property<Guid>("ConversationId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("conversation_id");
+
+                    b.Property<DateTimeOffset?>("DeletedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("deleted_at");
+
+                    b.Property<DateTimeOffset?>("ReadAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("read_at");
+
+                    b.Property<Guid>("SenderUserId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("sender_user_id");
+
+                    b.Property<DateTimeOffset>("SentAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("sent_at")
+                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
+
+                    b.HasKey("Id")
+                        .HasName("pk_messages");
+
+                    b.HasIndex("ConversationId")
+                        .HasDatabaseName("ix_messages_conversation_id");
+
+                    b.HasIndex("SenderUserId")
+                        .HasDatabaseName("ix_messages_sender_user_id");
+
+                    b.ToTable("messages", (string)null);
+                });
+
+            modelBuilder.Entity("TutorMatching.Domain.Notifications.Notification", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<string>("Body")
+                        .HasMaxLength(2000)
+                        .HasColumnType("character varying(2000)")
+                        .HasColumnName("body");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at")
+                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
+
+                    b.Property<Guid?>("HireRequestId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("hire_request_id");
+
+                    b.Property<bool>("IsRead")
+                        .HasColumnType("boolean")
+                        .HasColumnName("is_read");
+
+                    b.Property<Guid?>("MessageId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("message_id");
+
+                    b.Property<DateTimeOffset?>("ReadAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("read_at");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasMaxLength(256)
+                        .HasColumnType("character varying(256)")
+                        .HasColumnName("title");
+
+                    b.Property<Guid?>("TutorProfileId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("tutor_profile_id");
+
+                    b.Property<string>("TypeCode")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)")
+                        .HasColumnName("type_code");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("user_id");
+
+                    b.HasKey("Id")
+                        .HasName("pk_notifications");
+
+                    b.HasIndex("HireRequestId")
+                        .HasDatabaseName("ix_notifications_hire_request_id");
+
+                    b.HasIndex("MessageId")
+                        .HasDatabaseName("ix_notifications_message_id");
+
+                    b.HasIndex("TutorProfileId")
+                        .HasDatabaseName("ix_notifications_tutor_profile_id");
+
+                    b.HasIndex("UserId")
+                        .HasDatabaseName("ix_notifications_user_id");
+
+                    b.ToTable("notifications", (string)null);
+                });
+
+            modelBuilder.Entity("TutorMatching.Domain.Tutors.AvailabilitySlot", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<string>("AvailabilityType")
+                        .IsRequired()
+                        .HasMaxLength(32)
+                        .HasColumnType("character varying(32)")
+                        .HasColumnName("availability_type");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at")
+                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
+
+                    b.Property<int?>("DayOfWeek")
+                        .HasColumnType("integer")
+                        .HasColumnName("day_of_week");
+
+                    b.Property<TimeOnly>("EndTime")
+                        .HasColumnType("time without time zone")
+                        .HasColumnName("end_time");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("boolean")
+                        .HasColumnName("is_active");
+
+                    b.Property<DateOnly?>("SpecificDate")
+                        .HasColumnType("date")
+                        .HasColumnName("specific_date");
+
+                    b.Property<TimeOnly>("StartTime")
+                        .HasColumnType("time without time zone")
+                        .HasColumnName("start_time");
+
+                    b.Property<Guid>("TutorProfileId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("tutor_profile_id");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at")
+                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
+
+                    b.HasKey("Id")
+                        .HasName("pk_availability_slots");
+
+                    b.HasIndex("TutorProfileId")
+                        .HasDatabaseName("ix_availability_slots_tutor_profile_id");
+
+                    b.ToTable("availability_slots", (string)null);
+                });
+
             modelBuilder.Entity("TutorMatching.Domain.Tutors.TutorProfile", b =>
                 {
                     b.Property<Guid>("Id")
@@ -184,6 +949,12 @@ namespace TutorMatching.Infrastructure.Persistence.Migrations
                         .HasColumnType("integer")
                         .HasColumnName("monthly_rate_vnd");
 
+                    b.Property<string>("NormalizedDisplayName")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("normalized_display_name");
+
                     b.Property<string>("ProvinceCode")
                         .HasMaxLength(32)
                         .HasColumnType("character varying(32)")
@@ -228,6 +999,11 @@ namespace TutorMatching.Infrastructure.Persistence.Migrations
                         .HasColumnType("character varying(4000)")
                         .HasColumnName("teaching_methodology");
 
+                    b.Property<string>("TeachingModes")
+                        .IsRequired()
+                        .HasColumnType("jsonb")
+                        .HasColumnName("teaching_modes");
+
                     b.Property<DateTimeOffset>("UpdatedAt")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("timestamp with time zone")
@@ -237,6 +1013,11 @@ namespace TutorMatching.Infrastructure.Persistence.Migrations
                     b.Property<Guid>("UserId")
                         .HasColumnType("uuid")
                         .HasColumnName("user_id");
+
+                    b.Property<Guid>("Version")
+                        .IsConcurrencyToken()
+                        .HasColumnType("uuid")
+                        .HasColumnName("version");
 
                     b.Property<int?>("YearOfStudy")
                         .HasColumnType("integer")
@@ -256,6 +1037,154 @@ namespace TutorMatching.Infrastructure.Persistence.Migrations
                         .HasDatabaseName("ix_tutor_profiles_user_id");
 
                     b.ToTable("tutor_profiles", (string)null);
+                });
+
+            modelBuilder.Entity("TutorMatching.Domain.Tutors.TutorProfileReview", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<string>("FromStatusCode")
+                        .IsRequired()
+                        .HasMaxLength(32)
+                        .HasColumnType("character varying(32)")
+                        .HasColumnName("from_status_code");
+
+                    b.Property<string>("Note")
+                        .HasMaxLength(4000)
+                        .HasColumnType("character varying(4000)")
+                        .HasColumnName("note");
+
+                    b.Property<DateTimeOffset>("ReviewedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("reviewed_at")
+                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
+
+                    b.Property<Guid>("ReviewerUserId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("reviewer_user_id");
+
+                    b.Property<string>("ToStatusCode")
+                        .IsRequired()
+                        .HasMaxLength(32)
+                        .HasColumnType("character varying(32)")
+                        .HasColumnName("to_status_code");
+
+                    b.Property<Guid>("TutorProfileId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("tutor_profile_id");
+
+                    b.HasKey("Id")
+                        .HasName("pk_tutor_profile_reviews");
+
+                    b.HasIndex("ReviewerUserId")
+                        .HasDatabaseName("ix_tutor_profile_reviews_reviewer_user_id");
+
+                    b.HasIndex("TutorProfileId")
+                        .HasDatabaseName("ix_tutor_profile_reviews_tutor_profile_id");
+
+                    b.ToTable("tutor_profile_reviews", (string)null);
+                });
+
+            modelBuilder.Entity("TutorMatching.Domain.Tutors.TutorSubject", b =>
+                {
+                    b.Property<Guid>("TutorProfileId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("tutor_profile_id");
+
+                    b.Property<Guid>("SubjectId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("subject_id");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at")
+                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
+
+                    b.Property<string>("LevelDescription")
+                        .HasMaxLength(256)
+                        .HasColumnType("character varying(256)")
+                        .HasColumnName("level_description");
+
+                    b.HasKey("TutorProfileId", "SubjectId")
+                        .HasName("pk_tutor_subjects");
+
+                    b.HasIndex("SubjectId")
+                        .HasDatabaseName("ix_tutor_subjects_subject_id");
+
+                    b.ToTable("tutor_subjects", (string)null);
+                });
+
+            modelBuilder.Entity("TutorMatching.Domain.Tutors.TutorSubjectLevel", b =>
+                {
+                    b.Property<Guid>("TutorProfileId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("tutor_profile_id");
+
+                    b.Property<Guid>("SubjectId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("subject_id");
+
+                    b.Property<string>("LevelCode")
+                        .HasMaxLength(32)
+                        .HasColumnType("character varying(32)")
+                        .HasColumnName("level_code");
+
+                    b.HasKey("TutorProfileId", "SubjectId", "LevelCode")
+                        .HasName("pk_tutor_subject_levels");
+
+                    b.HasIndex("LevelCode")
+                        .HasDatabaseName("ix_tutor_subject_levels_level_code");
+
+                    b.ToTable("tutor_subject_levels", (string)null);
+                });
+
+            modelBuilder.Entity("TutorMatching.Domain.Users.PasswordResetToken", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at")
+                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
+
+                    b.Property<DateTimeOffset>("ExpiresAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("expires_at");
+
+                    b.Property<string>("TokenHash")
+                        .IsRequired()
+                        .HasMaxLength(128)
+                        .HasColumnType("character varying(128)")
+                        .HasColumnName("token_hash");
+
+                    b.Property<DateTimeOffset?>("UsedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("used_at");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("user_id");
+
+                    b.HasKey("Id")
+                        .HasName("pk_password_reset_tokens");
+
+                    b.HasIndex("TokenHash")
+                        .IsUnique()
+                        .HasDatabaseName("ix_password_reset_tokens_token_hash");
+
+                    b.HasIndex("UserId")
+                        .HasDatabaseName("ix_password_reset_tokens_user_id");
+
+                    b.ToTable("password_reset_tokens", (string)null);
                 });
 
             modelBuilder.Entity("TutorMatching.Infrastructure.Auditing.AuditEvent", b =>
@@ -532,872 +1461,6 @@ namespace TutorMatching.Infrastructure.Persistence.Migrations
                     b.ToTable("token_sessions", (string)null);
                 });
 
-            modelBuilder.Entity("TutorMatching.Domain.Locations.Province", b =>
-                {
-                    b.Property<string>("ProvinceCode")
-                        .HasMaxLength(32)
-                        .HasColumnType("character varying(32)")
-                        .HasColumnName("province_code");
-
-                    b.Property<bool>("IsActive")
-                        .HasColumnType("boolean")
-                        .HasColumnName("is_active");
-
-                    b.Property<string>("ProvinceName")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("character varying(100)")
-                        .HasColumnName("province_name");
-
-                    b.HasKey("ProvinceCode")
-                        .HasName("pk_provinces");
-
-                    b.HasIndex("ProvinceName")
-                        .IsUnique()
-                        .HasDatabaseName("ix_provinces_province_name");
-
-                    b.ToTable("provinces", (string)null);
-                });
-
-            modelBuilder.Entity("TutorMatching.Domain.Locations.District", b =>
-                {
-                    b.Property<string>("DistrictCode")
-                        .HasMaxLength(32)
-                        .HasColumnType("character varying(32)")
-                        .HasColumnName("district_code");
-
-                    b.Property<string>("DistrictName")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("character varying(100)")
-                        .HasColumnName("district_name");
-
-                    b.Property<bool>("IsActive")
-                        .HasColumnType("boolean")
-                        .HasColumnName("is_active");
-
-                    b.Property<string>("ProvinceCode")
-                        .IsRequired()
-                        .HasMaxLength(32)
-                        .HasColumnType("character varying(32)")
-                        .HasColumnName("province_code");
-
-                    b.HasKey("DistrictCode")
-                        .HasName("pk_districts");
-
-                    b.HasIndex("ProvinceCode", "DistrictName")
-                        .HasDatabaseName("ix_districts_province_code_district_name");
-
-                    b.ToTable("districts", (string)null);
-                });
-
-            modelBuilder.Entity("TutorMatching.Domain.Catalog.Subject", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid")
-                        .HasColumnName("id");
-
-                    b.Property<DateTimeOffset>("CreatedAt")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("created_at")
-                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
-
-                    b.Property<string>("Description")
-                        .HasMaxLength(1000)
-                        .HasColumnType("character varying(1000)")
-                        .HasColumnName("description");
-
-                    b.Property<bool>("IsActive")
-                        .HasColumnType("boolean")
-                        .HasColumnName("is_active");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("character varying(100)")
-                        .HasColumnName("name");
-
-                    b.Property<DateTimeOffset>("UpdatedAt")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("updated_at")
-                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
-
-                    b.HasKey("Id")
-                        .HasName("pk_subjects");
-
-                    b.HasIndex("Name")
-                        .IsUnique()
-                        .HasDatabaseName("ix_subjects_name");
-
-                    b.ToTable("subjects", (string)null);
-                });
-
-            modelBuilder.Entity("TutorMatching.Domain.Tutors.TutorSubject", b =>
-                {
-                    b.Property<Guid>("TutorProfileId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("tutor_profile_id");
-
-                    b.Property<Guid>("SubjectId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("subject_id");
-
-                    b.Property<DateTimeOffset>("CreatedAt")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("created_at")
-                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
-
-                    b.Property<string>("LevelDescription")
-                        .HasMaxLength(256)
-                        .HasColumnType("character varying(256)")
-                        .HasColumnName("level_description");
-
-                    b.HasKey("TutorProfileId", "SubjectId")
-                        .HasName("pk_tutor_subjects");
-
-                    b.HasIndex("SubjectId")
-                        .HasDatabaseName("ix_tutor_subjects_subject_id");
-
-                    b.ToTable("tutor_subjects", (string)null);
-                });
-
-            modelBuilder.Entity("TutorMatching.Domain.Tutors.AvailabilitySlot", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid")
-                        .HasColumnName("id");
-
-                    b.Property<string>("AvailabilityType")
-                        .IsRequired()
-                        .HasMaxLength(32)
-                        .HasColumnType("character varying(32)")
-                        .HasColumnName("availability_type");
-
-                    b.Property<DateTimeOffset>("CreatedAt")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("created_at")
-                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
-
-                    b.Property<int?>("DayOfWeek")
-                        .HasColumnType("integer")
-                        .HasColumnName("day_of_week");
-
-                    b.Property<TimeOnly>("EndTime")
-                        .HasColumnType("time without time zone")
-                        .HasColumnName("end_time");
-
-                    b.Property<bool>("IsActive")
-                        .HasColumnType("boolean")
-                        .HasColumnName("is_active");
-
-                    b.Property<DateOnly?>("SpecificDate")
-                        .HasColumnType("date")
-                        .HasColumnName("specific_date");
-
-                    b.Property<TimeOnly>("StartTime")
-                        .HasColumnType("time without time zone")
-                        .HasColumnName("start_time");
-
-                    b.Property<Guid>("TutorProfileId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("tutor_profile_id");
-
-                    b.Property<DateTimeOffset>("UpdatedAt")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("updated_at")
-                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
-
-                    b.HasKey("Id")
-                        .HasName("pk_availability_slots");
-
-                    b.HasIndex("TutorProfileId")
-                        .HasDatabaseName("ix_availability_slots_tutor_profile_id");
-
-                    b.ToTable("availability_slots", (string)null);
-                });
-
-            modelBuilder.Entity("TutorMatching.Domain.Courses.Course", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid")
-                        .HasColumnName("id");
-
-                    b.Property<DateTimeOffset>("CreatedAt")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("created_at")
-                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
-
-                    b.Property<DateTimeOffset?>("DeletedAt")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("deleted_at");
-
-                    b.Property<string>("Description")
-                        .HasMaxLength(4000)
-                        .HasColumnType("character varying(4000)")
-                        .HasColumnName("description");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasMaxLength(200)
-                        .HasColumnType("character varying(200)")
-                        .HasColumnName("name");
-
-                    b.Property<int?>("PricePerSessionVnd")
-                        .HasColumnType("integer")
-                        .HasColumnName("price_per_session_vnd");
-
-                    b.Property<int?>("SessionCount")
-                        .HasColumnType("integer")
-                        .HasColumnName("session_count");
-
-                    b.Property<string>("StatusCode")
-                        .IsRequired()
-                        .HasMaxLength(32)
-                        .HasColumnType("character varying(32)")
-                        .HasColumnName("status_code");
-
-                    b.Property<Guid>("SubjectId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("subject_id");
-
-                    b.Property<Guid>("TutorProfileId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("tutor_profile_id");
-
-                    b.Property<DateTimeOffset>("UpdatedAt")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("updated_at")
-                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
-
-                    b.HasKey("Id")
-                        .HasName("pk_courses");
-
-                    b.HasIndex("SubjectId")
-                        .HasDatabaseName("ix_courses_subject_id");
-
-                    b.HasIndex("TutorProfileId")
-                        .HasDatabaseName("ix_courses_tutor_profile_id");
-
-                    b.ToTable("courses", (string)null);
-                });
-
-            modelBuilder.Entity("TutorMatching.Domain.Tutors.TutorProfileReview", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid")
-                        .HasColumnName("id");
-
-                    b.Property<string>("FromStatusCode")
-                        .IsRequired()
-                        .HasMaxLength(32)
-                        .HasColumnType("character varying(32)")
-                        .HasColumnName("from_status_code");
-
-                    b.Property<string>("Note")
-                        .HasMaxLength(4000)
-                        .HasColumnType("character varying(4000)")
-                        .HasColumnName("note");
-
-                    b.Property<DateTimeOffset>("ReviewedAt")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("reviewed_at")
-                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
-
-                    b.Property<Guid>("ReviewerUserId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("reviewer_user_id");
-
-                    b.Property<string>("ToStatusCode")
-                        .IsRequired()
-                        .HasMaxLength(32)
-                        .HasColumnType("character varying(32)")
-                        .HasColumnName("to_status_code");
-
-                    b.Property<Guid>("TutorProfileId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("tutor_profile_id");
-
-                    b.HasKey("Id")
-                        .HasName("pk_tutor_profile_reviews");
-
-                    b.HasIndex("ReviewerUserId")
-                        .HasDatabaseName("ix_tutor_profile_reviews_reviewer_user_id");
-
-                    b.HasIndex("TutorProfileId")
-                        .HasDatabaseName("ix_tutor_profile_reviews_tutor_profile_id");
-
-                    b.ToTable("tutor_profile_reviews", (string)null);
-                });
-
-            modelBuilder.Entity("TutorMatching.Domain.Hiring.HireRequest", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid")
-                        .HasColumnName("id");
-
-                    b.Property<DateTimeOffset?>("AcceptedAt")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("accepted_at");
-
-                    b.Property<int?>("AgreedPriceVnd")
-                        .HasColumnType("integer")
-                        .HasColumnName("agreed_price_vnd");
-
-                    b.Property<string>("CancelReason")
-                        .HasMaxLength(1000)
-                        .HasColumnType("character varying(1000)")
-                        .HasColumnName("cancel_reason");
-
-                    b.Property<DateTimeOffset?>("CompletedAt")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("completed_at");
-
-                    b.Property<Guid?>("CourseId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("course_id");
-
-                    b.Property<DateTimeOffset>("CreatedAt")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("created_at")
-                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
-
-                    b.Property<string>("DistrictCode")
-                        .HasMaxLength(32)
-                        .HasColumnType("character varying(32)")
-                        .HasColumnName("district_code");
-
-                    b.Property<int>("DurationMinutes")
-                        .HasColumnType("integer")
-                        .HasColumnName("duration_minutes");
-
-                    b.Property<string>("LocationDetail")
-                        .HasMaxLength(500)
-                        .HasColumnType("character varying(500)")
-                        .HasColumnName("location_detail");
-
-                    b.Property<string>("Note")
-                        .HasMaxLength(2000)
-                        .HasColumnType("character varying(2000)")
-                        .HasColumnName("note");
-
-                    b.Property<int>("ProposedPriceVnd")
-                        .HasColumnType("integer")
-                        .HasColumnName("proposed_price_vnd");
-
-                    b.Property<string>("ProvinceCode")
-                        .HasMaxLength(32)
-                        .HasColumnType("character varying(32)")
-                        .HasColumnName("province_code");
-
-                    b.Property<Guid>("RequesterUserId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("requester_user_id");
-
-                    b.Property<int>("SessionsPerWeek")
-                        .HasColumnType("integer")
-                        .HasColumnName("sessions_per_week");
-
-                    b.Property<DateOnly>("StartDate")
-                        .HasColumnType("date")
-                        .HasColumnName("start_date");
-
-                    b.Property<string>("StatusCode")
-                        .IsRequired()
-                        .HasMaxLength(32)
-                        .HasColumnType("character varying(32)")
-                        .HasColumnName("status_code");
-
-                    b.Property<Guid>("SubjectId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("subject_id");
-
-                    b.Property<string>("TeachingModeCode")
-                        .IsRequired()
-                        .HasMaxLength(32)
-                        .HasColumnType("character varying(32)")
-                        .HasColumnName("teaching_mode_code");
-
-                    b.Property<Guid>("TutorProfileId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("tutor_profile_id");
-
-                    b.Property<DateTimeOffset>("UpdatedAt")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("updated_at")
-                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
-
-                    b.HasKey("Id")
-                        .HasName("pk_hire_requests");
-
-                    b.HasIndex("CourseId")
-                        .HasDatabaseName("ix_hire_requests_course_id");
-
-                    b.HasIndex("DistrictCode")
-                        .HasDatabaseName("ix_hire_requests_district_code");
-
-                    b.HasIndex("ProvinceCode")
-                        .HasDatabaseName("ix_hire_requests_province_code");
-
-                    b.HasIndex("RequesterUserId")
-                        .HasDatabaseName("ix_hire_requests_requester_user_id");
-
-                    b.HasIndex("SubjectId")
-                        .HasDatabaseName("ix_hire_requests_subject_id");
-
-                    b.HasIndex("TutorProfileId")
-                        .HasDatabaseName("ix_hire_requests_tutor_profile_id");
-
-                    b.ToTable("hire_requests", (string)null);
-                });
-
-            modelBuilder.Entity("TutorMatching.Domain.Hiring.RequestSchedule", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid")
-                        .HasColumnName("id");
-
-                    b.Property<DateTimeOffset>("CreatedAt")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("created_at")
-                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
-
-                    b.Property<int>("DayOfWeek")
-                        .HasColumnType("integer")
-                        .HasColumnName("day_of_week");
-
-                    b.Property<TimeOnly>("EndTime")
-                        .HasColumnType("time without time zone")
-                        .HasColumnName("end_time");
-
-                    b.Property<Guid>("HireRequestId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("hire_request_id");
-
-                    b.Property<TimeOnly>("StartTime")
-                        .HasColumnType("time without time zone")
-                        .HasColumnName("start_time");
-
-                    b.HasKey("Id")
-                        .HasName("pk_request_schedules");
-
-                    b.HasIndex("HireRequestId")
-                        .HasDatabaseName("ix_request_schedules_hire_request_id");
-
-                    b.ToTable("request_schedules", (string)null);
-                });
-
-            modelBuilder.Entity("TutorMatching.Domain.Hiring.Negotiation", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid")
-                        .HasColumnName("id");
-
-                    b.Property<DateTimeOffset>("CreatedAt")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("created_at")
-                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
-
-                    b.Property<Guid>("HireRequestId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("hire_request_id");
-
-                    b.Property<string>("Note")
-                        .HasMaxLength(2000)
-                        .HasColumnType("character varying(2000)")
-                        .HasColumnName("note");
-
-                    b.Property<int?>("ProposedPriceVnd")
-                        .HasColumnType("integer")
-                        .HasColumnName("proposed_price_vnd");
-
-                    b.Property<DateTimeOffset?>("RespondedAt")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("responded_at");
-
-                    b.Property<string>("ResponseStatusCode")
-                        .IsRequired()
-                        .HasMaxLength(32)
-                        .HasColumnType("character varying(32)")
-                        .HasColumnName("response_status_code");
-
-                    b.Property<Guid>("SenderUserId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("sender_user_id");
-
-                    b.HasKey("Id")
-                        .HasName("pk_negotiations");
-
-                    b.HasIndex("HireRequestId")
-                        .HasDatabaseName("ix_negotiations_hire_request_id");
-
-                    b.HasIndex("SenderUserId")
-                        .HasDatabaseName("ix_negotiations_sender_user_id");
-
-                    b.ToTable("negotiations", (string)null);
-                });
-
-            modelBuilder.Entity("TutorMatching.Domain.Hiring.NegotiationSchedule", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid")
-                        .HasColumnName("id");
-
-                    b.Property<int>("DayOfWeek")
-                        .HasColumnType("integer")
-                        .HasColumnName("day_of_week");
-
-                    b.Property<TimeOnly>("EndTime")
-                        .HasColumnType("time without time zone")
-                        .HasColumnName("end_time");
-
-                    b.Property<Guid>("NegotiationId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("negotiation_id");
-
-                    b.Property<TimeOnly>("StartTime")
-                        .HasColumnType("time without time zone")
-                        .HasColumnName("start_time");
-
-                    b.HasKey("Id")
-                        .HasName("pk_negotiation_schedules");
-
-                    b.HasIndex("NegotiationId")
-                        .HasDatabaseName("ix_negotiation_schedules_negotiation_id");
-
-                    b.ToTable("negotiation_schedules", (string)null);
-                });
-
-            modelBuilder.Entity("TutorMatching.Domain.Hiring.RequestStatusHistory", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid")
-                        .HasColumnName("id");
-
-                    b.Property<Guid?>("ActorUserId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("actor_user_id");
-
-                    b.Property<DateTimeOffset>("CreatedAt")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("created_at")
-                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
-
-                    b.Property<string>("FromStatusCode")
-                        .HasMaxLength(32)
-                        .HasColumnType("character varying(32)")
-                        .HasColumnName("from_status_code");
-
-                    b.Property<Guid>("HireRequestId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("hire_request_id");
-
-                    b.Property<string>("Reason")
-                        .HasMaxLength(1000)
-                        .HasColumnType("character varying(1000)")
-                        .HasColumnName("reason");
-
-                    b.Property<string>("ToStatusCode")
-                        .IsRequired()
-                        .HasMaxLength(32)
-                        .HasColumnType("character varying(32)")
-                        .HasColumnName("to_status_code");
-
-                    b.HasKey("Id")
-                        .HasName("pk_request_status_history");
-
-                    b.HasIndex("ActorUserId")
-                        .HasDatabaseName("ix_request_status_history_actor_user_id");
-
-                    b.HasIndex("HireRequestId")
-                        .HasDatabaseName("ix_request_status_history_hire_request_id");
-
-                    b.ToTable("request_status_history", (string)null);
-                });
-
-            modelBuilder.Entity("TutorMatching.Domain.Messaging.Conversation", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid")
-                        .HasColumnName("id");
-
-                    b.Property<DateTimeOffset?>("ClosedAt")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("closed_at");
-
-                    b.Property<DateTimeOffset>("CreatedAt")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("created_at")
-                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
-
-                    b.Property<Guid>("HireRequestId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("hire_request_id");
-
-                    b.HasKey("Id")
-                        .HasName("pk_conversations");
-
-                    b.HasIndex("HireRequestId")
-                        .IsUnique()
-                        .HasDatabaseName("ix_conversations_hire_request_id");
-
-                    b.ToTable("conversations", (string)null);
-                });
-
-            modelBuilder.Entity("TutorMatching.Domain.Messaging.Message", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid")
-                        .HasColumnName("id");
-
-                    b.Property<string>("Content")
-                        .IsRequired()
-                        .HasMaxLength(4000)
-                        .HasColumnType("character varying(4000)")
-                        .HasColumnName("content");
-
-                    b.Property<Guid>("ConversationId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("conversation_id");
-
-                    b.Property<DateTimeOffset?>("DeletedAt")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("deleted_at");
-
-                    b.Property<DateTimeOffset?>("ReadAt")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("read_at");
-
-                    b.Property<Guid>("SenderUserId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("sender_user_id");
-
-                    b.Property<DateTimeOffset>("SentAt")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("sent_at")
-                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
-
-                    b.HasKey("Id")
-                        .HasName("pk_messages");
-
-                    b.HasIndex("ConversationId")
-                        .HasDatabaseName("ix_messages_conversation_id");
-
-                    b.HasIndex("SenderUserId")
-                        .HasDatabaseName("ix_messages_sender_user_id");
-
-                    b.ToTable("messages", (string)null);
-                });
-
-            modelBuilder.Entity("TutorMatching.Domain.Notifications.Notification", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid")
-                        .HasColumnName("id");
-
-                    b.Property<string>("Body")
-                        .HasMaxLength(2000)
-                        .HasColumnType("character varying(2000)")
-                        .HasColumnName("body");
-
-                    b.Property<DateTimeOffset>("CreatedAt")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("created_at")
-                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
-
-                    b.Property<Guid?>("HireRequestId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("hire_request_id");
-
-                    b.Property<bool>("IsRead")
-                        .HasColumnType("boolean")
-                        .HasColumnName("is_read");
-
-                    b.Property<Guid?>("MessageId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("message_id");
-
-                    b.Property<DateTimeOffset?>("ReadAt")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("read_at");
-
-                    b.Property<string>("Title")
-                        .IsRequired()
-                        .HasMaxLength(256)
-                        .HasColumnType("character varying(256)")
-                        .HasColumnName("title");
-
-                    b.Property<Guid?>("TutorProfileId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("tutor_profile_id");
-
-                    b.Property<string>("TypeCode")
-                        .IsRequired()
-                        .HasMaxLength(64)
-                        .HasColumnType("character varying(64)")
-                        .HasColumnName("type_code");
-
-                    b.Property<Guid>("UserId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("user_id");
-
-                    b.HasKey("Id")
-                        .HasName("pk_notifications");
-
-                    b.HasIndex("HireRequestId")
-                        .HasDatabaseName("ix_notifications_hire_request_id");
-
-                    b.HasIndex("MessageId")
-                        .HasDatabaseName("ix_notifications_message_id");
-
-                    b.HasIndex("TutorProfileId")
-                        .HasDatabaseName("ix_notifications_tutor_profile_id");
-
-                    b.HasIndex("UserId")
-                        .HasDatabaseName("ix_notifications_user_id");
-
-                    b.ToTable("notifications", (string)null);
-                });
-
-            modelBuilder.Entity("TutorMatching.Domain.Content.Article", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid")
-                        .HasColumnName("id");
-
-                    b.Property<Guid>("AuthorUserId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("author_user_id");
-
-                    b.Property<string>("Content")
-                        .IsRequired()
-                        .HasColumnType("text")
-                        .HasColumnName("content");
-
-                    b.Property<DateTimeOffset>("CreatedAt")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("created_at")
-                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
-
-                    b.Property<DateTimeOffset?>("PublishedAt")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("published_at");
-
-                    b.Property<string>("Slug")
-                        .IsRequired()
-                        .HasMaxLength(256)
-                        .HasColumnType("character varying(256)")
-                        .HasColumnName("slug");
-
-                    b.Property<string>("StatusCode")
-                        .IsRequired()
-                        .HasMaxLength(32)
-                        .HasColumnType("character varying(32)")
-                        .HasColumnName("status_code");
-
-                    b.Property<string>("Summary")
-                        .HasMaxLength(1000)
-                        .HasColumnType("character varying(1000)")
-                        .HasColumnName("summary");
-
-                    b.Property<string>("Title")
-                        .IsRequired()
-                        .HasMaxLength(256)
-                        .HasColumnType("character varying(256)")
-                        .HasColumnName("title");
-
-                    b.Property<DateTimeOffset>("UpdatedAt")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("updated_at")
-                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
-
-                    b.HasKey("Id")
-                        .HasName("pk_articles");
-
-                    b.HasIndex("AuthorUserId")
-                        .HasDatabaseName("ix_articles_author_user_id");
-
-                    b.HasIndex("Slug")
-                        .IsUnique()
-                        .HasDatabaseName("ix_articles_slug");
-
-                    b.ToTable("articles", (string)null);
-                });
-
-            modelBuilder.Entity("TutorMatching.Domain.Users.PasswordResetToken", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid")
-                        .HasColumnName("id");
-
-                    b.Property<DateTimeOffset>("CreatedAt")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("created_at")
-                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
-
-                    b.Property<DateTimeOffset>("ExpiresAt")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("expires_at");
-
-                    b.Property<string>("TokenHash")
-                        .IsRequired()
-                        .HasMaxLength(128)
-                        .HasColumnType("character varying(128)")
-                        .HasColumnName("token_hash");
-
-                    b.Property<DateTimeOffset?>("UsedAt")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("used_at");
-
-                    b.Property<Guid>("UserId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("user_id");
-
-                    b.HasKey("Id")
-                        .HasName("pk_password_reset_tokens");
-
-                    b.HasIndex("TokenHash")
-                        .IsUnique()
-                        .HasDatabaseName("ix_password_reset_tokens_token_hash");
-
-                    b.HasIndex("UserId")
-                        .HasDatabaseName("ix_password_reset_tokens_user_id");
-
-                    b.ToTable("password_reset_tokens", (string)null);
-                });
-
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserClaim<System.Guid>", b =>
                 {
                     b.HasOne("TutorMatching.Infrastructure.Persistence.ApplicationUser", null)
@@ -1428,6 +1491,239 @@ namespace TutorMatching.Infrastructure.Persistence.Migrations
                         .HasConstraintName("fk_asp_net_user_tokens_user_accounts_user_id");
                 });
 
+            modelBuilder.Entity("TutorMatching.Domain.Content.Article", b =>
+                {
+                    b.HasOne("TutorMatching.Infrastructure.Persistence.ApplicationUser", null)
+                        .WithMany()
+                        .HasForeignKey("AuthorUserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_articles_user_accounts_author_user_id");
+                });
+
+            modelBuilder.Entity("TutorMatching.Domain.Courses.Course", b =>
+                {
+                    b.HasOne("TutorMatching.Domain.Catalog.Subject", "Subject")
+                        .WithMany()
+                        .HasForeignKey("SubjectId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_courses_subjects_subject_id");
+
+                    b.HasOne("TutorMatching.Domain.Tutors.TutorProfile", "TutorProfile")
+                        .WithMany()
+                        .HasForeignKey("TutorProfileId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_courses_tutor_profiles_tutor_profile_id");
+
+                    b.Navigation("Subject");
+
+                    b.Navigation("TutorProfile");
+                });
+
+            modelBuilder.Entity("TutorMatching.Domain.Hiring.HireRequest", b =>
+                {
+                    b.HasOne("TutorMatching.Domain.Courses.Course", "Course")
+                        .WithMany()
+                        .HasForeignKey("CourseId")
+                        .OnDelete(DeleteBehavior.SetNull)
+                        .HasConstraintName("fk_hire_requests_courses_course_id");
+
+                    b.HasOne("TutorMatching.Domain.Locations.District", "District")
+                        .WithMany()
+                        .HasForeignKey("DistrictCode")
+                        .OnDelete(DeleteBehavior.SetNull)
+                        .HasConstraintName("fk_hire_requests_districts_district_code");
+
+                    b.HasOne("TutorMatching.Domain.Locations.Province", "Province")
+                        .WithMany()
+                        .HasForeignKey("ProvinceCode")
+                        .OnDelete(DeleteBehavior.SetNull)
+                        .HasConstraintName("fk_hire_requests_provinces_province_code");
+
+                    b.HasOne("TutorMatching.Infrastructure.Persistence.ApplicationUser", null)
+                        .WithMany()
+                        .HasForeignKey("RequesterUserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_hire_requests_user_accounts_requester_user_id");
+
+                    b.HasOne("TutorMatching.Domain.Catalog.Subject", "Subject")
+                        .WithMany()
+                        .HasForeignKey("SubjectId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_hire_requests_subjects_subject_id");
+
+                    b.HasOne("TutorMatching.Domain.Tutors.TutorProfile", "TutorProfile")
+                        .WithMany()
+                        .HasForeignKey("TutorProfileId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_hire_requests_tutor_profiles_tutor_profile_id");
+
+                    b.Navigation("Course");
+
+                    b.Navigation("District");
+
+                    b.Navigation("Province");
+
+                    b.Navigation("Subject");
+
+                    b.Navigation("TutorProfile");
+                });
+
+            modelBuilder.Entity("TutorMatching.Domain.Hiring.Negotiation", b =>
+                {
+                    b.HasOne("TutorMatching.Domain.Hiring.HireRequest", "HireRequest")
+                        .WithMany("Negotiations")
+                        .HasForeignKey("HireRequestId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_negotiations_hire_requests_hire_request_id");
+
+                    b.HasOne("TutorMatching.Infrastructure.Persistence.ApplicationUser", null)
+                        .WithMany()
+                        .HasForeignKey("SenderUserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_negotiations_user_accounts_sender_user_id");
+
+                    b.Navigation("HireRequest");
+                });
+
+            modelBuilder.Entity("TutorMatching.Domain.Hiring.NegotiationSchedule", b =>
+                {
+                    b.HasOne("TutorMatching.Domain.Hiring.Negotiation", "Negotiation")
+                        .WithMany("Schedules")
+                        .HasForeignKey("NegotiationId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_negotiation_schedules_negotiations_negotiation_id");
+
+                    b.Navigation("Negotiation");
+                });
+
+            modelBuilder.Entity("TutorMatching.Domain.Hiring.RequestSchedule", b =>
+                {
+                    b.HasOne("TutorMatching.Domain.Hiring.HireRequest", "HireRequest")
+                        .WithMany("Schedules")
+                        .HasForeignKey("HireRequestId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_request_schedules_hire_requests_hire_request_id");
+
+                    b.Navigation("HireRequest");
+                });
+
+            modelBuilder.Entity("TutorMatching.Domain.Hiring.RequestStatusHistory", b =>
+                {
+                    b.HasOne("TutorMatching.Infrastructure.Persistence.ApplicationUser", null)
+                        .WithMany()
+                        .HasForeignKey("ActorUserId")
+                        .OnDelete(DeleteBehavior.SetNull)
+                        .HasConstraintName("fk_request_status_history_user_accounts_actor_user_id");
+
+                    b.HasOne("TutorMatching.Domain.Hiring.HireRequest", "HireRequest")
+                        .WithMany("StatusHistories")
+                        .HasForeignKey("HireRequestId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_request_status_history_hire_requests_hire_request_id");
+
+                    b.Navigation("HireRequest");
+                });
+
+            modelBuilder.Entity("TutorMatching.Domain.Locations.District", b =>
+                {
+                    b.HasOne("TutorMatching.Domain.Locations.Province", "Province")
+                        .WithMany("Districts")
+                        .HasForeignKey("ProvinceCode")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_districts_provinces_province_code");
+
+                    b.Navigation("Province");
+                });
+
+            modelBuilder.Entity("TutorMatching.Domain.Messaging.Conversation", b =>
+                {
+                    b.HasOne("TutorMatching.Domain.Hiring.HireRequest", "HireRequest")
+                        .WithOne()
+                        .HasForeignKey("TutorMatching.Domain.Messaging.Conversation", "HireRequestId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_conversations_hire_requests_hire_request_id");
+
+                    b.Navigation("HireRequest");
+                });
+
+            modelBuilder.Entity("TutorMatching.Domain.Messaging.Message", b =>
+                {
+                    b.HasOne("TutorMatching.Domain.Messaging.Conversation", "Conversation")
+                        .WithMany("Messages")
+                        .HasForeignKey("ConversationId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_messages_conversations_conversation_id");
+
+                    b.HasOne("TutorMatching.Infrastructure.Persistence.ApplicationUser", null)
+                        .WithMany()
+                        .HasForeignKey("SenderUserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_messages_user_accounts_sender_user_id");
+
+                    b.Navigation("Conversation");
+                });
+
+            modelBuilder.Entity("TutorMatching.Domain.Notifications.Notification", b =>
+                {
+                    b.HasOne("TutorMatching.Domain.Hiring.HireRequest", "HireRequest")
+                        .WithMany()
+                        .HasForeignKey("HireRequestId")
+                        .OnDelete(DeleteBehavior.SetNull)
+                        .HasConstraintName("fk_notifications_hire_requests_hire_request_id");
+
+                    b.HasOne("TutorMatching.Domain.Messaging.Message", "Message")
+                        .WithMany()
+                        .HasForeignKey("MessageId")
+                        .OnDelete(DeleteBehavior.SetNull)
+                        .HasConstraintName("fk_notifications_messages_message_id");
+
+                    b.HasOne("TutorMatching.Domain.Tutors.TutorProfile", "TutorProfile")
+                        .WithMany()
+                        .HasForeignKey("TutorProfileId")
+                        .OnDelete(DeleteBehavior.SetNull)
+                        .HasConstraintName("fk_notifications_tutor_profiles_tutor_profile_id");
+
+                    b.HasOne("TutorMatching.Infrastructure.Persistence.ApplicationUser", null)
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_notifications_user_accounts_user_id");
+
+                    b.Navigation("HireRequest");
+
+                    b.Navigation("Message");
+
+                    b.Navigation("TutorProfile");
+                });
+
+            modelBuilder.Entity("TutorMatching.Domain.Tutors.AvailabilitySlot", b =>
+                {
+                    b.HasOne("TutorMatching.Domain.Tutors.TutorProfile", "TutorProfile")
+                        .WithMany()
+                        .HasForeignKey("TutorProfileId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_availability_slots_tutor_profiles_tutor_profile_id");
+
+                    b.Navigation("TutorProfile");
+                });
+
             modelBuilder.Entity("TutorMatching.Domain.Tutors.TutorProfile", b =>
                 {
                     b.HasOne("TutorMatching.Domain.Locations.District", null)
@@ -1448,6 +1744,73 @@ namespace TutorMatching.Infrastructure.Persistence.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
                         .HasConstraintName("fk_tutor_profiles_user_accounts_user_id");
+                });
+
+            modelBuilder.Entity("TutorMatching.Domain.Tutors.TutorProfileReview", b =>
+                {
+                    b.HasOne("TutorMatching.Infrastructure.Persistence.ApplicationUser", null)
+                        .WithMany()
+                        .HasForeignKey("ReviewerUserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_tutor_profile_reviews_user_accounts_reviewer_user_id");
+
+                    b.HasOne("TutorMatching.Domain.Tutors.TutorProfile", "TutorProfile")
+                        .WithMany()
+                        .HasForeignKey("TutorProfileId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_tutor_profile_reviews_tutor_profiles_tutor_profile_id");
+
+                    b.Navigation("TutorProfile");
+                });
+
+            modelBuilder.Entity("TutorMatching.Domain.Tutors.TutorSubject", b =>
+                {
+                    b.HasOne("TutorMatching.Domain.Catalog.Subject", "Subject")
+                        .WithMany()
+                        .HasForeignKey("SubjectId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_tutor_subjects_subjects_subject_id");
+
+                    b.HasOne("TutorMatching.Domain.Tutors.TutorProfile", "TutorProfile")
+                        .WithMany()
+                        .HasForeignKey("TutorProfileId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_tutor_subjects_tutor_profiles_tutor_profile_id");
+
+                    b.Navigation("Subject");
+
+                    b.Navigation("TutorProfile");
+                });
+
+            modelBuilder.Entity("TutorMatching.Domain.Tutors.TutorSubjectLevel", b =>
+                {
+                    b.HasOne("TutorMatching.Domain.Catalog.TeachingLevel", null)
+                        .WithMany()
+                        .HasForeignKey("LevelCode")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_tutor_subject_levels_teaching_levels_level_code");
+
+                    b.HasOne("TutorMatching.Domain.Tutors.TutorSubject", null)
+                        .WithMany()
+                        .HasForeignKey("TutorProfileId", "SubjectId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_tutor_subject_levels_tutor_subjects");
+                });
+
+            modelBuilder.Entity("TutorMatching.Domain.Users.PasswordResetToken", b =>
+                {
+                    b.HasOne("TutorMatching.Infrastructure.Persistence.ApplicationUser", null)
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_password_reset_tokens_user_accounts_user_id");
                 });
 
             modelBuilder.Entity("TutorMatching.Infrastructure.Auditing.AuditEvent", b =>
@@ -1477,6 +1840,30 @@ namespace TutorMatching.Infrastructure.Persistence.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
                         .HasConstraintName("fk_token_sessions_user_accounts_user_id");
+                });
+
+            modelBuilder.Entity("TutorMatching.Domain.Hiring.HireRequest", b =>
+                {
+                    b.Navigation("Negotiations");
+
+                    b.Navigation("Schedules");
+
+                    b.Navigation("StatusHistories");
+                });
+
+            modelBuilder.Entity("TutorMatching.Domain.Hiring.Negotiation", b =>
+                {
+                    b.Navigation("Schedules");
+                });
+
+            modelBuilder.Entity("TutorMatching.Domain.Locations.Province", b =>
+                {
+                    b.Navigation("Districts");
+                });
+
+            modelBuilder.Entity("TutorMatching.Domain.Messaging.Conversation", b =>
+                {
+                    b.Navigation("Messages");
                 });
 #pragma warning restore 612, 618
         }

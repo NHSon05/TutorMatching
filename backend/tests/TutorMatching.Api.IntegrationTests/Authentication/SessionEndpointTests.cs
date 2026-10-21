@@ -13,10 +13,8 @@ namespace TutorMatching.Api.IntegrationTests.Authentication;
 [Collection("PostgreSQL API")]
 public sealed class SessionEndpointTests(PostgreSqlFixture fixture)
 {
-    [Theory]
-    [InlineData(false)]
-    [InlineData(true)]
-    public async Task RoleRemovalOrReplacementDeniesAccessAndRefreshWithoutStampChange(bool replaceRole)
+    [Fact]
+    public async Task RoleReplacementDeniesAccessAndRefreshWithoutStampChange()
     {
         await using var factory = await fixture.CreateFactoryAsync();
         using var client = factory.CreateApiClient();
@@ -29,8 +27,9 @@ public sealed class SessionEndpointTests(PostgreSqlFixture fixture)
         var user = (await manager.FindByEmailAsync("session@example.com"))!;
         var stamp = user.SecurityStamp;
         var session = await db.TokenSessions.AsNoTracking().SingleAsync();
-        Assert.True((await manager.RemoveFromRoleAsync(user, "LEARNER")).Succeeded);
-        if (replaceRole) Assert.True((await manager.AddToRoleAsync(user, "TUTOR")).Succeeded);
+        await Assert.ThrowsAsync<InvalidOperationException>(() => manager.RemoveFromRoleAsync(user, "LEARNER"));
+        Assert.Equal(TutorMatching.Domain.Users.AccountRole.LEARNER, user.Role);
+        Assert.True((await manager.AddToRoleAsync(user, "TUTOR")).Succeeded);
         Assert.Equal(stamp, (await db.Users.AsNoTracking().SingleAsync()).SecurityStamp);
 
         // Direct service assertion avoids relying on /me's independent profile/role checks.

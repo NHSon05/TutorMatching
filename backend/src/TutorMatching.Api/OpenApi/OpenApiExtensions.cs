@@ -18,6 +18,7 @@ public static class OpenApiExtensions
                 description.RelativePath?.StartsWith("api/v1/", StringComparison.Ordinal) == true;
             options.AddOperationTransformer((operation, context, _) =>
             {
+                operation.OperationId ??= context.Description.HttpMethod!.ToLowerInvariant() + "_" + System.Text.RegularExpressions.Regex.Replace(context.Description.RelativePath!, "[^a-zA-Z0-9]+", "_").Trim('_');
                 if (context.Description.ActionDescriptor.EndpointMetadata.OfType<IAllowAnonymous>().Any())
                     operation.Security = [];
 

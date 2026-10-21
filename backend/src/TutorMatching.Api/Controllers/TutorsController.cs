@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using TutorMatching.Api.Contracts.Tutors;
 using TutorMatching.Domain.Tutors;
 using TutorMatching.Infrastructure.Persistence;
+using TutorMatching.Infrastructure.Tutors;
 
 namespace TutorMatching.Api.Controllers;
 
@@ -22,21 +23,13 @@ public sealed class TutorsController(ApplicationDbContext dbContext) : Controlle
         [FromQuery] TutorQueryParameters parameters,
         CancellationToken cancellationToken)
     {
-        var query = from profile in dbContext.TutorProfiles.AsNoTracking()
+        var query = from profile in dbContext.PublicTutorProfiles()
                     join user in dbContext.Users.AsNoTracking() on profile.UserId equals user.Id
                     select new { profile, user };
 
-        // 1. Lọc theo trạng thái hồ sơ
-        if (!string.IsNullOrWhiteSpace(parameters.Status) &&
-            Enum.TryParse<TutorProfileStatus>(parameters.Status, true, out var statusFilter))
-        {
-            query = query.Where(x => x.profile.Status == statusFilter);
-        }
-        else if (string.IsNullOrWhiteSpace(parameters.Status) ||
-                 !parameters.Status.Equals("all", StringComparison.OrdinalIgnoreCase))
-        {
-            query = query.Where(x => x.profile.Status == TutorProfileStatus.APPROVED);
-        }
+        Response.Headers.CacheControl = "no-store";
+        if (!string.IsNullOrWhiteSpace(parameters.Status))
+            return BadRequest(new { message = "Bộ lọc trạng thái không được hỗ trợ trên API công khai." });
 
         // 2. Tìm kiếm theo từ khóa (tên, trường, chuyên ngành, bio)
         if (!string.IsNullOrWhiteSpace(parameters.Search))
@@ -102,7 +95,8 @@ public sealed class TutorsController(ApplicationDbContext dbContext) : Controlle
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> GetTutorById(Guid id, CancellationToken cancellationToken)
     {
-        var record = await (from profile in dbContext.TutorProfiles.AsNoTracking()
+        Response.Headers.CacheControl = "no-store";
+        var record = await (from profile in dbContext.PublicTutorProfiles()
                             join user in dbContext.Users.AsNoTracking() on profile.UserId equals user.Id
                             where profile.Id == id || profile.UserId == id
                             select new { profile, user })
@@ -157,13 +151,8 @@ public sealed class TutorsController(ApplicationDbContext dbContext) : Controlle
             SessionRateVnd: profile.SessionRateVnd,
             MonthlyRateVnd: profile.MonthlyRateVnd,
             IsNegotiable: profile.IsNegotiable,
-            Rating: 5.0, // Điểm đánh giá ban đầu
-            Certifications: profile.Certifications.Select(c => new TutorCertificationDto(
-                Name: c.Name,
-                Issuer: c.Issuer,
-                IssueYear: c.IssueYear,
-                FileUrl: c.FileUrl
-            )).ToList(),
+            Rating: null, // No verified reviews yet.
+            Certifications: [],
             CreatedAt: profile.CreatedAt,
             ApprovedAt: profile.ApprovedAt
         );
