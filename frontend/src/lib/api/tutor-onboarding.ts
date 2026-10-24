@@ -39,7 +39,11 @@ export interface TutorPricingDto {
   isNegotiable: boolean;
 }
 
+export interface TutorDiscoveryData { subjects?: { subjectId: string; levelCodes: string[] }[]; teachingModes?: string[]; provinceCode?: string | null; districtCode?: string | null }
+
 export interface TutorOnboardingResponse {
+  version?: string;
+  discovery?: TutorDiscoveryData;
   status: TutorProfileStatus;
   currentStep: number;
   about: TutorAboutDto;
@@ -54,6 +58,8 @@ export interface TutorOnboardingResponse {
 }
 
 export interface SaveOnboardingDraftRequest {
+  expectedVersion?: string;
+  discovery?: TutorDiscoveryData;
   currentStep?: number;
   about?: TutorAboutDto;
   avatarUrl?: string;
@@ -120,7 +126,7 @@ export async function uploadTutorCertificate(file: File): Promise<UploadFileResp
 /**
  * Nộp hồ sơ Onboarding chính thức để chuyển sang trạng thái chờ duyệt (PENDING_REVIEW)
  */
-export async function submitTutorOnboarding(): Promise<SubmitOnboardingResponse> {
-  const { data } = await http.post<SubmitOnboardingResponse>("/tutor/onboarding/submit");
+export async function submitTutorOnboarding(expectedVersion?: string): Promise<SubmitOnboardingResponse> {
+  const { data } = await http.post<SubmitOnboardingResponse>("/tutor/onboarding/submit", expectedVersion ? { expectedVersion } : undefined);
   return data;
 }

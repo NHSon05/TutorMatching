@@ -93,8 +93,15 @@ public sealed class AdminEndpointTests(PostgreSqlFixture fixture)
 
     private static async Task<HttpResponseMessage> Decide(HttpClient client, Guid id, string action, string note)
     {
+        Guid? expectedVersion = null;
+        using var detailResponse = await client.GetAsync($"/api/v1/admin/tutor-reviews/{id}");
+        if (detailResponse.IsSuccessStatusCode)
+        {
+            var detail = await detailResponse.Content.ReadFromJsonAsync<JsonElement>();
+            expectedVersion = detail.GetProperty("profile").GetProperty("version").GetGuid();
+        }
         var csrf = await client.GetFromJsonAsync<JsonElement>("/api/v1/auth/csrf");
-        using var request = new HttpRequestMessage(HttpMethod.Post, $"/api/v1/admin/tutors/{id}/{action}") { Content = JsonContent.Create(new { note }) };
+        using var request = new HttpRequestMessage(HttpMethod.Post, $"/api/v1/admin/tutors/{id}/{action}") { Content = JsonContent.Create(new { note, expectedVersion }) };
         request.Headers.Add("X-CSRF-TOKEN", csrf.GetProperty("requestToken").GetString());
         return await client.SendAsync(request);
     }

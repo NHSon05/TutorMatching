@@ -18,6 +18,7 @@ public sealed class ApiExceptionHandler(
         }
 
         logger.LogError(
+            exception,
             "Unhandled exception {ExceptionType}. TraceId: {TraceId}",
             exception.GetType().Name,
             httpContext.TraceIdentifier

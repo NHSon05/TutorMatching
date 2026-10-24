@@ -82,3 +82,20 @@ Search by ADR ID, subsystem, or keyword. Add only durable decisions; keep each A
 - Decision: Dedicated `TutorOnboarding` API (`/api/v1/tutor/onboarding/*`) supports draft autosave across 6 steps, avatar/cert uploads, and review submission.
 - Consequence: Frontend routes `TUTOR` dynamically: `DRAFT` to `/tutor/onboarding`, `PENDING_REVIEW` to `/tutor/profile-edit`, and `APPROVED` to `/tutor/dashboard`.
 
+## ADR-009 - Merge account roles directly into user_accounts
+
+- Date: 2026-10-18
+- Status: Accepted
+- Context: DatabaseSchema designed single role directly in users table, but identity foundation split roles into asp_net_user_roles and asp_net_roles.
+- Decision: Add `role` column to `user_accounts` table with canonical check constraint (`ADMIN`, `LEARNER`, `TUTOR`).
+- Decision: Replace multi-table role storage with custom `ApplicationUserStore: IUserRoleStore<ApplicationUser>`, removing `asp_net_roles`, `asp_net_user_roles`, `asp_net_role_claims`.
+- Consequence: Users have exactly one canonical role stored directly on `user_accounts`. Migration backfills existing roles from `asp_net_user_roles` before dropping legacy tables.
+
+
+## ADR-010 - Version every tutor review decision
+
+- Date: 2026-10-21
+- Status: Accepted (Sprint 2 US3 / research R3, R11)
+- Decision: Require the displayed expectedVersion on all admin decision routes, including Sprint 1 approve/reject aliases; no unversioned compatibility bypass.
+- Decision: Keep full reasons in immutable action/version history, persist audit and Notification in the same transaction, and leave unknowable legacy reviewedVersion null.
+- Consequence: Older clients must fetch admin review detail and send its current version; stale/resubmitted profiles return409.

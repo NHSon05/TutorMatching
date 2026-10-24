@@ -11,9 +11,12 @@ export default function TutorNavbar() {
   const navItems = [
     { label: "Tổng quan", href: "/tutor/dashboard" },
     { label: "Lớp đang dạy", href: "/tutor/teaching-classes" },
+    { label: "Lịch rảnh & khóa học", href: "/tutor/offers" },
     { label: "Hồ sơ gia sư", href: "/tutor/profile-edit" },
     { label: "Tin nhắn", href: "/messages" },
   ];
+
+  const visibleItems = isOnboarding ? navItems.filter(item => item.href === "/tutor/offers" || item.href === "/tutor/profile-edit") : navItems;
 
   return (
     <header className="bg-white border-b border-gray-200 sticky top-0 z-40">
@@ -28,9 +31,9 @@ export default function TutorNavbar() {
             </span>
           </Link>
 
-          {!isOnboarding && (
+          {visibleItems.length > 0 && (
             <nav className="hidden md:flex items-center gap-6">
-              {navItems.map((item) => {
+              {visibleItems.map((item) => {
                 const isActive =
                   item.href === "/tutor/dashboard"
                     ? pathname === "/tutor/dashboard" || pathname === "/"
@@ -55,7 +58,7 @@ export default function TutorNavbar() {
         </div>
 
         <div className="flex items-center gap-4">
-          {!isOnboarding && (
+          {visibleItems.length > 0 && (
             <Link
               href="/profile"
               className="text-xs font-medium text-gray-600 hover:text-gray-900"

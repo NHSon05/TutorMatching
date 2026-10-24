@@ -8,8 +8,8 @@ Stable, compact facts for agents. Search by heading or keyword and read only the
 - Product requirements: `docs/Final_SRS_TutorMatch_PBL3.pdf`.
 - Data-model proposal: `docs/DatabaseSchema.md`.
 - Spec Kit constitution: `.specify/memory/constitution.md`.
-- Sprint features: `001-foundation-accounts` is planned/tasked; `002-tutor-discovery`,
-  `003-hire-negotiation`, and `004-messaging-admin-release` are defined and awaiting planning.
+- Sprint features: `001-foundation-accounts` has core auth/profile implementation; `002-tutor-discovery` phases 1–4 are implemented.
+  `003-hire-negotiation` and `004-messaging-admin-release` are defined and awaiting planning.
 - `005-database-snake-case` is implemented and applied to local PostgreSQL; physical names include Identity and EF history.
 - Shared AI usage guide: `docs/guides/AI-WORKFLOW.md`.
 - Sprint 1 persistence and Application ports are in place. Registration, JWT login/logout/refresh and authorization are implemented; browser E2E verification, profile editing and password reset remain pending in `specs/001-foundation-accounts/tasks.md`.
@@ -24,8 +24,8 @@ Stable, compact facts for agents. Search by heading or keyword and read only the
 - Layered backend project references and Domain/Application/API test projects are registered in the solution.
 - Local PostgreSQL 17 and Mailpit run through `backend/compose.yaml`; backend and frontend use separate environment files.
 - API startup and EF design-time tooling share `Infrastructure/Configurations/DotEnvLoader.cs`; it loads `.env` only beside `TutorMatching.slnx` and preserves existing process environment variables. Published deployments should supply environment variables directly.
-- Sprint 1 persistence uses ASP.NET Core Identity with UUID keys, EF Core 10, Npgsql, canonical roles/statuses, account constraints, UTC timestamps, and an initial migration validated locally and applied to Supabase through its IPv4 Session pooler.
-- All current physical tables/columns/keys/indexes/sequences use snake_case. `SnakeCaseNaming` configures EF; `DatabaseOptions` configures `ef_migrations_history` with snake_case columns. Historical migrations retain original names; `UseSnakeCaseDatabaseNames` performs renames without rebuilding objects.
+- Sprint 1 persistence uses ASP.NET Core Identity with UUID keys, EF Core 10, Npgsql, canonical statuses/roles, account constraints, UTC timestamps, and migrations applied via DatabaseMigrator.
+- All current physical tables/columns/keys/indexes/sequences use snake_case. Role is persisted directly as `user_accounts.role` with canonical check constraint (`ADMIN`, `LEARNER`, `TUTOR`) via custom `ApplicationUserStore: IUserRoleStore<ApplicationUser>`, replacing `asp_net_roles` and `asp_net_user_roles`. Historical migrations retain original names.
 - T010 ports live in `TutorMatching.Application/Abstractions/`: current user, UTC clock, email, token sessions, allowlisted account audit, and account service; Application references Domain only. See the local README for adapter responsibilities.
 - Authentication uses dual HttpOnly cookies (`accessToken` JWT 5m path `/`, `refreshToken` opaque rotating path `/api/v1/auth`), server-side TokenSessions, 30m idle/8h absolute limits, per-request stamp/status/role validation, CSRF, and allowlisted credentialed CORS. Login counts failures (5 attempts/15m); logout revokes all sessions via security stamp. `/users/me` derives ownership from claims; `/users/me/access/{role}` checks current database role. Frontend guards use `/users/me`, not editable role cookies.
 - `Jwt__SigningKey` is required Base64 (at least 32 random bytes), without fallback. `AddTokenSessions` migration creates session/refresh tables. Refresh/logout serialize on a PostgreSQL session row lock. Frontend `http` in `frontend/src/lib/api/http.ts` is the shared Axios browser client (get/post/put/patch/delete, standard response.data). Its fetch adapter uses no-store and cookies; mutations obtain CSRF automatically. Protected 401s use a shared renewal promise and same-origin Web Locks, probe under the lock and retry once with fresh CSRF. Auth routes bypass renewal. Requires HTTPS/localhost and Web Locks; transient failures do not log out.
@@ -87,3 +87,13 @@ Stable, compact facts for agents. Search by heading or keyword and read only the
 - `DECISIONS.md` holds short durable ADRs and is searched selectively.
 - Update this file only when stable project facts change; transient progress belongs in `SESSION.md`.
 - Feature requirements, plans, contracts, and task progress belong in `specs/`, not agent memory.
+
+- Sprint 2 catalog/public gate: `/admin/catalog` UI and `/api/v1/catalog/{kind}` / admin catalog APIs; `DiscoveryFoundation` migration normalizes known subject/level data while preserving legacy JSON. Use the API-configured connection at port 5433 for migration/backup; the Compose instance can be different. See `specs/002-tutor-discovery/evidence.md`.
+
+- Sprint 2 US1 owner profile supports versioned edits, normalized subjects/levels, teaching modes/service area and re-review on core/name changes. Local DB includes TutorReviewDecisions (2026-10-21); see feature evidence for validation.
+
+- Sprint 2 US2: owner availability/course APIs and `/tutor/offers`; profile-row locks prevent overlapping writes, course/slot removals are soft. `WeeklyAvailability.Capacity` supplies reusable duration matching for later search.
+
+- Sprint 2 US3: admin queue/detail/decision + owner history; all review routes (including old approve/reject aliases) require expectedVersion. Three actions commit status/history/audit/Notification atomically. Legacy reviewedVersion stays null; full notes in immutable history. See feature contract/evidence.
+
+- Sprint2 US4/US5: /tutors uses server-side filters/count/page and canonical /tutors/{profileId} detail, no mock fallback. IPublicTutorService/PublicTutorService use PostgreSQL JSONB/range union capacity and repeatable-read projections; public inventory also requires active subject and positive session rate. Legacy userId detail lookup returns404. DevelopmentDataSeeder normalizes demo subjects/levels and conservatively repairs unchanged, unlinked legacy demo profiles; UI uses compact filters and tutor cards.

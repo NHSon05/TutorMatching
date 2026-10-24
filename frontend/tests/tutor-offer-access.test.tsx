@@ -1,0 +1,10 @@
+import { render,screen,waitFor } from "@testing-library/react";
+import { beforeEach,expect,it,vi } from "vitest";
+import { TutorGuard } from "@/components/tutor/TutorGuard";
+const state=vi.hoisted(()=>({path:"/tutor/offers",role:"TUTOR",replace:vi.fn()}));
+vi.mock("next/navigation",()=>({usePathname:()=>state.path,useRouter:()=>({replace:state.replace})}));
+vi.mock("@/hooks/use-session",()=>({useSession:()=>({data:{id:"owner",role:state.role,email:"owner@example.test",fullName:"Owner",status:"ACTIVE",tutorProfileStatus:"DRAFT"},isLoading:false,error:null})}));
+beforeEach(()=>{state.path="/tutor/offers";state.role="TUTOR";state.replace.mockReset();});
+it("allows a draft tutor to manage offers",()=>{render(<TutorGuard><p>Offer editor</p></TutorGuard>);expect(screen.getByText("Offer editor")).toBeInTheDocument();expect(state.replace).not.toHaveBeenCalled();});
+it("keeps the approval gate on the teaching dashboard",async()=>{state.path="/tutor/dashboard";render(<TutorGuard><p>Dashboard</p></TutorGuard>);expect(screen.queryByText("Dashboard")).not.toBeInTheDocument();await waitFor(()=>expect(state.replace).toHaveBeenCalledWith("/tutor/onboarding"));});
+it("still denies learner access to tutor management",async()=>{state.role="LEARNER";render(<TutorGuard><p>Offer editor</p></TutorGuard>);expect(screen.queryByText("Offer editor")).not.toBeInTheDocument();await waitFor(()=>expect(state.replace).toHaveBeenCalledWith("/forbidden"));});

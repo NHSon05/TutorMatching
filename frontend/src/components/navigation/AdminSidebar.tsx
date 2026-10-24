@@ -10,6 +10,7 @@ export default function AdminSidebar() {
   const menuItems = [
     { label: "Bảng điều khiển", href: "/admin/dashboard", icon: "📊" },
     { label: "Duyệt hồ sơ gia sư", href: "/admin/tutor-approvals", icon: "📝" },
+    { label: "Quản lý danh mục", href: "/admin/catalog", icon: "📚" },
     { label: "Quản lý người dùng", href: "/admin/users", icon: "👥" },
     { label: "Cài đặt hệ thống", href: "/settings", icon: "⚙️" },
   ];

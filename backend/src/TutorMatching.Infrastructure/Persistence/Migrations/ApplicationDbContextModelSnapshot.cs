@@ -865,6 +865,10 @@ namespace TutorMatching.Infrastructure.Persistence.Migrations
                     b.HasIndex("TutorProfileId")
                         .HasDatabaseName("ix_availability_slots_tutor_profile_id");
 
+                    b.HasIndex("DayOfWeek", "TutorProfileId", "StartTime", "EndTime")
+                        .HasDatabaseName("ix_availability_slots_search")
+                        .HasFilter("is_active AND availability_type = 'WEEKLY'");
+
                     b.ToTable("availability_slots", (string)null);
                 });
 
@@ -1036,6 +1040,9 @@ namespace TutorMatching.Infrastructure.Persistence.Migrations
                         .IsUnique()
                         .HasDatabaseName("ix_tutor_profiles_user_id");
 
+                    b.HasIndex("Status", "ApprovedAt")
+                        .HasDatabaseName("ix_tutor_profiles_status_approved_at");
+
                     b.ToTable("tutor_profiles", (string)null);
                 });
 
@@ -1045,6 +1052,12 @@ namespace TutorMatching.Infrastructure.Persistence.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid")
                         .HasColumnName("id");
+
+                    b.Property<string>("Action")
+                        .IsRequired()
+                        .HasMaxLength(32)
+                        .HasColumnType("character varying(32)")
+                        .HasColumnName("action");
 
                     b.Property<string>("FromStatusCode")
                         .IsRequired()
@@ -1062,6 +1075,10 @@ namespace TutorMatching.Infrastructure.Persistence.Migrations
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("reviewed_at")
                         .HasDefaultValueSql("CURRENT_TIMESTAMP");
+
+                    b.Property<Guid?>("ReviewedVersion")
+                        .HasColumnType("uuid")
+                        .HasColumnName("reviewed_version");
 
                     b.Property<Guid>("ReviewerUserId")
                         .HasColumnType("uuid")
@@ -1083,8 +1100,8 @@ namespace TutorMatching.Infrastructure.Persistence.Migrations
                     b.HasIndex("ReviewerUserId")
                         .HasDatabaseName("ix_tutor_profile_reviews_reviewer_user_id");
 
-                    b.HasIndex("TutorProfileId")
-                        .HasDatabaseName("ix_tutor_profile_reviews_tutor_profile_id");
+                    b.HasIndex("TutorProfileId", "ReviewedAt")
+                        .HasDatabaseName("ix_tutor_profile_reviews_tutor_profile_id_reviewed_at");
 
                     b.ToTable("tutor_profile_reviews", (string)null);
                 });

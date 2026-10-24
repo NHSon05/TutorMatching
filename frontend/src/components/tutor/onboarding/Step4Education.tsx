@@ -127,6 +127,7 @@ export function Step4Education({ data, onChange, errors }: Step4EducationProps) 
           </div>
         </div>
       )}
+      {data.educationType === "NO_DEGREE" && <TextField label="Chuyên môn hiện tại" value={data.degree} onChange={e=>onChange({degree:e.target.value})} helperText="Mô tả trình độ hoặc kinh nghiệm chuyên môn của bạn."/>}
     </div>
   );
 }

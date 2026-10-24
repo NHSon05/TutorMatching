@@ -7,7 +7,7 @@ using TutorMatching.Application.Authentication.Register;
 namespace TutorMatching.Api.Controllers;
 
 [ApiController]
-[Route("api/v1/auth")]
+[Route("auth")]
 public sealed class AuthController(RegisterAccountHandler registerHandler,
     TutorMatching.Application.Authentication.Sessions.SessionHandler sessions,
     TutorMatching.Application.Abstractions.ITokenSessionService tokens,

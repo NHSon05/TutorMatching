@@ -40,7 +40,8 @@ export function SelectCheck({
   id,
 }: SelectCheckProps) {
   const isControlled = controlledValues !== undefined;
-  const [uncontrolledValues, setUncontrolledValues] = React.useState<string[]>(defaultValues);
+  const [uncontrolledValues, setUncontrolledValues] =
+    React.useState<string[]>(defaultValues);
   const selectedValues = isControlled ? controlledValues : uncontrolledValues;
 
   const [isOpen, setIsOpen] = React.useState(false);
@@ -53,7 +54,10 @@ export function SelectCheck({
   // Click outside listener
   React.useEffect(() => {
     function handleClickOutside(e: MouseEvent) {
-      if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
+      if (
+        containerRef.current &&
+        !containerRef.current.contains(e.target as Node)
+      ) {
         setIsOpen(false);
       }
     }
@@ -126,13 +130,15 @@ export function SelectCheck({
           hasError
             ? "border-status-error focus:ring-status-error/30"
             : isOpen
-            ? "border-gray-900 dark:border-white focus:ring-gray-900/10"
-            : "border-gray-300 dark:border-gray-700 hover:border-gray-400 focus:ring-gray-900/10 shadow-2xs"
+              ? "border-gray-900 dark:border-white focus:ring-gray-900/10"
+              : "border-gray-300 dark:border-gray-700 hover:border-gray-400 focus:ring-gray-900/10 shadow-2xs"
         } ${disabled ? "opacity-50 cursor-not-allowed bg-gray-50 dark:bg-gray-800/50" : ""}`}
       >
         <div className="flex flex-wrap items-center gap-1.5 truncate">
           {selectedValues.length === 0 ? (
-            <span className="text-sm text-gray-400 dark:text-gray-500">{placeholder}</span>
+            <span className="text-sm text-gray-400 dark:text-gray-500">
+              {placeholder}
+            </span>
           ) : (
             <>
               {selectedLabels.slice(0, maxDisplayedBadges).map((lbl) => (
@@ -183,11 +189,18 @@ export function SelectCheck({
               onClick={handleSelectAll}
               className="text-xs text-brand hover:underline font-semibold whitespace-nowrap px-1"
             >
-              {selectedValues.length === options.length ? "Bỏ chọn tất cả" : "Chọn tất cả"}
+              {selectedValues.length === options.length
+                ? "Bỏ chọn tất cả"
+                : "Chọn tất cả"}
             </button>
           </div>
 
-          <ul className="max-h-56 overflow-y-auto divide-y divide-gray-50 dark:divide-gray-800/50 py-1">
+          <ul
+            role="listbox"
+            aria-multiselectable="true"
+            aria-label={typeof label === "string" ? label : placeholder}
+            className="max-h-56 overflow-y-auto divide-y divide-gray-50 dark:divide-gray-800/50 py-1"
+          >
             {filteredOptions.length === 0 ? (
               <li className="px-3.5 py-3 text-xs text-center text-gray-400 dark:text-gray-500">
                 Không tìm thấy kết quả
@@ -198,13 +211,23 @@ export function SelectCheck({
                 return (
                   <li
                     key={opt.value}
+                    role="option"
+                    aria-selected={isChecked}
+                    aria-disabled={opt.disabled || undefined}
+                    tabIndex={opt.disabled ? -1 : 0}
+                    onKeyDown={(event) => {
+                      if (event.key === "Enter" || event.key === " ") {
+                        event.preventDefault();
+                        handleToggle(opt.value, opt.disabled);
+                      }
+                    }}
                     onClick={() => handleToggle(opt.value, opt.disabled)}
                     className={`flex items-center gap-2.5 px-3.5 py-2 text-xs select-none cursor-pointer transition-colors ${
                       opt.disabled
                         ? "opacity-40 cursor-not-allowed"
                         : isChecked
-                        ? "bg-brand/5 text-gray-900 dark:text-gray-100 font-medium"
-                        : "text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800"
+                          ? "bg-brand/5 text-gray-900 dark:text-gray-100 font-medium"
+                          : "text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800"
                     }`}
                   >
                     <div
@@ -215,7 +238,12 @@ export function SelectCheck({
                       }`}
                     >
                       {isChecked && (
-                        <svg className="w-3 h-3 stroke-current" viewBox="0 0 24 24" fill="none" strokeWidth="3">
+                        <svg
+                          className="w-3 h-3 stroke-current"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          strokeWidth="3"
+                        >
                           <polyline points="20 6 9 17 4 12" />
                         </svg>
                       )}
@@ -230,10 +258,14 @@ export function SelectCheck({
       )}
 
       {errorMessage && (
-        <p className="text-xs text-status-error font-medium mt-1">{errorMessage}</p>
+        <p className="text-xs text-status-error font-medium mt-1">
+          {errorMessage}
+        </p>
       )}
       {helperText && !errorMessage && (
-        <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">{helperText}</p>
+        <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+          {helperText}
+        </p>
       )}
     </div>
   );

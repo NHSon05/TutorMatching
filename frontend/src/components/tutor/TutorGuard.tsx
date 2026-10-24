@@ -10,14 +10,14 @@ export function TutorGuard({ children }: { children: ReactNode }) {
   const pathname = usePathname();
   const { data: account, isLoading, error } = useSession();
 
-  const isOnboarding = pathname === "/tutor/onboarding";
+  const isOnboarding = pathname === "/tutor/onboarding" || pathname === "/tutor/offers" || pathname === "/tutor/profile-edit";
   const isApproved = account?.tutorProfileStatus === "APPROVED";
 
   useEffect(() => {
     if (isLoading || error || !account) return;
     if (account.role !== "TUTOR") return;
 
-    // Gia sư chưa được phê duyệt không được phép truy cập vào bất kỳ route nào khác ngoài /tutor/onboarding
+    // Profile and offer management are available before approval; teaching/dashboard routes remain gated.
     if (!isApproved && !isOnboarding) {
       router.replace("/tutor/onboarding");
     }

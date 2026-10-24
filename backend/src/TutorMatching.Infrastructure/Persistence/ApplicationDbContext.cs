@@ -137,6 +137,9 @@ public sealed class ApplicationDbContext(
             }
         }
 
+        if (ChangeTracker.Entries<TutorProfileReview>().Any(e => e.State is EntityState.Modified or EntityState.Deleted))
+            throw new InvalidOperationException("Tutor review history is immutable.");
+
         foreach (var entry in ChangeTracker.Entries<AuditEvent>())
         {
             if (entry.State == EntityState.Added && entry.Entity.CreatedAt == default)

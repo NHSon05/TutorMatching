@@ -4,7 +4,7 @@
 
 **Created**: 2026-10-02
 
-**Status**: Ready for clarification or planning
+**Status**: Planned for core MVP; implementation pending
 
 **Input**: Sprint 2 enables tutors to maintain professional profiles, subjects, availability and
 courses; administrators to moderate profiles; and visitors or learners to find and view approved
@@ -21,7 +21,7 @@ qualifications, teaching offer and price after the profile is approved.
 reviewable information.
 
 **Independent Test**: Sign in as a tutor, save an incomplete draft, complete the required fields,
-link subjects and submit the profile for review; verify the resulting states and ownership rules.
+link subjects with teaching levels and submit the profile for review; verify the resulting states and ownership rules.
 
 **Acceptance Scenarios**:
 
@@ -161,12 +161,12 @@ not exposed.
   data without deleting values already referenced by profiles, courses or history. _(Source: SRS
   FR-14, UC-14, BR-14)_
 - **FR-007**: Tutors MUST be able to associate their profile with multiple active subjects and
-  remove associations no longer offered. _(Source: SRS FR-03, UC-04)_
+  remove associations no longer offered. Each selected subject MUST have one or more controlled teaching-level values on submission. _(Source: SRS FR-03, UC-04)_
 - **FR-008**: Tutors MUST be able to add, edit and remove their own availability slots; every slot
   MUST have a start before its end and MUST NOT overlap another slot for that tutor. _(Source: SRS
   FR-04, UC-05)_
 - **FR-009**: Tutors MUST be able to create and update courses containing a subject, name,
-  description or syllabus, optional course-specific price and lifecycle status. _(Source: SRS
+  description or syllabus, positive integer session count, positive integer price per session and lifecycle status. _(Source: SRS
   FR-05, UC-05)_
 - **FR-010**: A course already referenced by historical data MUST be hidden rather than hard
   deleted. _(Source: SRS UC-05, section 4.2)_
@@ -236,8 +236,8 @@ not exposed.
 
 - Sprint 1 authentication, roles and private personal profiles are available before this feature.
 - `LEARNER` is the canonical persisted learner role despite the `LEANER` typo in some SRS tables.
-- A profile may support recurring weekday slots and optionally dated exceptions; exact storage is
-  decided during planning.
+- MVP availability uses recurring weekly slots in Asia/Ho_Chi_Minh, ISO weekday 1–7,
+  half-open intervals and no overnight slots; legacy dated exceptions remain preserved but are not used for weekly matching.
 - Location reference data is limited to the province/city and district values needed by MVP search;
   maps, coordinates and distance calculations are excluded.
 - Subject maintenance included here is the minimum needed for profile and search workflows; the
@@ -246,3 +246,14 @@ not exposed.
   recommendations and generated explanations are explicitly outside the approved SRS scope.
 - Hiring, negotiation, messaging, payment, credential verification and public contact details are
   outside this feature.
+
+## Sprint 2 planning clarifications — 2026-10-20
+
+- S2-10–11 remain after MVP by explicit user decision; no AI acceptance criteria.
+- Request changes returns a pending profile to DRAFT with an explicit review action and note; rejection returns REJECTED. Both may be corrected and resubmitted.
+- Public price is a positive integer VND per session; no implicit hourly/monthly conversion. Course session count and per-session price are mandatory and positive for active courses.
+- At least one active subject and a controlled teaching level per subject are required for submission and public inventory. Inactive catalog entries retain history but cannot be newly selected.
+- Desired frequency is 1–21 sessions/week and duration is 30–240 minutes. Frequency, duration and desired weekly windows must be supplied together. Capacity counts non-overlapping sessions fitting the union of availability/window intersections; it does not represent reserved lessons.
+- Core edits hide the approved profile immediately: valid complete content returns to PENDING_REVIEW, incomplete content to DRAFT. Editing pending content is rejected to prevent changing the material under review.
+- Review notifications are persisted atomically with decisions and visible through owner review history/status; a full notification inbox remains later sprint work.
+- Additional acceptance: one subject with several levels is stored without duplicate associations; a zero session count/price prevents course activation; duplicate requested windows do not inflate schedule capacity.

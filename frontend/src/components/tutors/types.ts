@@ -36,7 +36,7 @@ export interface Tutor {
   name: string;
   avatar: string;
   title: string;
-  rating: number;
+  rating: number | null;
   location: string;
   experience: string;
   sessionsCount: string;

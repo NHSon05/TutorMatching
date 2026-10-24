@@ -4,6 +4,8 @@ using TutorMatching.Infrastructure.Configurations;
 using TutorMatching.Api.Security;
 using TutorMatching.Api.Errors;
 using TutorMatching.Api.OpenApi;
+using TutorMatching.Api.Routing;
+using Microsoft.AspNetCore.Mvc;
 
 DotEnvLoader.Load();
 
@@ -11,7 +13,10 @@ var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 
-builder.Services.AddControllers();
+builder.Services.AddControllers(options =>
+{
+    options.UseCentralRoutePrefix(new RouteAttribute(ApiRoutes.Prefix));
+});
 builder.Services.AddApiErrors();
 builder.Services.AddScoped<RegisterAccountHandler>();
 builder.Services.AddScoped<TutorMatching.Application.Users.Profile.CurrentProfileHandler>();

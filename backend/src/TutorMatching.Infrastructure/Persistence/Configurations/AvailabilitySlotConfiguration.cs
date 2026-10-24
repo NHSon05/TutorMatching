@@ -43,5 +43,9 @@ public sealed class AvailabilitySlotConfiguration : IEntityTypeConfiguration<Ava
             .WithMany()
             .HasForeignKey(x => x.TutorProfileId)
             .OnDelete(DeleteBehavior.Cascade);
+
+        builder.HasIndex(x => new { x.DayOfWeek, x.TutorProfileId, x.StartTime, x.EndTime })
+            .HasFilter("is_active AND availability_type = 'WEEKLY'")
+            .HasDatabaseName("ix_availability_slots_search");
     }
 }

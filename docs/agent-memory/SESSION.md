@@ -1,33 +1,27 @@
 # Current Session Handoff
 
-Status: US4 FRONTEND PROFILE MANAGEMENT IMPLEMENTED & VERIFIED
-Updated: 2026-10-17
+Status: Idle — Sprint 2 (002-tutor-discovery) Phase 8 completely finished and verified. All tasks T001–T035 checked.
+Updated: 2026-10-23
 
-## Scope and current changes
+## Completed Sprint 2 Delivery
 
-- Implemented role-aware Profile UI for TUTOR and LEARNER at `frontend/src/app/(public)/profile/page.tsx` and consolidated `/settings` and `/tutor/profile-edit` onto the shared client.
-- Added authenticated API client in `frontend/src/lib/api/profile.ts` for PUT `/api/v1/users/me` (allowlisted fields only: fullName, phoneNumber, dateOfBirth, avatarUrl; email/role/status read-only).
-- Built reusable `ProfileForm` with optimistic session/Zustand cache updates, CSRF handling, field validation, and error states (401, 403, 409, 422, 429).
-- Built `TutorProfessionalForm` to load and draft-save professional tutor profile fields through existing `/tutor/onboarding` endpoints.
-- Provided explicit sample learning preferences ("Dữ liệu mẫu") for learners with clear disclaimer that backend persistence is not yet available.
-- Updated navigation and SiteShell guards to support `/profile` alongside existing routes.
-- Updated spec and plan artifacts: `specs/001-foundation-accounts/spec.md`, `plan.md`, and marked T040/T043 in `tasks.md`.
+- Foundation & US1–US5: Catalog management, progressive onboarding, availability/courses, admin review decisions, public search/filter/capacity, and public tutor detail.
+- Phase 8 / T032: Performance benchmark executed on isolated Testcontainers PostgreSQL 17.6 seeded with 10k profiles and 50k weekly slots. All 3 scenarios passed p95 ≤ 3.0s SLA with 100 concurrent workers (`simple` p95 1,403.7ms, `combined` p95 1,501.9ms, `capacity` p95 2,680.5ms; 0 errors). Execution plans documented in `evidence.md`.
+- Phase 8 / T033: Multi-role E2E browser test (`frontend/tests/e2e/tutor-discovery.spec.ts`) executed in Chrome via `BrowserFixture.cs`. Verified tutor draft submission, admin review loop (`REQUEST_CHANGES` -> `REJECT` -> `APPROVE`), public search, keyboard navigation to detail, 390x844 mobile viewport (`discovery-mobile.png`), and dynamic account lock detection via IPC file signal.
+- Phase 8 / T034: Implemented OpenAPI 3.1 contract parity validated against `specs/002-tutor-discovery/contracts/openapi.json` (4/4 passed); onboarding draft backward compatibility preserved.
+- Phase 8 / T035: Quality convergence and quickstart validation complete. All evidence recorded in `specs/002-tutor-discovery/evidence.md`.
 
-## Verification evidence
+## Verification Evidence
 
-- Frontend component tests:
-  - `ProfileForm.test.tsx`: 18 passed.
-  - `TutorProfessionalForm.test.tsx`: 3 passed.
-  - `profile-api.test.ts`: 4 passed.
-  - Full suite: 21 test files, 179 tests passing.
-- TypeScript check (`tsc --noEmit`): 0 errors.
-- ESLint: 0 errors on modified/created profile modules.
+- Backend tests: `dotnet test backend/TutorMatching.slnx` -> 217 passed, 0 failed (Domain: 9, Application: 45, Integration: 163).
+- Frontend unit/component tests: `npm --prefix frontend run test` -> 211 passed, 0 failed across 28 test files.
+- Frontend linter: `npm --prefix frontend run lint` -> 0 errors/warnings.
+- Frontend production build: `npm --prefix frontend run build` -> compiled successfully, 26 routes generated.
+- EF Core schema: `dotnet ef migrations has-pending-model-changes` -> 0 pending changes.
+- Performance runner: `dotnet run --project backend/tests/performance/tutor-discovery -c Release -- --evidence /tmp/...` -> Passed (true).
+- Browser E2E runner: `dotnet run --project backend/tests/performance/tutor-discovery -c Release -- --browser /tmp/...` -> 1 passed (11.4s).
 
-## Next steps
+## Next Sprint / Future Work
 
-- T044: Playwright profile journey (`profile.spec.ts`) against live backend environment.
-- Phase 7 (US5 - Password reset) remains pending.
-
-## Pre-existing work preserved
-
-- Pre-existing uncommitted changes across backend controllers, OpenAPI, tutor hiring dialog, and integration tests remain intact.
+- Sprint 3 (Hire request negotiation, messaging, and reviews).
+- Sprint 1 backlog: parent/student registration flow and password reset verification.

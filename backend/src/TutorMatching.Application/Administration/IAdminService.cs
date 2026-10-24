@@ -6,5 +6,5 @@ public enum ReviewOutcome { Succeeded, NotFound, Conflict }
 public interface IAdminService
 {
     Task<AdminUsersPage> GetUsersAsync(int page, int pageSize, CancellationToken cancellationToken);
-    Task<ReviewOutcome> ReviewAsync(Guid profileId, Guid actorId, bool approve, string? note, CancellationToken cancellationToken);
+    Task<ReviewOutcome> ReviewAsync(Guid profileId, Guid actorId, bool approve, Guid expectedVersion, string? note, CancellationToken cancellationToken);
 }

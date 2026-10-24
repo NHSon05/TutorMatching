@@ -22,6 +22,8 @@ public sealed class TutorProfileConfiguration : IEntityTypeConfiguration<TutorPr
             .HasConversion<string>()
             .HasMaxLength(32)
             .IsRequired();
+        builder.HasIndex(x => new { x.Status, x.ApprovedAt })
+            .HasDatabaseName("ix_tutor_profiles_status_approved_at");
 
         builder.Property(x => x.CurrentStep)
             .IsRequired();

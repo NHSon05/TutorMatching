@@ -72,6 +72,8 @@ public sealed class PublicEligibilityTests(PostgreSqlFixture fixture)
         var profile = await db.TutorProfiles.SingleAsync(p => p.UserId == user.Id);
         user.Status = accountStatus;
         profile.Status = status;
+        profile.SessionRateVnd = 150000;
+        db.TutorSubjects.Add(new TutorSubject { TutorProfileId = profile.Id, SubjectId = TutorDiscoverySeed.MathId });
         await db.SaveChangesAsync();
         return profile.Id;
     }

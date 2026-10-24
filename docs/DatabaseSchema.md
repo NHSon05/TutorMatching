@@ -8,9 +8,9 @@ Tất cả bảng, cột, khóa, index và sequence dùng lowercase `snake_case`
 C# property và JSON contract giữ quy ước riêng; giá trị role/status không đổi.
 Migration cũ giữ nguyên tên lịch sử để replay được; migration mới đổi tên schema hiện có.
 
-Schema foundation đã triển khai gồm `user_accounts`, `audit_events`, `token_sessions`,
-`session_refresh_tokens`, `asp_net_roles`, `asp_net_role_claims`, `asp_net_user_roles`,
-`asp_net_user_claims`, `asp_net_user_logins`, `asp_net_user_tokens` và `ef_migrations_history`.
+Schema foundation đã triển khai gồm `user_accounts` (chứa cột `role`), `audit_events`, `token_sessions`,
+`session_refresh_tokens`, `asp_net_user_claims`, `asp_net_user_logins`, `asp_net_user_tokens` và `ef_migrations_history`.
+Role của người dùng được gộp trực tiếp vào bảng `user_accounts` (thay vì tách qua `asp_net_user_roles` và `asp_net_roles`).
 Lịch sử migration dùng `migration_id`, `product_version`.
 
 Trạng thái token chỉ lưu bằng `token_sessions.revoked_at` và
@@ -43,7 +43,7 @@ users {
   phone string nullable unique
   date_of_birth date nullable
   avatar_url string nullable
-  role_code string
+  role string
   status_code string
   last_login_at datetime nullable
   created_at datetime
@@ -149,6 +149,8 @@ tutor_profile_reviews {
   review_id string pk
   tutor_profile_id string fk
   reviewer_user_id string fk
+  action string // APPROVE / REQUEST_CHANGES / REJECT; legacy fallback LEGACY_REVIEW
+  reviewed_version uuid nullable // unknown for pre-versioning history
   from_status_code string
   to_status_code string
   note text nullable

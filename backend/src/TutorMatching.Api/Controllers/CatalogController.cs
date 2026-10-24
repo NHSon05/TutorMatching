@@ -5,26 +5,43 @@ using TutorMatching.Application.Catalog;
 using TutorMatching.Application.Abstractions;
 
 namespace TutorMatching.Api.Controllers;
+
 [ApiController]
-[Route("api/v1/catalog/{kind}")]
+[Consumes("application/json")]
+[ProducesResponseType(typeof(ProblemDetails), 400, "application/problem+json")]
+[ProducesResponseType(typeof(ProblemDetails), 404, "application/problem+json")]
 public sealed class CatalogController(ICatalogService service, ICurrentUser currentUser) : ControllerBase
 {
     private static bool Known(string kind) => kind is "subjects" or "provinces" or "districts" or "teaching-levels";
-    [HttpGet, AllowAnonymous]
+    [ProducesResponseType(typeof(CatalogItem[]), 200, "application/json")]
+    [HttpGet("catalog/{kind}"), AllowAnonymous]
     public async Task<IActionResult> Public(string kind, [FromQuery] string? provinceCode, CancellationToken token)
     {
         Response.Headers.CacheControl = "no-store";
         return Known(kind) ? Ok(await service.ListAsync(kind, false, provinceCode, token)) : NotFound();
     }
-    [HttpGet("/api/v1/admin/catalog/{kind}"), Authorize(Roles = "ADMIN")]
+    [ProducesResponseType(typeof(CatalogItem[]), 200, "application/json")]
+    [ProducesResponseType(typeof(ProblemDetails), 401, "application/problem+json")]
+    [ProducesResponseType(typeof(ProblemDetails), 403, "application/problem+json")]
+    [HttpGet("admin/catalog/{kind}"), Authorize(Roles = "ADMIN")]
     public async Task<IActionResult> Admin(string kind, CancellationToken token)
     {
         Response.Headers.CacheControl = "no-store";
         return Known(kind) ? Ok(await service.ListAsync(kind, true, null, token)) : NotFound();
     }
-    [HttpPost("/api/v1/admin/catalog/{kind}"), Authorize(Roles = "ADMIN")]
+    [ProducesResponseType(typeof(CatalogItem), 200, "application/json")]
+    [ProducesResponseType(typeof(ProblemDetails), 401, "application/problem+json")]
+    [ProducesResponseType(typeof(ProblemDetails), 403, "application/problem+json")]
+    [ProducesResponseType(typeof(ProblemDetails), 409, "application/problem+json")]
+    [ProducesResponseType(typeof(ProblemDetails), 422, "application/problem+json")]
+    [HttpPost("admin/catalog/{kind}"), Authorize(Roles = "ADMIN")]
     public Task<IActionResult> Create(string kind, CatalogWrite request, CancellationToken token) => Save(kind, request.Code, request, true, token);
-    [HttpPut("/api/v1/admin/catalog/{kind}/{code}"), Authorize(Roles = "ADMIN")]
+    [ProducesResponseType(typeof(CatalogItem), 200, "application/json")]
+    [ProducesResponseType(typeof(ProblemDetails), 401, "application/problem+json")]
+    [ProducesResponseType(typeof(ProblemDetails), 403, "application/problem+json")]
+    [ProducesResponseType(typeof(ProblemDetails), 409, "application/problem+json")]
+    [ProducesResponseType(typeof(ProblemDetails), 422, "application/problem+json")]
+    [HttpPut("admin/catalog/{kind}/{code}"), Authorize(Roles = "ADMIN")]
     public Task<IActionResult> Update(string kind, string code, CatalogWrite request, CancellationToken token) => Save(kind, code, request, false, token);
     private async Task<IActionResult> Save(string kind, string code, CatalogWrite request, bool create, CancellationToken token)
     {

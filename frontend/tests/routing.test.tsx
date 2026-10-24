@@ -30,8 +30,12 @@ vi.mock("@/lib/auth/session", () => ({
 
 vi.mock("next/navigation", () => ({
   usePathname: () => route.path,
+  useSearchParams: () => new URLSearchParams(),
   useRouter: () => router,
 }));
+
+vi.mock("@/lib/api/catalog", () => ({ getPublicCatalog: vi.fn(async () => []) }));
+vi.mock("@/lib/api/tutors", () => ({ getTutors: vi.fn(async () => ({items: [], totalCount: 0, page: 1, pageSize: 20})), publicAvatarUrl: vi.fn() }));
 
 describe("TutorMatching Routing & Role Architecture", () => {
   beforeEach(() => {
@@ -59,16 +63,14 @@ describe("TutorMatching Routing & Role Architecture", () => {
     });
     const page = await HomePage();
     render(page);
-    expect(await screen.findByText("Welcome back, Esther!")).toBeInTheDocument();
-    expect(screen.getByText("Your Courses")).toBeInTheDocument();
-    expect(screen.getByText("My Schedule")).toBeInTheDocument();
-    expect(screen.getByText("Homework progress")).toBeInTheDocument();
+    expect(await screen.findByRole("heading", {name:"Danh sách gia sư"})).toBeInTheDocument();
+    expect(screen.getByLabelText("Tên gia sư")).toBeInTheDocument();
   });
 
-  it("renders Public Tutors list page", () => {
+  it("renders Public Tutors list page", async () => {
     render(<TutorsPage />);
-    expect(screen.getByText("Danh Sách Gia Sư")).toBeInTheDocument();
-    expect(screen.getByText("Lê Phương Diệu")).toBeInTheDocument();
+    expect(await screen.findByRole("heading", {name:"Danh sách gia sư"})).toBeInTheDocument();
+    expect(await screen.findByText("0 gia sư phù hợp")).toBeInTheDocument();
   });
 
   it("renders Public Login page with authentication form", () => {

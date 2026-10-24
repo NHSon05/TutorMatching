@@ -10,7 +10,7 @@ namespace TutorMatching.Api.Controllers;
 
 [ApiController]
 [Authorize]
-[Route("api/v1/users")]
+[Route("users")]
 public sealed class UsersController(ICurrentUser currentUser, IAccountService accounts,
     CurrentProfileHandler profiles) : ControllerBase
 {

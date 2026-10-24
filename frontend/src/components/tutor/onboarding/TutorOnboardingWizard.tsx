@@ -1,6 +1,9 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
+import { TutorReviewHistory } from "@/components/profile/TutorReviewHistory";
+import { TutorDiscoveryFields } from "@/components/profile/TutorDiscoveryFields";
+import type { TutorDiscoveryData } from "@/lib/api/tutor-onboarding";
 import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";
 import { ApiError } from "@/lib/api/http";
@@ -20,8 +23,13 @@ import { Step5Description } from "./Step5Description";
 import { Step6Pricing } from "./Step6Pricing";
 
 export function TutorOnboardingWizard() {
+  const ownerId = useAuthStore(state => state.user?.id);
+  const [profileStatus, setProfileStatus] = useState("DRAFT");
+  const version = useRef<string | undefined>(undefined);
+  const [discovery,setDiscovery]=useState<TutorDiscoveryData>({subjects:[],teachingModes:[]});
   const [formState, setFormState] = useState<OnboardingFormState>(INITIAL_FORM_STATE);
   const [currentStep, setCurrentStep] = useState<number>(1);
+  const [isAvatarUploading,setIsAvatarUploading]=useState(false);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [isSavingDraft, setIsSavingDraft] = useState<boolean>(false);
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
@@ -36,6 +44,9 @@ export function TutorOnboardingWizard() {
       try {
         const res = await getTutorOnboarding();
         if (!isMounted) return;
+        version.current=res.version;
+        setProfileStatus(res.status);
+        setDiscovery(res.discovery??{subjects:[],teachingModes:[]});
 
         // Nếu hồ sơ đã nộp và đang chờ duyệt hoặc đã duyệt
         if (res.status === "PENDING_REVIEW" || res.status === "APPROVED") {
@@ -92,13 +103,15 @@ export function TutorOnboardingWizard() {
   // Helper build draft request
   const buildDraftPayload = (step: number): SaveOnboardingDraftRequest => ({
     currentStep: step,
+    expectedVersion: version.current,
+    discovery,
     about: {
       fullName: formState.about.fullName,
       dateOfBirth: formState.about.dateOfBirth || undefined,
       phoneNumber: formState.about.phoneNumber || undefined,
-      subjects: formState.about.subjects,
+
       languages: formState.about.languages,
-      teachingLevels: formState.about.teachingLevels,
+
     },
     avatarUrl: formState.avatarUrl || undefined,
     hasCertifications: formState.hasCertifications,
@@ -138,13 +151,13 @@ export function TutorOnboardingWizard() {
       if (!formState.about.phoneNumber.trim()) {
         newErrors.phoneNumber = "Vui lòng nhập số điện thoại liên hệ.";
       }
-      if (formState.about.subjects.length === 0) {
+      if ((discovery.subjects?.length??0) === 0) {
         newErrors.subjects = "Vui lòng chọn ít nhất 1 môn học nhận dạy.";
       }
       if (formState.about.languages.length === 0) {
         newErrors.languages = "Vui lòng chọn ít nhất 1 ngôn ngữ giảng dạy.";
       }
-      if (formState.about.teachingLevels.length === 0) {
+      if (discovery.subjects?.some(s=>s.levelCodes.length===0)) {
         newErrors.teachingLevels = "Vui lòng chọn ít nhất 1 cấp học nhận dạy.";
       }
     } else if (step === 2) {
@@ -156,6 +169,7 @@ export function TutorOnboardingWizard() {
         newErrors.certifications = "Vui lòng thêm thông tin chứng chỉ hoặc chọn 'Chưa có chứng chỉ'.";
       }
     } else if (step === 4) {
+      if(!formState.education.degree.trim())newErrors.qualification="Vui lòng nhập trình độ chuyên môn.";
       if (formState.education.educationType !== "NO_DEGREE" && !formState.education.schoolName.trim()) {
         newErrors.schoolName = "Vui lòng nhập tên trường đại học / cao đẳng.";
       }
@@ -167,12 +181,9 @@ export function TutorOnboardingWizard() {
         newErrors.experienceYears = "Vui lòng nhập số năm kinh nghiệm hợp lệ (≥ 0).";
       }
     } else if (step === 6) {
-      const hasRate =
-        (formState.pricing.hourlyRateVnd && formState.pricing.hourlyRateVnd > 0) ||
-        (formState.pricing.sessionRateVnd && formState.pricing.sessionRateVnd > 0) ||
-        (formState.pricing.monthlyRateVnd && formState.pricing.monthlyRateVnd > 0);
+      const hasRate = Number.isInteger(formState.pricing.sessionRateVnd) && (formState.pricing.sessionRateVnd??0)>0;
       if (!hasRate) {
-        newErrors.pricing = "Vui lòng nhập ít nhất một mức giá học phí hợp lệ.";
+        newErrors.pricing = "Vui lòng nhập giá theo buổi là số nguyên dương.";
       }
     }
 
@@ -190,7 +201,7 @@ export function TutorOnboardingWizard() {
         }
       }
       setErrors((prev) => ({ ...prev, ...fieldErrors }));
-      if (fieldErrors.phoneNumber || fieldErrors.fullName || fieldErrors.dateOfBirth) {
+      if (fieldErrors.phoneNumber || fieldErrors.fullName || fieldErrors.dateOfBirth || fieldErrors.subjects || fieldErrors.teachingModes || fieldErrors.districtCode) {
         setCurrentStep(1);
       }
     }
@@ -201,7 +212,7 @@ export function TutorOnboardingWizard() {
     setIsSavingDraft(true);
     setSaveMessage(null);
     try {
-      await saveTutorOnboardingDraft(buildDraftPayload(currentStep));
+      const saved=await saveTutorOnboardingDraft(buildDraftPayload(currentStep)); version.current=saved.version;
       setSaveMessage("✓ Đã lưu nháp tiến độ thành công!");
       setTimeout(() => setSaveMessage(null), 3000);
     } catch (err) {
@@ -222,7 +233,7 @@ export function TutorOnboardingWizard() {
 
     // Tự động lưu nháp sang backend trước khi chuyển bước
     try {
-      await saveTutorOnboardingDraft(buildDraftPayload(currentStep + 1));
+      const saved=await saveTutorOnboardingDraft(buildDraftPayload(currentStep + 1)); version.current=saved.version;
       const nextStep = currentStep + 1;
       setCurrentStep(nextStep);
       window.scrollTo({ top: 0, behavior: "smooth" });
@@ -255,9 +266,10 @@ export function TutorOnboardingWizard() {
     setIsSubmitting(true);
     try {
       // Lưu lại dữ liệu bước 6 trước
-      await saveTutorOnboardingDraft(buildDraftPayload(6));
+      const saved=await saveTutorOnboardingDraft(buildDraftPayload(6)); version.current=saved.version;
       // Nộp hồ sơ
-      const res = await submitTutorOnboarding();
+      const res = await submitTutorOnboarding(version.current);
+      setProfileStatus(res.status);
       if (res.status === "PENDING_REVIEW") {
         setIsSubmittedSuccess(true);
         // Cập nhật trạng thái người dùng trong Zustand Store
@@ -293,15 +305,16 @@ export function TutorOnboardingWizard() {
           ⏳
         </div>
         <h1 className="text-2xl sm:text-3xl font-extrabold text-gray-900 mb-3 tracking-tight">
-          Hồ sơ của bạn đang chờ phê duyệt
+          {profileStatus === "APPROVED" ? "Hồ sơ của bạn đã được duyệt" : "Hồ sơ của bạn đang chờ phê duyệt"}
         </h1>
         <p className="text-gray-600 text-sm sm:text-base max-w-lg mx-auto mb-6 leading-relaxed">
-          Cảm ơn bạn đã hoàn thành 6 bước đăng ký gia sư tại <strong>TutorMatch</strong>! Đội ngũ kiểm duyệt sẽ kiểm tra thông tin và phê duyệt hồ sơ của bạn trong vòng <strong>24 giờ làm việc</strong>.
+          Bạn có thể xem kết quả và lý do trong lịch sử duyệt hồ sơ bên dưới.
         </p>
 
+        {ownerId && <div className="mb-5 text-left"><TutorReviewHistory accountId={ownerId} /></div>}
         <div className="p-4 bg-amber-50/70 rounded-xl border border-amber-200/80 text-left text-xs text-amber-900 mb-8 space-y-1.5">
           <p className="font-semibold">💡 Trong thời gian chờ duyệt:</p>
-          <p>• Bạn có thể xem lại và cập nhật hồ sơ cá nhân.</p>
+          <p>• Bạn có thể xem lại thông tin. Hồ sơ chờ duyệt chưa thể chỉnh sửa.</p>
           <p>• Khi được phê duyệt, bạn sẽ nhận được thông báo và hồ sơ sẽ được hiển thị công khai tới hàng ngàn học viên.</p>
         </div>
 
@@ -324,6 +337,8 @@ export function TutorOnboardingWizard() {
 
   return (
     <div className="max-w-4xl mx-auto space-y-8 pb-12">
+      <p>Trạng thái hồ sơ: {profileStatus}</p>
+      {ownerId && <TutorReviewHistory accountId={ownerId} />}
       {/* ========================================================================= */}
       {/* HEADER VÀ STEPPER TIẾN ĐỘ 6 BƯỚC                                          */}
       {/* ========================================================================= */}
@@ -343,7 +358,7 @@ export function TutorOnboardingWizard() {
               type="button"
               variant="secondary"
               size="small"
-              disabled={isSavingDraft}
+              disabled={isSavingDraft || isSubmitting || isAvatarUploading}
               onClick={handleSaveDraft}
             >
               {isSavingDraft ? "Đang lưu..." : "💾 Lưu nháp"}
@@ -403,6 +418,9 @@ export function TutorOnboardingWizard() {
       {/* ========================================================================= */}
       <div className="bg-white rounded-3xl border border-gray-200 p-6 sm:p-8 shadow-sm">
         {currentStep === 1 && (
+          <>
+          <TutorDiscoveryFields value={discovery} onChange={setDiscovery}/>
+          {Object.values(errors).length>0&&<p role="alert">{Object.values(errors).join(" ")}</p>}
           <Step1About
             data={formState.about}
             onChange={(updated) =>
@@ -410,12 +428,14 @@ export function TutorOnboardingWizard() {
             }
             errors={errors}
           />
+          </>
         )}
 
         {currentStep === 2 && (
           <Step2Photo
             avatarUrl={formState.avatarUrl}
-            onUploaded={(url) => setFormState((prev) => ({ ...prev, avatarUrl: url }))}
+            onUploadingChange={setIsAvatarUploading}
+            onUploaded={async(url) => { const latest=await getTutorOnboarding();version.current=latest.version;setFormState((prev) => ({ ...prev, avatarUrl: url })); }}
             error={errors.avatarUrl}
           />
         )}
@@ -476,7 +496,7 @@ export function TutorOnboardingWizard() {
             type="button"
             variant="secondary"
             size="medium"
-            disabled={currentStep === 1 || isSubmitting}
+            disabled={currentStep === 1 || isSubmitting || isSavingDraft || isAvatarUploading}
             onClick={handleBack}
           >
             ← Quay lại
@@ -488,6 +508,7 @@ export function TutorOnboardingWizard() {
                 type="button"
                 variant="tutor"
                 size="medium"
+                disabled={isSavingDraft || isSubmitting || isAvatarUploading}
                 onClick={handleNext}
               >
                 Tiếp tục bước tiếp theo →
@@ -497,7 +518,7 @@ export function TutorOnboardingWizard() {
                 type="button"
                 variant="tutor"
                 size="medium"
-                disabled={isSubmitting}
+                disabled={isSubmitting || isSavingDraft || isAvatarUploading}
                 onClick={handleSubmit}
                 className="font-bold shadow-md"
               >

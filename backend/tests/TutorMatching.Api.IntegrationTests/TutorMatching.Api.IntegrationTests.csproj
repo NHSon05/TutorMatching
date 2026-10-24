@@ -26,6 +26,7 @@
     <Using Include="Xunit" />
     <None Include="../../../specs/001-foundation-accounts/contracts/admin-catalog-implemented.openapi.json" Link="Contracts/admin-catalog.json" CopyToOutputDirectory="PreserveNewest" />
     <None Include="../../../specs/001-foundation-accounts/contracts/openapi.yaml" Link="Contracts/openapi.yaml" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="../../../specs/002-tutor-discovery/contracts/openapi.json" Link="Contracts/discovery.json" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
 </Project>

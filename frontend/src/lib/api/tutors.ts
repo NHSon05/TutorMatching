@@ -1,66 +1,107 @@
-import { http } from "@/lib/api/http";
-import type { TutorCertificationDto } from "@/lib/api/tutor-onboarding";
-
+import { http, API_BASE_URL } from "./http";
+export interface PublicSubject {
+  subjectId: string;
+  name: string;
+  levelCodes: string[];
+  levelNames: string[];
+}
 export interface TutorListItemResponse {
   id: string;
-  userId: string;
-  fullName: string;
-  email: string;
-  phoneNumber?: string;
-  avatarUrl?: string;
-  status: string;
-  subjects: string[];
-  languages: string[];
-  teachingLevels: string[]; 
-  educationType?: string;
-  schoolName?: string;
-  degree?: string;
-  specialization?: string;
-  yearOfStudy?: number;
-  bio?: string;
-  experienceYears: number;
-  teachingMethodology?: string;
-  achievementsAndResults?: string;
-  hourlyRateVnd: number;
-  sessionRateVnd?: number;
-  monthlyRateVnd?: number;
-  isNegotiable: boolean;
-  rating: number;
-  certifications: TutorCertificationDto[];
-  createdAt: string;
-  approvedAt?: string;
+  displayName: string;
+  avatarUrl: string | null;
+  bio: string | null;
+  qualification: string | null;
+  schoolName: string | null;
+  specialization: string | null;
+  experienceYears: number | null;
+  teachingMethodology: string | null;
+  achievements: string | null;
+  sessionRateVnd: number;
+  teachingModes: string[];
+  provinceCode: string | null;
+  provinceName: string | null;
+  districtCode: string | null;
+  districtName: string | null;
+  subjects: PublicSubject[];
+  approvedAt: string | null;
 }
-
 export interface TutorQueryParameters {
-  search?: string;
-  subject?: string;
-  city?: string;
-  status?: string;
+  name?: string;
+  subjectId?: string[];
+  levelCode?: string[];
+  qualification?: string;
   minPrice?: number;
   maxPrice?: number;
+  mode?: string[];
+  provinceCode?: string;
+  districtCode?: string;
+  sessionsPerWeek?: number;
+  durationMinutes?: number;
+  weeklyWindows?: string;
+  sort?: string;
   page?: number;
   pageSize?: number;
 }
-
 export interface PagedTutorsResponse {
   items: TutorListItemResponse[];
   totalCount: number;
   page: number;
   pageSize: number;
 }
-
-/**
- * Lấy danh sách toàn bộ gia sư (hỗ trợ lọc theo tìm kiếm, môn học, khu vực, giá).
- */
-export async function getTutors(params?: TutorQueryParameters): Promise<PagedTutorsResponse> {
-  const res = await http.get<PagedTutorsResponse>("/tutors", { params });
-  return res.data;
+export function serializeTutorQuery(params: TutorQueryParameters) {
+  const query = new URLSearchParams();
+  for (const [key, value] of Object.entries(params)) {
+    if (value === undefined) continue;
+    for (const entry of Array.isArray(value) ? value : [value])
+      query.append(key, String(entry));
+  }
+  return query;
 }
-
-/**
- * Lấy thông tin chi tiết của một gia sư theo id hoặc userId.
- */
-export async function getTutorById(id: string): Promise<TutorListItemResponse> {
-  const res = await http.get<TutorListItemResponse>(`/tutors/${id}`);
-  return res.data;
+export async function getTutors(
+  params?: TutorQueryParameters | URLSearchParams,
+  signal?: AbortSignal
+): Promise<PagedTutorsResponse> {
+  return (
+    await http.get<PagedTutorsResponse>("/tutors", {
+      params:
+        params instanceof URLSearchParams
+          ? params
+          : serializeTutorQuery(params ?? {}),
+      signal,
+    })
+  ).data;
+}
+export function publicAvatarUrl(value: string | null) {
+  if (!value) return undefined;
+  if (value.startsWith("/uploads/avatars/") && !value.includes(".."))
+    return new URL(value, API_BASE_URL).href;
+  return /^https?:\/\//.test(value) ? value : undefined;
+}
+export interface PublicTutorDetail extends TutorListItemResponse {
+  availability: {
+    id: string;
+    dayOfWeek: number;
+    startTime: string;
+    endTime: string;
+    timeZone: string;
+  }[];
+  courses: {
+    id: string;
+    subjectId: string;
+    subjectName: string;
+    name: string;
+    content: string | null;
+    sessionCount: number;
+    pricePerSessionVnd: number;
+  }[];
+}
+export async function getTutorById(
+  id: string,
+  signal?: AbortSignal
+): Promise<PublicTutorDetail> {
+  return (
+    await http.get<PublicTutorDetail>(`/tutors/${encodeURIComponent(id)}`, {
+      signal,
+    })
+  ).data;
 }

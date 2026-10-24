@@ -41,12 +41,17 @@ public sealed class OpenApiContractTests(PostgreSqlFixture fixture)
         foreach (var schema in extension["components"]!["schemas"]!.AsObject())
             if (expected["components"]!["schemas"]![schema.Key] is null)
                 expected["components"]!["schemas"]![schema.Key] = schema.Value!.DeepClone();
+        var discovery = JsonNode.Parse(await File.ReadAllTextAsync(Path.Combine(AppContext.BaseDirectory, "Contracts", "discovery.json")))!;
+        foreach (var path in discovery["paths"]!.AsObject())
+            expected["paths"]![path.Key[expectedPrefix.Length..]] = path.Value!.DeepClone();
+        foreach (var schema in discovery["components"]!["schemas"]!.AsObject())
+            expected["components"]!["schemas"]![schema.Key] = schema.Value!.DeepClone();
         var actualOps = Operations(actual);
         var expectedOps = Operations(expected);
         Assert.NotEmpty(actualOps);
         foreach (var (key, operation) in actualOps)
         {
-            if (key.Contains("/api/v1/tutor") || PendingOperations.Any(p => key.Contains(p))) continue;
+            if ((key.Contains("/api/v1/tutor") && key is not ("GET /api/v1/tutor/reviews" or "GET /api/v1/tutors" or "GET /api/v1/tutors/{id}")) || PendingOperations.Any(p => key.Contains(p))) continue;
             Assert.True(expectedOps.TryGetValue(key, out var contract), $"Undocumented operation: {key}");
             Assert.True(contract!["operationId"] is JsonValue, $"Missing contract operationId: {key}");
             Assert.True(operation["operationId"] is JsonValue, $"Missing generated operationId: {key}");

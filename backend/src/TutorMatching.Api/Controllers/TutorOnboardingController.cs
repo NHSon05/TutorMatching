@@ -9,7 +9,7 @@ namespace TutorMatching.Api.Controllers;
 
 [ApiController]
 [Authorize(Roles = "TUTOR")]
-[Route("api/v1/tutor/onboarding")]
+[Route("tutor/onboarding")]
 public sealed class TutorOnboardingController(
     ICurrentUser currentUser,
     ITutorOnboardingService onboardingService,
@@ -182,7 +182,7 @@ public sealed class TutorOnboardingController(
             "Hồ sơ gia sư đã được gửi xét duyệt thành công. Quản trị viên sẽ phản hồi trong vòng 24-48 giờ."));
     }
 
-    private static TutorOnboardingResponse MapToResponse(TutorOnboardingData data)
+    internal static TutorOnboardingResponse MapToResponse(TutorOnboardingData data)
     {
         return new TutorOnboardingResponse(
             data.Status,

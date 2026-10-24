@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React from "react";
 import { TextField } from "@/components/ui/text-field";
 import type { OnboardingFormState } from "./types";
 
@@ -9,24 +9,6 @@ interface Step1AboutProps {
   onChange: (updated: Partial<OnboardingFormState["about"]>) => void;
   errors: Record<string, string>;
 }
-
-const POPULAR_SUBJECTS = [
-  "Toán học",
-  "Tiếng Anh",
-  "Ngữ văn",
-  "Vật lý",
-  "Hóa học",
-  "Sinh học",
-  "Lịch sử",
-  "Địa lý",
-  "Tin học / Lập trình",
-  "Tiếng Nhật",
-  "Tiếng Hàn",
-  "Tiếng Trung",
-  "Tiếng Pháp",
-  "Toán tư duy",
-  "Rèn chữ đẹp",
-];
 
 const POPULAR_LANGUAGES = [
   "Tiếng Việt",
@@ -37,31 +19,10 @@ const POPULAR_LANGUAGES = [
   "Tiếng Pháp",
 ];
 
-const POPULAR_LEVELS = [
-  "Tiểu học (Lớp 1 - 5)",
-  "THCS (Lớp 6 - 9)",
-  "THPT (Lớp 10 - 12)",
-  "Luyện thi vào 10",
-  "Luyện thi tốt nghiệp & ĐH",
-  "Sinh viên đại học",
-  "Người đi làm",
-];
-
 export function Step1About({ data, onChange, errors }: Step1AboutProps) {
-  const [customSubject, setCustomSubject] = useState("");
 
   const toggleItem = (list: string[], item: string): string[] => {
     return list.includes(item) ? list.filter((i) => i !== item) : [...list, item];
-  };
-
-  const handleAddCustomSubject = (e: React.FormEvent) => {
-    e.preventDefault();
-    const trimmed = customSubject.trim();
-    if (!trimmed) return;
-    if (!data.subjects.includes(trimmed)) {
-      onChange({ subjects: [...data.subjects, trimmed] });
-    }
-    setCustomSubject("");
   };
 
   return (
@@ -112,62 +73,6 @@ export function Step1About({ data, onChange, errors }: Step1AboutProps) {
         </div>
       </div>
 
-      {/* Môn học nhận dạy */}
-      <div className="space-y-2 pt-2 border-t border-gray-100">
-        <div className="flex items-center justify-between">
-          <label className="text-sm font-semibold text-gray-900">
-            Môn học nhận dạy <span className="text-red-500">*</span>
-          </label>
-          <span className="text-xs text-gray-500">Đã chọn: {data.subjects.length} môn</span>
-        </div>
-        <p className="text-xs text-gray-500">Nhấp vào môn học bạn có thể giảng dạy tốt nhất:</p>
-
-        <div className="flex flex-wrap gap-2 pt-1">
-          {POPULAR_SUBJECTS.map((subject) => {
-            const isSelected = data.subjects.includes(subject);
-            return (
-              <button
-                key={subject}
-                type="button"
-                onClick={() => onChange({ subjects: toggleItem(data.subjects, subject) })}
-                className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all ${
-                  isSelected
-                    ? "bg-amber-600 text-white shadow-xs"
-                    : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-                }`}
-              >
-                {isSelected ? `✓ ${subject}` : `+ ${subject}`}
-              </button>
-            );
-          })}
-        </div>
-
-        {/* Nhập thêm môn khác */}
-        <div className="flex items-center gap-2 pt-2">
-          <input
-            type="text"
-            placeholder="Nhập môn học khác..."
-            value={customSubject}
-            onChange={(e) => setCustomSubject(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === "Enter") {
-                e.preventDefault();
-                handleAddCustomSubject(e);
-              }
-            }}
-            className="text-xs border border-gray-300 rounded-lg px-3 py-2 flex-1 focus:outline-none focus:ring-1 focus:ring-amber-500"
-          />
-          <button
-            type="button"
-            onClick={handleAddCustomSubject}
-            className="text-xs font-semibold px-3 py-2 rounded-lg bg-gray-800 text-white hover:bg-gray-700"
-          >
-            Thêm
-          </button>
-        </div>
-        {errors.subjects && <p className="text-xs text-red-600 font-medium">{errors.subjects}</p>}
-      </div>
-
       {/* Ngôn ngữ giảng dạy */}
       <div className="space-y-2 pt-2 border-t border-gray-100">
         <label className="text-sm font-semibold text-gray-900 block">
@@ -195,34 +100,6 @@ export function Step1About({ data, onChange, errors }: Step1AboutProps) {
         {errors.languages && <p className="text-xs text-red-600 font-medium">{errors.languages}</p>}
       </div>
 
-      {/* Cấp học nhận dạy */}
-      <div className="space-y-2 pt-2 border-t border-gray-100">
-        <label className="text-sm font-semibold text-gray-900 block">
-          Cấp học nhận dạy <span className="text-red-500">*</span>
-        </label>
-        <div className="flex flex-wrap gap-2">
-          {POPULAR_LEVELS.map((level) => {
-            const isSelected = data.teachingLevels.includes(level);
-            return (
-              <button
-                key={level}
-                type="button"
-                onClick={() => onChange({ teachingLevels: toggleItem(data.teachingLevels, level) })}
-                className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all ${
-                  isSelected
-                    ? "bg-amber-600 text-white shadow-xs"
-                    : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-                }`}
-              >
-                {isSelected ? `✓ ${level}` : `+ ${level}`}
-              </button>
-            );
-          })}
-        </div>
-        {errors.teachingLevels && (
-          <p className="text-xs text-red-600 font-medium">{errors.teachingLevels}</p>
-        )}
-      </div>
     </div>
   );
 }

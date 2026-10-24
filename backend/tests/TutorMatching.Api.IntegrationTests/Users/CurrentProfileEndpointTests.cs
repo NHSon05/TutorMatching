@@ -225,16 +225,19 @@ public sealed class CurrentProfileEndpointTests(PostgreSqlFixture fixture)
         await using var factory = await fixture.CreateFactoryAsync();
         using var owner = factory.CreateApiClient();
         await RegisterAndLogin(owner, "private@example.com", "TUTOR", "+84900000000");
-        var id = (await ReadProfile(owner)).GetProperty("id").GetGuid();
+        Guid profileId;
         await using (var scope = factory.Services.CreateAsyncScope())
         {
             var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
             var tutor = await db.TutorProfiles.SingleAsync();
+            profileId = tutor.Id;
             tutor.Status = TutorProfileStatus.APPROVED;
+            tutor.SessionRateVnd = 150000;
+            db.TutorSubjects.Add(new TutorSubject { TutorProfileId = tutor.Id, SubjectId = TutorDiscoverySeed.MathId });
             await db.SaveChangesAsync();
         }
         using var anonymous = factory.CreateApiClient();
-        foreach (var path in new[] { "/api/v1/tutors", $"/api/v1/tutors/{id}" })
+        foreach (var path in new[] { "/api/v1/tutors", $"/api/v1/tutors/{profileId}" })
         {
             using var response = await anonymous.GetAsync(path);
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);

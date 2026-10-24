@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using TutorMatching.Domain.Tutors;
+using TutorMatching.Domain.Catalog;
 using TutorMatching.Domain.Users;
 
 namespace TutorMatching.Infrastructure.Persistence;
@@ -72,6 +73,14 @@ public sealed class DevelopmentDataSeeder(
             var existingUser = await userManager.FindByEmailAsync(item.Email);
             if (existingUser is not null)
             {
+                // Repair only recognizable, untouched demo profiles from the legacy seed.
+                var existingProfile = await dbContext.TutorProfiles.SingleOrDefaultAsync(p => p.UserId == existingUser.Id);
+                if (existingProfile is not null && existingUser.Role == AccountRole.TUTOR && existingUser.FullName == item.FullName &&
+                    existingProfile.Status == item.Status && existingProfile.Bio == item.Bio && existingProfile.Degree == item.Degree &&
+                    existingProfile.SessionRateVnd == item.SessionRateVnd && existingProfile.Subjects.SequenceEqual(item.Subjects) &&
+                    existingProfile.TeachingLevels.SequenceEqual(item.TeachingLevels) &&
+                    !await dbContext.TutorSubjects.AnyAsync(link => link.TutorProfileId == existingProfile.Id))
+                    await NormalizeDemoProfile(existingProfile, item);
                 continue;
             }
 
@@ -128,9 +137,32 @@ public sealed class DevelopmentDataSeeder(
             };
 
             dbContext.TutorProfiles.Add(profile);
+            await NormalizeDemoProfile(profile, item);
         }
 
         await dbContext.SaveChangesAsync();
+    }
+
+    private async Task NormalizeDemoProfile(TutorProfile profile, SeedTutorItem item)
+    {
+        // These are explicit development-fixture choices, never inferred for real tutor profiles.
+        if (profile.TeachingModes.Count == 0) profile.TeachingModes = ["ONLINE"];
+        profile.NormalizedDisplayName = ApplicationDbContext.NormalizeSearchName(item.FullName);
+        var levelMap = new Dictionary<string,string>(StringComparer.Ordinal) {
+            ["Tiểu học (Lớp 1 - 5)"]="PRIMARY", ["THCS (Lớp 6 - 9)"]="SECONDARY",
+            ["THPT (Lớp 10 - 12)"]="HIGH_SCHOOL", ["Luyện thi tốt nghiệp & ĐH"]="HIGH_SCHOOL",
+            ["Luyện thi vào 10"]="SECONDARY", ["Sinh viên đại học"]="UNIVERSITY"
+        };
+        var levels = item.TeachingLevels.Where(levelMap.ContainsKey).Select(label=>levelMap[label]).Distinct().ToList();
+        foreach (var name in item.Subjects.Distinct())
+        {
+            var subject = dbContext.Subjects.Local.FirstOrDefault(s=>s.Name==name) ?? await dbContext.Subjects.SingleOrDefaultAsync(s=>s.Name==name);
+            if (subject is null) { subject=new Subject{Id=Guid.NewGuid(),Name=name,IsActive=true}; dbContext.Subjects.Add(subject); }
+            // Respect catalog deactivation; do not reactivate anything on startup.
+            dbContext.TutorSubjects.Add(new TutorSubject{TutorProfileId=profile.Id,SubjectId=subject.Id});
+            foreach(var level in levels)
+                dbContext.Set<TutorSubjectLevel>().Add(new TutorSubjectLevel{TutorProfileId=profile.Id,SubjectId=subject.Id,LevelCode=level});
+        }
     }
 
     private static List<SeedTutorItem> GetDemoTutors() =>

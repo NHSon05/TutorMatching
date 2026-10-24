@@ -6,6 +6,7 @@ import { getTutorOnboarding, saveTutorOnboardingDraft, type TutorOnboardingRespo
 import { createQueryClient, sessionKey } from "@/lib/query/client";
 
 vi.mock("@/lib/api/tutor-onboarding", () => ({ getTutorOnboarding: vi.fn(), saveTutorOnboardingDraft: vi.fn() }));
+vi.mock("@/lib/api/tutor-reviews", () => ({ getReviewHistory: vi.fn(async () => []) }));
 const data: TutorOnboardingResponse = {
   status: "APPROVED", currentStep: 6,
   about: { fullName: "Private Name", phoneNumber: "0901234567", subjects: ["Toán"], languages: ["Tiếng Việt"], teachingLevels: ["THPT"] },

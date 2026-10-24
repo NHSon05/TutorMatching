@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import TutorsListClient from "@/components/tutors/TutorsListClient";
-import { getMockTutors } from "@/data/mockTutors";
 
 export const metadata: Metadata = {
   title: "Danh Sách Gia Sư | TutorMatching",
@@ -8,7 +7,5 @@ export const metadata: Metadata = {
 };
 
 export default function TutorsPage() {
-  const initialTutors = getMockTutors();
-
-  return <TutorsListClient initialTutors={initialTutors} />;
+  return <TutorsListClient />;
 }

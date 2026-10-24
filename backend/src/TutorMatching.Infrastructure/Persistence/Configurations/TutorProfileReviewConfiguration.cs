@@ -19,6 +19,9 @@ public sealed class TutorProfileReviewConfiguration : IEntityTypeConfiguration<T
             .HasMaxLength(32)
             .IsRequired();
 
+        builder.Property(x => x.Action).HasMaxLength(32).IsRequired();
+        builder.HasIndex(x => new { x.TutorProfileId, x.ReviewedAt });
+
         builder.Property(x => x.Note)
             .HasMaxLength(4000);
 

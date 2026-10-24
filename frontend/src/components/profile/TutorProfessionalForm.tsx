@@ -1,11 +1,16 @@
 "use client";
 
+import { TutorReviewHistory } from "./TutorReviewHistory";
 import { useState, type FormEvent } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { TutorDiscoveryFields } from "./TutorDiscoveryFields";
+import { submitTutorOnboarding } from "@/lib/api/tutor-onboarding";
 import { getTutorOnboarding, saveTutorOnboardingDraft, type TutorOnboardingResponse } from "@/lib/api/tutor-onboarding";
+import { ApiError } from "@/lib/api/http";
 import { sessionKey } from "@/lib/query/client";
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader } from "@/components/ui/card";
+import { Dropdown } from "@/components/ui/dropdown";
 import { TextField } from "@/components/ui/text-field";
 import { TextArea } from "@/components/ui/text-area";
 import { Badge } from "@/components/ui/badge";
@@ -27,6 +32,8 @@ function ProfessionalEditor({ initial, accountId }: { initial: TutorOnboardingRe
   const [message, setMessage] = useState("");
   const [success, setSuccess] = useState(false);
   const mutation = useMutation({ mutationFn: saveTutorOnboardingDraft });
+  const [reviewing, setReviewing] = useState(false);
+  const locked = saved.status === "PENDING_REVIEW";
   const dirty = JSON.stringify(draft) !== JSON.stringify(saved);
   const list = (value: string) => value.split(",").map(item => item.trim()).filter(Boolean);
   function change(next: TutorOnboardingResponse) {
@@ -48,7 +55,9 @@ function ProfessionalEditor({ initial, accountId }: { initial: TutorOnboardingRe
     const session = client.getQueryData(sessionKey);
     try {
       const result = await mutation.mutateAsync({
-        about: { subjects: draft.about.subjects, languages: draft.about.languages, teachingLevels: draft.about.teachingLevels },
+        expectedVersion: saved.version,
+        discovery: draft.discovery,
+        about: { languages: draft.about.languages, ...(draft.discovery ? {} : { subjects: draft.about.subjects, teachingLevels: draft.about.teachingLevels }) },
         education: draft.education,
         description: draft.description,
         pricing: draft.pricing,
@@ -61,9 +70,9 @@ function ProfessionalEditor({ initial, accountId }: { initial: TutorOnboardingRe
       setSaved(result);
       setSuccess(true);
       setMessage("Đã lưu hồ sơ giảng dạy.");
-    } catch {
+    } catch (error) {
       setSuccess(false);
-      setMessage("Chưa thể lưu hồ sơ giảng dạy. Vui lòng thử lại; nội dung nhập vẫn được giữ lại.");
+      setMessage(error instanceof ApiError && error.status===409 ? "Hồ sơ đã thay đổi hoặc đang chờ duyệt. Tải lại trang trước khi chỉnh sửa." : error instanceof ApiError && error.errors ? Object.values(error.errors).flat().join(" ") : "Chưa thể lưu hồ sơ giảng dạy. Vui lòng thử lại; nội dung nhập vẫn được giữ lại.");
     }
   }
 
@@ -73,16 +82,19 @@ function ProfessionalEditor({ initial, accountId }: { initial: TutorOnboardingRe
         <h2 className="text-lg font-bold text-content-primary">Hồ sơ giảng dạy</h2>
         <p className="text-sm text-content-secondary">Chuyên môn, giới thiệu và học phí từ hồ sơ gia sư của bạn.</p>
       </CardHeader>
+      <p>Trạng thái hồ sơ: {saved.status}</p>
+      <TutorReviewHistory accountId={accountId} />
+      {draft.version && !draft.discovery?.subjects?.length && !!draft.about.subjects?.length && <p className="text-status-warning">Môn đã nhập trước đây: {draft.about.subjects.join(", ")}. Vui lòng chọn lại từ danh mục môn/lớp.</p>}
       <form onSubmit={submit} className="space-y-6">
-        <fieldset disabled={mutation.isPending} className="grid min-w-0 gap-5 sm:grid-cols-2">
-          <TextField label="Môn học nhận dạy" defaultValue={draft.about.subjects?.join(", ") ?? ""} key={`subjects-${saved.about.subjects?.join(",")}`} onChange={e => change({ ...draft, about: { ...draft.about, subjects: list(e.target.value) } })} helperText="Phân cách các môn bằng dấu phẩy." />
-          <TextField label="Cấp học" defaultValue={draft.about.teachingLevels?.join(", ") ?? ""} key={`levels-${saved.about.teachingLevels?.join(",")}`} onChange={e => change({ ...draft, about: { ...draft.about, teachingLevels: list(e.target.value) } })} helperText="Phân cách các cấp học bằng dấu phẩy." />
+        <fieldset disabled={mutation.isPending || locked || reviewing} className="grid min-w-0 gap-5 sm:grid-cols-2">
+          {draft.version ? <TutorDiscoveryFields value={draft.discovery ?? {subjects:[],teachingModes:[]}} onChange={discovery=>change({...draft,discovery})}/> : <TextField label="Môn học nhận dạy" value={draft.about.subjects?.join(", ")??""} onChange={e=>change({...draft,about:{...draft.about,subjects:list(e.target.value)}})}/>}
           <TextField label="Ngôn ngữ giảng dạy" defaultValue={draft.about.languages?.join(", ") ?? ""} key={`languages-${saved.about.languages?.join(",")}`} onChange={e => change({ ...draft, about: { ...draft.about, languages: list(e.target.value) } })} />
           <TextField label="Số năm kinh nghiệm" type="number" min={0} step={1} value={draft.description.experienceYears ?? ""} onChange={e => change({ ...draft, description: { ...draft.description, experienceYears: e.target.value === "" ? undefined : Number(e.target.value) } })} />
+          <Dropdown label="Tình trạng học vấn" options={[{value:"STUDYING",label:"Đang học"},{value:"GRADUATED",label:"Đã tốt nghiệp"},{value:"NO_DEGREE",label:"Chuyên môn khác"}]} value={draft.education.educationType??""} onChange={educationType=>change({...draft,education:{...draft.education,educationType}})}/>
           <TextField label="Trường / cơ sở đào tạo" value={draft.education.schoolName ?? ""} onChange={e => change({ ...draft, education: { ...draft.education, schoolName: e.target.value } })} />
           <TextField label="Chuyên ngành" value={draft.education.specialization ?? ""} onChange={e => change({ ...draft, education: { ...draft.education, specialization: e.target.value } })} />
           <TextField label="Bằng cấp" value={draft.education.degree ?? ""} onChange={e => change({ ...draft, education: { ...draft.education, degree: e.target.value } })} />
-          <TextField label="Học phí theo giờ (VNĐ)" type="number" min={1} step={1} value={draft.pricing.hourlyRateVnd ?? ""} onChange={e => change({ ...draft, pricing: { ...draft.pricing, hourlyRateVnd: e.target.value === "" ? undefined : Number(e.target.value) } })} />
+          <TextField label="Học phí theo buổi (VNĐ)" type="number" min={1} step={1} value={draft.pricing.sessionRateVnd ?? ""} onChange={e => change({ ...draft, pricing: { ...draft.pricing, sessionRateVnd: e.target.value === "" ? undefined : Number(e.target.value) } })} />
           <TextArea className="sm:col-span-2" label="Giới thiệu bản thân" rows={4} value={draft.description.bio ?? ""} onChange={e => change({ ...draft, description: { ...draft.description, bio: e.target.value } })} />
           <TextArea label="Phương pháp giảng dạy" rows={3} value={draft.description.teachingMethodology ?? ""} onChange={e => change({ ...draft, description: { ...draft.description, teachingMethodology: e.target.value } })} />
           <TextArea label="Thành tích & kết quả" rows={3} value={draft.description.achievementsAndResults ?? ""} onChange={e => change({ ...draft, description: { ...draft.description, achievementsAndResults: e.target.value } })} />
@@ -92,8 +104,12 @@ function ProfessionalEditor({ initial, accountId }: { initial: TutorOnboardingRe
           {draft.certifications.length ? <div className="flex flex-wrap gap-2">{draft.certifications.map((certificate, index) => <Badge key={`${certificate.name}-${index}`} variant="tutor">{certificate.name} · {certificate.issuer}</Badge>)}</div> : <p className="text-sm text-content-secondary">Chưa có chứng chỉ được cập nhật.</p>}
         </section>
         {message && <p role={success ? "status" : "alert"} className={`text-sm ${success ? "text-status-success" : "text-status-error"}`}>{message}</p>}
+        {locked && <p role="status">Hồ sơ đang chờ duyệt. Bạn có thể sửa sau khi nhận kết quả.</p>}
+        {saved.version && !locked && saved.status !== "APPROVED" && <Button type="button" disabled={dirty || mutation.isPending || reviewing} onClick={async()=>{
+          const ownerSession=client.getQueryData(sessionKey); setReviewing(true);try {await submitTutorOnboarding(saved.version); const result=await getTutorOnboarding();if(!ownerSession || client.getQueryData(sessionKey)!==ownerSession)return;setSaved(result);setDraft(result);client.setQueryData(["tutor-profile",accountId],result);setSuccess(true);setMessage("Đã gửi hồ sơ chờ duyệt.");}catch {setSuccess(false);setMessage("Chưa gửi được. Kiểm tra thông tin cá nhân, ảnh, trình độ, môn/lớp, hình thức và giá theo buổi; tải lại nếu hồ sơ đã thay đổi.");}finally{setReviewing(false);}
+        }}>Gửi duyệt hồ sơ</Button>}
         <div className="flex justify-end border-t border-border-default pt-5">
-          <Button type="submit" variant="tutor" disabled={!dirty} isLoading={mutation.isPending}>{mutation.isPending ? "Đang lưu hồ sơ..." : "Lưu hồ sơ giảng dạy"}</Button>
+          <Button type="submit" variant="tutor" disabled={!dirty || locked || reviewing} isLoading={mutation.isPending}>{mutation.isPending ? "Đang lưu hồ sơ..." : "Lưu hồ sơ giảng dạy"}</Button>
         </div>
       </form>
     </Card>

@@ -1,0 +1,373 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Sprint 1 admin extension",
+    "version": "1.0.0"
+  },
+  "security": [
+    {
+      "cookieAuth": []
+    }
+  ],
+  "paths": {
+    "/api/v1/users": {
+      "get": {
+        "summary": "ADMIN: list users",
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 1000000,
+              "default": 1
+            }
+          },
+          {
+            "name": "pageSize",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 20
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Paginated admin user allowlist",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "items": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "additionalProperties": false,
+                        "properties": {
+                          "fullName": {
+                            "type": "string"
+                          },
+                          "email": {
+                            "type": "string"
+                          },
+                          "role": {
+                            "type": "string"
+                          },
+                          "status": {
+                            "type": "string"
+                          },
+                          "id": {
+                            "type": "string",
+                            "format": "uuid"
+                          },
+                          "tutorProfileId": {
+                            "type": [
+                              "string",
+                              "null"
+                            ]
+                          },
+                          "tutorProfileStatus": {
+                            "type": [
+                              "string",
+                              "null"
+                            ]
+                          }
+                        },
+                        "required": [
+                          "fullName",
+                          "email",
+                          "role",
+                          "status",
+                          "id",
+                          "tutorProfileId",
+                          "tutorProfileStatus"
+                        ]
+                      }
+                    },
+                    "totalCount": {
+                      "type": "integer"
+                    },
+                    "page": {
+                      "type": "integer"
+                    },
+                    "pageSize": {
+                      "type": "integer"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthenticated"
+          },
+          "403": {
+            "description": "Not ADMIN"
+          },
+          "422": {
+            "description": "Invalid pagination"
+          }
+        }
+      }
+    },
+    "/api/v1/admin/users": {
+      "get": {
+        "summary": "ADMIN: list users",
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 1000000,
+              "default": 1
+            }
+          },
+          {
+            "name": "pageSize",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 20
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Paginated admin user allowlist",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "items": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "additionalProperties": false,
+                        "properties": {
+                          "fullName": {
+                            "type": "string"
+                          },
+                          "email": {
+                            "type": "string"
+                          },
+                          "role": {
+                            "type": "string"
+                          },
+                          "status": {
+                            "type": "string"
+                          },
+                          "id": {
+                            "type": "string",
+                            "format": "uuid"
+                          },
+                          "tutorProfileId": {
+                            "type": [
+                              "string",
+                              "null"
+                            ]
+                          },
+                          "tutorProfileStatus": {
+                            "type": [
+                              "string",
+                              "null"
+                            ]
+                          }
+                        },
+                        "required": [
+                          "fullName",
+                          "email",
+                          "role",
+                          "status",
+                          "id",
+                          "tutorProfileId",
+                          "tutorProfileStatus"
+                        ]
+                      }
+                    },
+                    "totalCount": {
+                      "type": "integer"
+                    },
+                    "page": {
+                      "type": "integer"
+                    },
+                    "pageSize": {
+                      "type": "integer"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthenticated"
+          },
+          "403": {
+            "description": "Not ADMIN"
+          },
+          "422": {
+            "description": "Invalid pagination"
+          }
+        }
+      }
+    },
+    "/api/v1/admin/tutors/{id}/approve": {
+      "post": {
+        "tags": [
+          "Admin"
+        ],
+        "operationId": "post_api_v1_admin_tutors_id_approve",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ReviewRequest"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ReviewRequest"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/ReviewRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "security": [
+          {
+            "csrfHeader": [],
+            "csrfCookie": [],
+            "cookieAuth": []
+          }
+        ]
+      }
+    },
+    "/api/v1/admin/tutors/{id}/reject": {
+      "post": {
+        "tags": [
+          "Admin"
+        ],
+        "operationId": "post_api_v1_admin_tutors_id_reject",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ReviewRequest"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ReviewRequest"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/ReviewRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "security": [
+          {
+            "csrfHeader": [],
+            "csrfCookie": [],
+            "cookieAuth": []
+          }
+        ]
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "cookieAuth": {
+        "type": "apiKey",
+        "name": "accessToken",
+        "in": "cookie"
+      },
+      "refreshCookie": {
+        "type": "apiKey",
+        "name": "refreshToken",
+        "in": "cookie"
+      },
+      "csrfHeader": {
+        "type": "apiKey",
+        "name": "X-CSRF-TOKEN",
+        "in": "header"
+      },
+      "csrfCookie": {
+        "type": "apiKey",
+        "name": "tutormatch_session_csrf",
+        "in": "cookie"
+      }
+    },
+    "schemas": {
+      "ReviewRequest": {
+        "required": [
+          "expectedVersion"
+        ],
+        "type": "object",
+        "properties": {
+          "expectedVersion": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "uuid"
+          },
+          "note": {
+            "type": [
+              "null",
+              "string"
+            ]
+          }
+        }
+      }
+    }
+  }
+}

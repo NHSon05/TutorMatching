@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using TutorMatching.Domain.Users;
+using TutorMatching.Api.Routing;
 
 namespace TutorMatching.Api.Security;
 
@@ -167,7 +168,7 @@ public static class ApiSecurityExtensions
                 PartitionedRateLimiter.Create<HttpContext, string>(context =>
                     RateLimitPartition.GetFixedWindowLimiter(ClientIp(context), _ => Window(120))),
                 PartitionedRateLimiter.Create<HttpContext, string>(context =>
-                    context.Request.Path.StartsWithSegments("/api/v1/auth") && IsUnsafe(context.Request.Method)
+                    context.Request.Path.StartsWithSegments($"/{ApiRoutes.Prefix}/auth") && IsUnsafe(context.Request.Method)
                         ? RateLimitPartition.GetFixedWindowLimiter(ClientIp(context), _ => Window(10))
                         : RateLimitPartition.GetNoLimiter("non-auth")));
             options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
@@ -214,7 +215,7 @@ public static class ApiSecurityExtensions
     }
 
     public static IEndpointConventionBuilder MapCsrfEndpoint(this IEndpointRouteBuilder endpoints) =>
-        endpoints.MapGet("/api/v1/auth/csrf", (HttpContext context, IAntiforgery antiforgery) =>
+        endpoints.MapGet($"/{ApiRoutes.Prefix}/auth/csrf", (HttpContext context, IAntiforgery antiforgery) =>
         {
             // context.Response.Headers.CacheControl = "no-store";
             var tokens = antiforgery.GetAndStoreTokens(context);

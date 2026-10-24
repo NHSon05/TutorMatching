@@ -7,11 +7,12 @@ import { uploadTutorAvatar } from "@/lib/api/tutor-onboarding";
 
 interface Step2PhotoProps {
   avatarUrl?: string;
-  onUploaded: (url: string) => void;
+  onUploaded: (url: string) => void | Promise<void>;
+  onUploadingChange?: (uploading: boolean) => void;
   error?: string;
 }
 
-export function Step2Photo({ avatarUrl, onUploaded, error }: Step2PhotoProps) {
+export function Step2Photo({ avatarUrl, onUploaded, error, onUploadingChange }: Step2PhotoProps) {
   const [isUploading, setIsUploading] = useState(false);
   const [uploadError, setUploadError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -32,14 +33,16 @@ export function Step2Photo({ avatarUrl, onUploaded, error }: Step2PhotoProps) {
 
     setUploadError(null);
     setIsUploading(true);
+    onUploadingChange?.(true);
 
     try {
       const res = await uploadTutorAvatar(file);
-      onUploaded(res.fileUrl);
+      await onUploaded(res.fileUrl);
     } catch {
       setUploadError("Tải ảnh lên thất bại. Vui lòng kiểm tra kết nối và thử lại.");
     } finally {
       setIsUploading(false);
+      onUploadingChange?.(false);
       if (fileInputRef.current) {
         fileInputRef.current.value = "";
       }

@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.OpenApi;
 using TutorMatching.Api.Contracts.Auth;
+using TutorMatching.Api.Routing;
 using TutorMatching.Api.Security;
 using TutorMatching.Application.Authentication.Register;
 
@@ -15,13 +16,24 @@ public static class OpenApiExtensions
         {
             options.OpenApiVersion = OpenApiSpecVersion.OpenApi3_1;
             options.ShouldInclude = description =>
-                description.RelativePath?.StartsWith("api/v1/", StringComparison.Ordinal) == true;
+                description.RelativePath?.StartsWith(ApiRoutes.Prefix + "/", StringComparison.Ordinal) == true;
             options.AddOperationTransformer((operation, context, _) =>
             {
                 operation.OperationId ??= context.Description.HttpMethod!.ToLowerInvariant() + "_" + System.Text.RegularExpressions.Regex.Replace(context.Description.RelativePath!, "[^a-zA-Z0-9]+", "_").Trim('_');
                 if (context.Description.ActionDescriptor.EndpointMetadata.OfType<IAllowAnonymous>().Any())
                     operation.Security = [];
 
+                if (context.Description.RelativePath == ApiRoutes.Prefix + "/tutors")
+                {
+                    foreach (var parameter in operation.Parameters ?? [])
+                    {
+                        if (parameter is not OpenApiParameter p) continue;
+                        if (p.Name is "minPrice" or "maxPrice" or "sessionsPerWeek" or "durationMinutes" or "page" or "pageSize")
+                            p.Schema = new OpenApiSchema { Type = JsonSchemaType.Integer, Description = "Validated integer query; invalid values return 400." };
+                        if (p.Name == "subjectId")
+                            p.Schema = new OpenApiSchema { Type = JsonSchemaType.Array, Items = new OpenApiSchema { Type = JsonSchemaType.String, Format = "uuid" } };
+                    }
+                }
                 var consumes = context.Description.ActionDescriptor.EndpointMetadata
                     .OfType<ConsumesAttribute>()
                     .LastOrDefault();
@@ -39,6 +51,25 @@ public static class OpenApiExtensions
             });
             options.AddSchemaTransformer((schema, context, _) =>
             {
+                if (new[] { typeof(TutorMatching.Application.Tutors.PublicTutorSummary), typeof(TutorMatching.Application.Tutors.PublicTutorDetail),
+                    typeof(TutorMatching.Application.Tutors.PublicTutorPage), typeof(TutorMatching.Application.Tutors.PublicSubject),
+                    typeof(TutorMatching.Application.Tutors.PublicAvailability), typeof(TutorMatching.Application.Tutors.PublicCourse) }.Contains(context.JsonTypeInfo.Type))
+                    schema.AdditionalPropertiesAllowed = false;
+                if (context.JsonTypeInfo.Type == typeof(TutorMatching.Api.Controllers.AvailabilityRequest) ||
+                    context.JsonTypeInfo.Type == typeof(TutorMatching.Api.Controllers.AvailabilityResponse))
+                {
+                    if (schema.Properties?["dayOfWeek"] is OpenApiSchema day)
+                    {
+                        day.Type = JsonSchemaType.Integer;
+                        day.Minimum = "1";
+                        day.Maximum = "7";
+                    }
+                    foreach (var field in new[] { "startTime", "endTime" })
+                        if (schema.Properties?[field] is OpenApiSchema time)
+                            time.Pattern = "^([01][0-9]|2[0-3]):[0-5][0-9]$";
+                    if (schema.Properties?.TryGetValue("timeZone", out var timeZone) == true && timeZone is OpenApiSchema zone)
+                        zone.Const = "Asia/Ho_Chi_Minh";
+                }
                 if (context.JsonTypeInfo.Type == typeof(TutorMatching.Domain.Users.AccountRole) ||
                     context.JsonTypeInfo.Type == typeof(TutorMatching.Domain.Users.AccountStatus))
                     schema.Type = JsonSchemaType.String;
