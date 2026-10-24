@@ -1,7 +1,18 @@
 # Current Session Handoff
 
-Status: Idle — Sprint 2 (002-tutor-discovery) Phase 8 completely finished and verified. All tasks T001–T035 checked.
-Updated: 2026-10-23
+Status: Idle. Local empty tutor listing resolved by authorized development reseed; no remaining blocker for this fix.
+Updated: 2026-10-25
+
+## Latest targeted verification
+
+- GET tutors initial listing: no default search filters were found; production logic unchanged. Public eligibility and pagination remain enforced.
+- Added `TutorSearchTests.UnfilteredListIncludesTutorsWithoutSlotsAndFilteringCanBeCleared`: unfiltered list includes public tutors without slots; name/price/schedule restrict results only when supplied; clearing restores the list.
+- Added frontend regression: empty URL sends no filters, editing form does not refetch, submitting sends selected criteria without implicit schedule filters.
+- Latest checks: DevelopmentTutorSeedTests + TutorSearchTests + PublicEligibilityTests 39 passed; diff whitespace check passed. Earlier frontend tutor-search + TutorsListClient 12 passed; full suites below were not rerun for this fix.
+- Cause: DiscoveryFoundation drafts legacy demo profiles with unmapped teaching-level labels, while the old seed repair required APPROVED and no subject links.
+- DevelopmentDataSeeder now repairs recognizable demo drafts only with DiscoveryMigrationDrafted audit evidence at/after profile UpdatedAt; restores approval and fills missing subject/level links without duplication or catalog reactivation.
+- Regression coverage: partial migration links, repeated seeding, and preservation of drafts without migration evidence or edited after migration. Initial test fixture failed because normal SaveChanges updates UpdatedAt; corrected to simulate migration SQL with ExecuteUpdateAsync, then all 39 passed.
+- Executed authorized `dotnet run --project backend/src/TutorMatching.Api --no-build -- --seed-only` successfully on local development DB. Live localhost:5014 GET `/api/v1/tutors?page=1&pageSize=20` now returns totalCount 10 and 10 items; public eligibility rules unchanged.
 
 ## Completed Sprint 2 Delivery
 

@@ -17,6 +17,34 @@ public sealed class TutorSearchTests(PostgreSqlFixture fixture)
 {
     internal static readonly Guid English = Guid.Parse("02000000-0000-0000-0000-000000000002");
     [Fact]
+    public async Task UnfilteredListIncludesTutorsWithoutSlotsAndFilteringCanBeCleared()
+    {
+        await using var factory = await fixture.CreateFactoryAsync(); var ids = await Seed(factory);
+        await using (var scope = factory.Services.CreateAsyncScope())
+        {
+            var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+            await db.AvailabilitySlots.Where(s => s.TutorProfileId == ids[1]).ExecuteDeleteAsync();
+        }
+        using var client = factory.CreateApiClient();
+        async Task AssertAllPublicTutors()
+        {
+            var result = await client.GetFromJsonAsync<JsonElement>("/api/v1/tutors");
+            Assert.Equal(2, result.GetProperty("totalCount").GetInt32());
+            Assert.Equal(ids.Take(2).Order(), result.GetProperty("items").EnumerateArray().Select(x => x.GetProperty("id").GetGuid()).Order());
+            Assert.Equal(1, result.GetProperty("page").GetInt32());
+            Assert.Equal(20, result.GetProperty("pageSize").GetInt32());
+        }
+        await AssertAllPublicTutors();
+        var byName = await client.GetFromJsonAsync<JsonElement>("/api/v1/tutors?name=nguyen");
+        Assert.Equal(ids[0], Assert.Single(byName.GetProperty("items").EnumerateArray()).GetProperty("id").GetGuid());
+        var byPrice = await client.GetFromJsonAsync<JsonElement>("/api/v1/tutors?minPrice=200000");
+        Assert.Equal(ids[1], Assert.Single(byPrice.GetProperty("items").EnumerateArray()).GetProperty("id").GetGuid());
+        var windows = Uri.EscapeDataString("[{\"dayOfWeek\":1,\"startTime\":\"18:00\",\"endTime\":\"20:00\"}]");
+        var bySchedule = await client.GetFromJsonAsync<JsonElement>($"/api/v1/tutors?sessionsPerWeek=2&durationMinutes=60&weeklyWindows={windows}");
+        Assert.Equal(ids[0], Assert.Single(bySchedule.GetProperty("items").EnumerateArray()).GetProperty("id").GetGuid());
+        await AssertAllPublicTutors();
+    }
+    [Fact]
     public async Task FiltersGroupsAndKeepsSubjectLevelAssociation()
     {
         await using var factory = await fixture.CreateFactoryAsync(); var ids = await Seed(factory); using var client = factory.CreateApiClient();

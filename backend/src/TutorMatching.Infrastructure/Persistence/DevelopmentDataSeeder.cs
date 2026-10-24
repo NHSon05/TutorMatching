@@ -76,11 +76,26 @@ public sealed class DevelopmentDataSeeder(
                 // Repair only recognizable, untouched demo profiles from the legacy seed.
                 var existingProfile = await dbContext.TutorProfiles.SingleOrDefaultAsync(p => p.UserId == existingUser.Id);
                 if (existingProfile is not null && existingUser.Role == AccountRole.TUTOR && existingUser.FullName == item.FullName &&
-                    existingProfile.Status == item.Status && existingProfile.Bio == item.Bio && existingProfile.Degree == item.Degree &&
+                    existingProfile.Bio == item.Bio && existingProfile.Degree == item.Degree &&
                     existingProfile.SessionRateVnd == item.SessionRateVnd && existingProfile.Subjects.SequenceEqual(item.Subjects) &&
-                    existingProfile.TeachingLevels.SequenceEqual(item.TeachingLevels) &&
-                    !await dbContext.TutorSubjects.AnyAsync(link => link.TutorProfileId == existingProfile.Id))
-                    await NormalizeDemoProfile(existingProfile, item);
+                    existingProfile.TeachingLevels.SequenceEqual(item.TeachingLevels))
+                {
+                    var migrationDrafted = existingProfile.Status == TutorProfileStatus.DRAFT &&
+                        await dbContext.AuditEvents.AnyAsync(a => a.Action == "DiscoveryMigrationDrafted" &&
+                            a.EntityType == "TutorProfile" && a.EntityId == existingProfile.Id.ToString() &&
+                            a.CreatedAt >= existingProfile.UpdatedAt);
+                    if (migrationDrafted || (existingProfile.Status == item.Status &&
+                        !await dbContext.TutorSubjects.AnyAsync(link => link.TutorProfileId == existingProfile.Id)))
+                    {
+                        await NormalizeDemoProfile(existingProfile, item);
+                        if (migrationDrafted)
+                        {
+                            existingProfile.Status = item.Status;
+                            existingProfile.ApprovedAt = DateTimeOffset.UtcNow;
+                            existingProfile.UpdatedAt = DateTimeOffset.UtcNow;
+                        }
+                    }
+                }
                 continue;
             }
 
@@ -154,14 +169,18 @@ public sealed class DevelopmentDataSeeder(
             ["Luyện thi vào 10"]="SECONDARY", ["Sinh viên đại học"]="UNIVERSITY"
         };
         var levels = item.TeachingLevels.Where(levelMap.ContainsKey).Select(label=>levelMap[label]).Distinct().ToList();
+        var existingSubjects = await dbContext.TutorSubjects.Where(s => s.TutorProfileId == profile.Id).Select(s => s.SubjectId).ToListAsync();
+        var existingLevels = await dbContext.Set<TutorSubjectLevel>().Where(s => s.TutorProfileId == profile.Id).ToListAsync();
         foreach (var name in item.Subjects.Distinct())
         {
             var subject = dbContext.Subjects.Local.FirstOrDefault(s=>s.Name==name) ?? await dbContext.Subjects.SingleOrDefaultAsync(s=>s.Name==name);
             if (subject is null) { subject=new Subject{Id=Guid.NewGuid(),Name=name,IsActive=true}; dbContext.Subjects.Add(subject); }
             // Respect catalog deactivation; do not reactivate anything on startup.
-            dbContext.TutorSubjects.Add(new TutorSubject{TutorProfileId=profile.Id,SubjectId=subject.Id});
+            if (!existingSubjects.Contains(subject.Id))
+                dbContext.TutorSubjects.Add(new TutorSubject{TutorProfileId=profile.Id,SubjectId=subject.Id});
             foreach(var level in levels)
-                dbContext.Set<TutorSubjectLevel>().Add(new TutorSubjectLevel{TutorProfileId=profile.Id,SubjectId=subject.Id,LevelCode=level});
+                if (!existingLevels.Any(link => link.SubjectId == subject.Id && link.LevelCode == level))
+                    dbContext.Set<TutorSubjectLevel>().Add(new TutorSubjectLevel{TutorProfileId=profile.Id,SubjectId=subject.Id,LevelCode=level});
         }
     }
 

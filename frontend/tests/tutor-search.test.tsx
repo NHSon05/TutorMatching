@@ -76,6 +76,27 @@ async function selectFilter(label: string, option: string) {
 function advanced() {
   fireEvent.click(screen.getByRole("button", { name: /Bộ lọc nâng cao/ }));
 }
+it("loads without filters and only applies draft criteria on submission", async () => {
+  view();
+  await screen.findByRole("link", { name: "Xem hồ sơ Nguyễn An" });
+  expect(getTutors).toHaveBeenCalledTimes(1);
+  expect(vi.mocked(getTutors).mock.calls[0][0]?.toString()).toBe("");
+
+  fireEvent.change(screen.getByLabelText("Tên gia sư"), {
+    target: { value: "An" },
+  });
+  await selectFilter("Môn học", "Toán");
+  expect(push).not.toHaveBeenCalled();
+  expect(getTutors).toHaveBeenCalledTimes(1);
+
+  fireEvent.click(screen.getByRole("button", { name: "Áp dụng bộ lọc" }));
+  const params = new URL(push.mock.calls[0][0], "https://example.test").searchParams;
+  expect(params.get("name")).toBe("An");
+  expect(params.getAll("subjectId")).toEqual(["math"]);
+  expect(params.has("weeklyWindows")).toBe(false);
+  expect(params.has("sessionsPerWeek")).toBe(false);
+  expect(params.has("durationMinutes")).toBe(false);
+});
 it("uses URL criteria and links to the canonical profile without inventing price or ratings", async () => {
   view("name=An&subjectId=math&mode=ONLINE");
   expect(

@@ -27,6 +27,72 @@ public sealed class DevelopmentTutorSeedTests(PostgreSqlFixture fixture)
         Assert.All(page.GetProperty("items").EnumerateArray(),item=>Assert.NotEmpty(item.GetProperty("subjects").EnumerateArray()));
     }
     [Fact]
+    public async Task MigrationDraftedDemoProfilesAreRepairedWithPartialLinksAndSeedRemainsIdempotent()
+    {
+        await using var factory = await fixture.CreateFactoryAsync();
+        await using (var scope = factory.Services.CreateAsyncScope())
+        {
+            var seed = scope.ServiceProvider.GetRequiredService<DevelopmentDataSeeder>();
+            var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+            await seed.SeedAsync();
+            var subjectCount = await db.TutorSubjects.CountAsync();
+            var levelCount = await db.Set<TutorSubjectLevel>().CountAsync();
+            await db.Set<TutorSubjectLevel>().ExecuteDeleteAsync();
+            var mathId = await db.Subjects.Where(s => s.Name == "Toán học").Select(s => s.Id).SingleAsync();
+            await db.TutorSubjects.Where(s => s.SubjectId != mathId).ExecuteDeleteAsync();
+            // The migration uses SQL and preserves UpdatedAt, unlike normal profile edits.
+            await db.TutorProfiles.ExecuteUpdateAsync(setters => setters
+                .SetProperty(p => p.Status, TutorProfileStatus.DRAFT)
+                .SetProperty(p => p.ApprovedAt, (DateTimeOffset?)null));
+            db.ChangeTracker.Clear();
+            foreach (var profile in await db.TutorProfiles.ToListAsync())
+            {
+                db.AuditEvents.Add(new TutorMatching.Infrastructure.Auditing.AuditEvent
+                {
+                    Id = Guid.NewGuid(), Action = "DiscoveryMigrationDrafted", EntityType = "TutorProfile",
+                    EntityId = profile.Id.ToString(), CreatedAt = DateTimeOffset.UtcNow
+                });
+            }
+            await db.SaveChangesAsync();
+            await seed.SeedAsync();
+            await seed.SeedAsync();
+            db.ChangeTracker.Clear();
+            Assert.Equal(10, await db.TutorProfiles.CountAsync(p => p.Status == TutorProfileStatus.APPROVED && p.ApprovedAt != null));
+            Assert.Equal(subjectCount, await db.TutorSubjects.CountAsync());
+            Assert.Equal(levelCount, await db.Set<TutorSubjectLevel>().CountAsync());
+        }
+        using var client = factory.CreateApiClient();
+        var page = await client.GetFromJsonAsync<JsonElement>("/api/v1/tutors");
+        Assert.Equal(10, page.GetProperty("totalCount").GetInt32());
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task DraftDemoWithoutMigrationEvidenceOrEditedAfterMigrationIsNotApproved(bool editedAfterMigration)
+    {
+        await using var factory = await fixture.CreateFactoryAsync();
+        await using var scope = factory.Services.CreateAsyncScope();
+        var seed = scope.ServiceProvider.GetRequiredService<DevelopmentDataSeeder>();
+        var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+        await seed.SeedAsync();
+        var profile = await db.TutorProfiles.FirstAsync();
+        profile.Status = TutorProfileStatus.DRAFT;
+        profile.ApprovedAt = null;
+        profile.UpdatedAt = DateTimeOffset.UtcNow;
+        if (editedAfterMigration)
+            db.AuditEvents.Add(new TutorMatching.Infrastructure.Auditing.AuditEvent
+            {
+                Id = Guid.NewGuid(), Action = "DiscoveryMigrationDrafted", EntityType = "TutorProfile",
+                EntityId = profile.Id.ToString(), CreatedAt = profile.UpdatedAt.AddDays(-1)
+            });
+        await db.SaveChangesAsync();
+        await seed.SeedAsync();
+        db.ChangeTracker.Clear();
+        Assert.Equal(TutorProfileStatus.DRAFT, (await db.TutorProfiles.SingleAsync(p => p.Id == profile.Id)).Status);
+    }
+
+    [Fact]
     public async Task LegacyDemoSeedIsRepairedWithoutResettingApprovalOrInactiveCatalogs()
     {
         await using var factory=await fixture.CreateFactoryAsync();
