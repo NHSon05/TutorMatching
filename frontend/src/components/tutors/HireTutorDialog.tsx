@@ -2,19 +2,28 @@
 
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
+import { useQuery } from "@tanstack/react-query";
 import { Dialog } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Avatar } from "@/components/ui/avatar";
 import { RadioGroup, Radio } from "@/components/ui/radio";
 import { TextField } from "@/components/ui/text-field";
 import { TextArea } from "@/components/ui/text-area";
+import { Spinner } from "@/components/ui/spinner";
+import {
+  getTutorById,
+  publicAvatarUrl,
+  type PublicTutorDetail,
+  type TutorListItemResponse,
+} from "@/lib/api/tutors";
 import type { Tutor } from "./types";
 
 export interface HireTutorDialogProps {
   isOpen: boolean;
   onClose: () => void;
   onBackToDetail?: () => void;
-  tutor: Tutor | null;
+  tutorId?: string | null;
+  tutor?: Tutor | TutorListItemResponse | PublicTutorDetail | null;
 }
 
 const POPULAR_FREQUENCIES = [
@@ -40,13 +49,36 @@ const TIME_SLOTS = [
   { id: "evening", label: "Tối (18:30 - 21:00)" },
 ];
 
+const modeNames: Record<string, string> = {
+  ONLINE: "Trực tuyến",
+  OFFLINE: "Trực tiếp",
+  HYBRID: "Kết hợp",
+};
+
 export function HireTutorDialog({
   isOpen,
   onClose,
   onBackToDetail,
   tutor,
+  tutorId,
 }: HireTutorDialogProps) {
   const router = useRouter();
+
+  // Xác định ID gia sư mục tiêu
+  const targetId = tutorId ?? (tutor?.id ? String(tutor.id) : null);
+
+  // Gọi API /api/v1/tutors/{id} khi mở dialog
+  const {
+    data: tutorDetail,
+    isPending,
+    isError,
+    refetch,
+  } = useQuery({
+    queryKey: ["public-tutor-detail", targetId],
+    queryFn: ({ signal }) => getTutorById(targetId!, signal),
+    enabled: isOpen && !!targetId,
+    staleTime: 60 * 1000,
+  });
 
   // Form State
   const [frequency, setFrequency] = useState<string>("2 buổi/tuần");
@@ -58,7 +90,70 @@ export function HireTutorDialog({
   const [priceError, setPriceError] = useState<string | undefined>(undefined);
   const [isSubmitted, setIsSubmitted] = useState<boolean>(false);
 
-  if (!tutor) return null;
+  if (!isOpen) return null;
+
+  // Dữ liệu gia sư hợp nhất từ API chi tiết và prop ban đầu
+  const name: string =
+    tutorDetail?.displayName ??
+    (tutor &&
+    "displayName" in tutor &&
+    typeof (tutor as TutorListItemResponse).displayName === "string"
+      ? (tutor as TutorListItemResponse).displayName
+      : tutor && "name" in tutor && typeof (tutor as Tutor).name === "string"
+      ? (tutor as Tutor).name
+      : "Gia sư");
+
+  const avatarSrc: string | undefined =
+    tutorDetail?.avatarUrl !== undefined
+      ? publicAvatarUrl(tutorDetail.avatarUrl)
+      : tutor && "avatarUrl" in tutor
+      ? publicAvatarUrl((tutor as TutorListItemResponse).avatarUrl)
+      : tutor && "avatar" in tutor && typeof (tutor as Tutor).avatar === "string"
+      ? (tutor as Tutor).avatar
+      : undefined;
+
+  const title: string = tutorDetail
+    ? [
+        tutorDetail.qualification,
+        tutorDetail.schoolName || tutorDetail.specialization,
+      ]
+        .filter(Boolean)
+        .join(" • ")
+    : tutor && "qualification" in tutor
+    ? [
+        (tutor as TutorListItemResponse).qualification,
+        (tutor as TutorListItemResponse).schoolName ||
+          (tutor as TutorListItemResponse).specialization,
+      ]
+        .filter(Boolean)
+        .join(" • ")
+    : tutor && "title" in tutor && typeof (tutor as Tutor).title === "string"
+    ? (tutor as Tutor).title!
+    : "Gia sư chuyên môn";
+
+  const priceFormatted: string = tutorDetail
+    ? `${tutorDetail.sessionRateVnd.toLocaleString("vi-VN")}đ/buổi`
+    : tutor &&
+      "sessionRateVnd" in tutor &&
+      typeof (tutor as TutorListItemResponse).sessionRateVnd === "number"
+    ? `${(tutor as TutorListItemResponse).sessionRateVnd.toLocaleString("vi-VN")}đ/buổi`
+    : tutor &&
+      "priceFormatted" in tutor &&
+      typeof (tutor as Tutor).priceFormatted === "string"
+    ? (tutor as Tutor).priceFormatted!
+    : "Đang cập nhật";
+
+  const mode: string = tutorDetail
+    ? tutorDetail.teachingModes.map((m) => modeNames[m] || m).join(" / ")
+    : tutor &&
+      "teachingModes" in tutor &&
+      Array.isArray((tutor as TutorListItemResponse).teachingModes)
+    ? (tutor as TutorListItemResponse).teachingModes
+        .map((m) => modeNames[m] || m)
+        .join(" / ")
+    : tutor && "mode" in tutor && typeof (tutor as Tutor).mode === "string"
+    ? (tutor as Tutor).mode!
+    : "Trực tuyến / Trực tiếp";
 
   const toggleDay = (dayId: string) => {
     setSelectedDays((prev) =>
@@ -88,7 +183,9 @@ export function HireTutorDialog({
     if (isNegotiating === "negotiate") {
       const priceNum = Number(proposedPrice.replace(/\D/g, ""));
       if (!priceNum || priceNum < 10000) {
-        setPriceError("Vui lòng nhập mức giá đề xuất hợp lệ (tối thiểu 10.000 VNĐ).");
+        setPriceError(
+          "Vui lòng nhập mức giá đề xuất hợp lệ (tối thiểu 10.000 VNĐ)."
+        );
         return;
       }
     }
@@ -109,7 +206,39 @@ export function HireTutorDialog({
       maxWidth="lg"
       className="p-6 sm:p-7"
     >
-      {isSubmitted ? (
+      {/* Loading state khi đang tải dữ liệu gia sư từ API và chưa có cache */}
+      {isPending && !tutorDetail && !tutor ? (
+        <div className="py-12 text-center space-y-3" role="status">
+          <Spinner label="Đang tải thông tin gia sư..." size="large" />
+          <p className="text-sm text-content-secondary font-medium">
+            Đang tải thông tin gia sư...
+          </p>
+        </div>
+      ) : isError && !tutorDetail && !tutor ? (
+        <div className="py-8 text-center space-y-3">
+          <p role="alert" className="text-status-error font-medium">
+            Không thể tải thông tin hồ sơ gia sư. Vui lòng thử lại.
+          </p>
+          <div className="flex justify-center gap-3 pt-2">
+            <Button
+              type="button"
+              variant="secondary"
+              shape="pill"
+              onClick={handleClose}
+            >
+              Đóng
+            </Button>
+            <Button
+              type="button"
+              variant="brand"
+              shape="pill"
+              onClick={() => void refetch()}
+            >
+              Thử lại
+            </Button>
+          </div>
+        </div>
+      ) : isSubmitted ? (
         // =========================================================================
         // MÀN HÌNH THÀNH CÔNG SAU KHI GỬI YÊU CẦU THUÊ
         // =========================================================================
@@ -117,32 +246,32 @@ export function HireTutorDialog({
           <div className="w-16 h-16 bg-status-success-bg text-status-success rounded-full flex items-center justify-center mx-auto text-3xl font-bold">
             ✓
           </div>
-          <h3 className="text-2xl font-extrabold text-gray-900 tracking-tight">
+          <h3 className="text-2xl font-extrabold text-content-primary tracking-tight">
             Đã gửi yêu cầu thuê gia sư!
           </h3>
-          <p className="text-sm text-gray-600 max-w-md mx-auto leading-relaxed">
+          <p className="text-sm text-content-secondary max-w-md mx-auto leading-relaxed">
             Yêu cầu của bạn đã được gửi thành công đến gia sư{" "}
-            <strong className="text-gray-900">{tutor.name}</strong>. Gia sư sẽ
+            <strong className="text-content-primary">{name}</strong>. Gia sư sẽ
             nhận được thông báo và liên hệ lại với bạn trong thời gian sớm nhất.
           </p>
 
-          <div className="bg-gray-50 border border-gray-200 rounded-2xl p-4 max-w-md mx-auto text-left text-xs space-y-1.5 text-gray-700">
+          <div className="bg-surface-subtle border border-border-default rounded-2xl p-4 max-w-md mx-auto text-left text-xs space-y-1.5 text-content-secondary">
             <p>
-              📅 <strong>Lịch học:</strong> {frequency} ({selectedDays.join(", ")})
+              📅 <strong className="text-content-primary">Lịch học:</strong> {frequency} ({selectedDays.join(", ")})
             </p>
             <p>
-              ⏰ <strong>Khung giờ:</strong>{" "}
+              ⏰ <strong className="text-content-primary">Khung giờ:</strong>{" "}
               {TIME_SLOTS.find((s) => s.id === timeSlot)?.label}
             </p>
             <p>
-              💰 <strong>Mức học phí:</strong>{" "}
+              💰 <strong className="text-content-primary">Mức học phí:</strong>{" "}
               {isNegotiating === "negotiate" && proposedPrice
-                ? `${Number(proposedPrice.replace(/\D/g, "")).toLocaleString("vi-VN")}đ/h (Đề xuất thương lượng)`
-                : tutor.priceFormatted}
+                ? `${Number(proposedPrice.replace(/\D/g, "")).toLocaleString("vi-VN")}đ/buổi (Đề xuất thương lượng)`
+                : priceFormatted}
             </p>
             {notes.trim() && (
               <p>
-                📝 <strong>Nhắc nhở:</strong> {notes}
+                📝 <strong className="text-content-primary">Nhắc nhở:</strong> {notes}
               </p>
             )}
           </div>
@@ -174,39 +303,69 @@ export function HireTutorDialog({
         // =========================================================================
         <form onSubmit={handleSubmit} className="space-y-5">
           {/* Header Thông tin gia sư */}
-          <div className="flex items-center gap-3.5 pb-4 border-b border-gray-100">
+          <div className="flex items-center gap-3.5 pb-4 border-b border-border-subtle">
             <Avatar
               size="large"
-              src={tutor.avatar}
-              alt={tutor.name}
-              fallbackText={tutor.name}
-              shape="circle"
+              src={avatarSrc}
+              alt={name}
+              fallbackText={name}
+              shape="rounded"
             />
             <div className="flex-1 min-w-0">
-              <h3 className="text-lg font-bold text-gray-900 truncate">
-                Thuê gia sư: {tutor.name}
+              <h3 className="text-lg font-bold text-content-primary truncate">
+                Đăng ký học: {name}
               </h3>
-              <p className="text-xs text-gray-500 truncate">{tutor.title}</p>
+              <p className="text-xs text-content-secondary truncate">{title}</p>
             </div>
             <div className="text-right">
               <span className="text-sm font-extrabold text-brand block">
-                {tutor.priceFormatted}
+                {priceFormatted}
               </span>
-              <span className="text-[11px] text-gray-400">{tutor.mode}</span>
+              <span className="text-[11px] text-content-muted">{mode}</span>
             </div>
           </div>
 
           {/* Vùng nội dung cuộn */}
           <div className="max-h-[60vh] overflow-y-auto pr-1 space-y-5">
+            {/* Lịch rảnh khai báo của gia sư nếu có từ api/v1/tutors/{id} */}
+            {tutorDetail?.availability && tutorDetail.availability.length > 0 && (
+              <div className="bg-brand-50/70 border border-brand-200/70 rounded-2xl p-3 text-xs space-y-1.5">
+                <span className="font-bold flex items-center gap-1.5 text-brand-900">
+                  <span>📅</span> Lịch rảnh gia sư đã khai báo:
+                </span>
+                <div className="flex flex-wrap gap-1.5">
+                  {tutorDetail.availability.map((a) => {
+                    const dayLabels: Record<number, string> = {
+                      1: "Thứ 2",
+                      2: "Thứ 3",
+                      3: "Thứ 4",
+                      4: "Thứ 5",
+                      5: "Thứ 6",
+                      6: "Thứ 7",
+                      7: "Chủ nhật",
+                    };
+                    return (
+                      <span
+                        key={a.id}
+                        className="bg-white px-2 py-0.5 rounded-md border border-brand-200 text-[11px] font-medium text-brand-800 shadow-2xs"
+                      >
+                        {dayLabels[a.dayOfWeek] || `T${a.dayOfWeek}`}: {a.startTime} – {a.endTime}
+                      </span>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
             {/* 1. CHỌN BUỔI HỌC */}
             <div className="space-y-3">
-              <label className="block text-sm font-bold text-gray-900">
-                1. Chọn lịch & buổi học mong muốn <span className="text-red-500">*</span>
+              <label className="block text-sm font-bold text-content-primary">
+                1. Chọn lịch & buổi học mong muốn <span className="text-status-error">*</span>
               </label>
 
               {/* Tần suất buổi học / tuần */}
               <div>
-                <span className="block text-xs font-semibold text-gray-600 mb-1.5">
+                <span className="block text-xs font-semibold text-content-secondary mb-1.5">
                   Số buổi mỗi tuần:
                 </span>
                 <div className="flex flex-wrap gap-2">
@@ -218,7 +377,7 @@ export function HireTutorDialog({
                       className={`px-3 py-1.5 rounded-full text-xs font-semibold transition-all cursor-pointer ${
                         frequency === freq
                           ? "bg-brand text-white shadow-xs"
-                          : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                          : "bg-surface-subtle border border-border-default text-content-secondary hover:bg-surface-muted"
                       }`}
                     >
                       {freq}
@@ -229,7 +388,7 @@ export function HireTutorDialog({
 
               {/* Chọn các thứ trong tuần */}
               <div>
-                <span className="block text-xs font-semibold text-gray-600 mb-1.5">
+                <span className="block text-xs font-semibold text-content-secondary mb-1.5">
                   Chọn các thứ học trong tuần:
                 </span>
                 <div className="grid grid-cols-7 gap-1.5">
@@ -243,7 +402,7 @@ export function HireTutorDialog({
                         className={`py-1.5 text-center rounded-xl text-xs font-bold transition-all cursor-pointer ${
                           isSelected
                             ? "bg-brand text-white shadow-xs"
-                            : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                            : "bg-surface-subtle border border-border-default text-content-secondary hover:bg-surface-muted"
                         }`}
                       >
                         {day.label}
@@ -255,7 +414,7 @@ export function HireTutorDialog({
 
               {/* Chọn ca học */}
               <div>
-                <span className="block text-xs font-semibold text-gray-600 mb-1.5">
+                <span className="block text-xs font-semibold text-content-secondary mb-1.5">
                   Ca học phù hợp:
                 </span>
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
@@ -267,7 +426,7 @@ export function HireTutorDialog({
                       className={`p-2.5 rounded-xl border text-left text-xs font-medium transition-all cursor-pointer ${
                         timeSlot === slot.id
                           ? "border-brand bg-brand-50/50 text-brand-900 font-semibold ring-1 ring-brand"
-                          : "border-gray-200 hover:bg-gray-50 text-gray-700"
+                          : "border-border-default hover:bg-surface-subtle text-content-secondary"
                       }`}
                     >
                       {slot.label}
@@ -278,21 +437,23 @@ export function HireTutorDialog({
             </div>
 
             {/* 2. GIÁ TIỀN & THƯƠNG LƯỢNG */}
-            <div className="space-y-3 pt-3 border-t border-gray-100">
-              <label className="block text-sm font-bold text-gray-900">
+            <div className="space-y-3 pt-3 border-t border-border-subtle">
+              <label className="block text-sm font-bold text-content-primary">
                 2. Học phí & Thương lượng giá
               </label>
 
               {/* Thẻ hiển thị giá niêm yết */}
-              <div className="bg-gray-50 rounded-2xl p-3 border border-gray-200 flex items-center justify-between">
+              <div className="bg-surface-subtle rounded-2xl p-3 border border-border-default flex items-center justify-between">
                 <div>
-                  <span className="text-xs text-gray-500 block">Giá niêm yết của gia sư</span>
-                  <span className="text-base font-bold text-gray-900">
-                    {tutor.priceFormatted}
+                  <span className="text-xs text-content-muted block">
+                    Giá niêm yết của gia sư
+                  </span>
+                  <span className="text-base font-bold text-content-primary">
+                    {priceFormatted}
                   </span>
                 </div>
                 <span className="text-xs px-2.5 py-1 bg-status-success-bg text-status-success-dark rounded-full font-semibold">
-                  {tutor.mode}
+                  {mode}
                 </span>
               </div>
 
@@ -310,7 +471,7 @@ export function HireTutorDialog({
               >
                 <Radio
                   value="standard"
-                  label={`Đồng ý học theo giá niêm yết (${tutor.priceFormatted})`}
+                  label={`Đồng ý học theo giá niêm yết (${priceFormatted})`}
                   helperText="Học phí được áp dụng theo mức giá gia sư đã công khai."
                 />
                 <Radio
@@ -324,7 +485,7 @@ export function HireTutorDialog({
               {isNegotiating === "negotiate" && (
                 <div className="pl-6 pt-1 animate-in fade-in slide-in-from-top-1">
                   <TextField
-                    label="Mức giá đề xuất của bạn (VNĐ/giờ)"
+                    label="Mức giá đề xuất của bạn (VNĐ/buổi)"
                     required
                     placeholder="Ví dụ: 180000"
                     value={proposedPrice}
@@ -341,7 +502,7 @@ export function HireTutorDialog({
             </div>
 
             {/* 3. NHẮC NHỞ THÊM */}
-            <div className="space-y-2 pt-3 border-t border-gray-100">
+            <div className="space-y-2 pt-3 border-t border-border-subtle">
               <TextArea
                 label="3. Nhắc nhở thêm cho gia sư"
                 placeholder="Nhập mục tiêu học tập, yêu cầu về tài liệu, trình độ hiện tại của học sinh hoặc lưu ý về địa điểm học..."
@@ -354,7 +515,7 @@ export function HireTutorDialog({
           </div>
 
           {/* Footer nút hành động */}
-          <div className="flex items-center justify-between pt-4 border-t border-gray-100">
+          <div className="flex items-center justify-between pt-4 border-t border-border-subtle">
             <Button
               type="button"
               variant="secondary"
@@ -380,3 +541,5 @@ export function HireTutorDialog({
     </Dialog>
   );
 }
+
+export default HireTutorDialog;

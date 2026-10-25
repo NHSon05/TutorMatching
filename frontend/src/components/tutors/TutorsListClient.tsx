@@ -1,19 +1,19 @@
 "use client";
 import { Suspense, useState, type FormEvent } from "react";
-import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Avatar } from "@/components/ui/avatar";
 import { TextField } from "@/components/ui/text-field";
 import { SelectCheck } from "@/components/ui/select-check";
 import { Accordion } from "@/components/ui/accordion";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Dropdown } from "@/components/ui/dropdown";
-import { getTutors, publicAvatarUrl } from "@/lib/api/tutors";
+import { getTutors } from "@/lib/api/tutors";
 import { getPublicCatalog } from "@/lib/api/catalog";
 import { ApiError } from "@/lib/api/http";
+import { TutorCard } from "./TutorCard";
+import { HireTutorDialog } from "./HireTutorDialog";
 export type * from "./types";
 export default function TutorsListClient() {
   return (
@@ -43,6 +43,8 @@ export function TutorSearchView({ queryString }: { queryString: string }) {
   const router = useRouter();
   const pathname = usePathname();
   const params = new URLSearchParams(queryString);
+  const [selectedHireTutorId, setSelectedHireTutorId] = useState<string | null>(null);
+  const [isHireOpen, setIsHireOpen] = useState(false);
   const [name, setName] = useState(params.get("name") ?? "");
   const [qualification, setQualification] = useState(
     params.get("qualification") ?? ""
@@ -184,8 +186,8 @@ export function TutorSearchView({ queryString }: { queryString: string }) {
     navigate(next);
   }
   return (
-    <div className="min-h-screen bg-surface-base py-6 text-content-primary sm:py-8">
-      <div className="mx-auto w-full max-w-7xl space-y-6 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen text-content-primary">
+      <div className="mx-auto w-full max-w-7xl space-y-6">
         <header className="space-y-1">
           <h1 className="text-2xl font-bold tracking-tight">
             Danh sách gia sư
@@ -503,92 +505,16 @@ export function TutorSearchView({ queryString }: { queryString: string }) {
                 <p>Hãy bỏ bớt điều kiện hoặc xóa tất cả bộ lọc.</p>
               </Card>
             ) : (
-              <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-3">
+              <div className="flex flex-col gap-6">
                 {query.data.items.map((t) => (
-                  <Card
+                  <TutorCard
                     key={t.id}
-                    hoverable
-                    padding="large"
-                    className="flex h-full flex-col rounded-3xl border-border-default bg-surface-card shadow-sm transition-all hover:-translate-y-1 hover:shadow-lg"
-                  >
-                    <div className="mb-5 flex items-center gap-3.5">
-                      <Avatar
-                        size="xlarge"
-                        src={publicAvatarUrl(t.avatarUrl)}
-                        alt={t.displayName}
-                        fallbackText={t.displayName}
-                        className="shrink-0 rounded-full border border-border-default"
-                      />
-                      <div className="min-w-0">
-                        <h2 className="truncate text-lg font-bold">
-                          {t.displayName}
-                        </h2>
-                        <p className="mt-1 line-clamp-2 text-sm text-content-secondary">
-                          {[t.qualification, t.schoolName]
-                            .filter(Boolean)
-                            .join(" • ") || "Gia sư"}
-                        </p>
-                      </div>
-                    </div>
-                    <div className="mb-4 flex flex-wrap items-center gap-2 text-xs">
-                      <span className="rounded-full bg-brand/5 px-2.5 py-1 font-semibold text-brand">
-                        {t.teachingModes
-                          .map((m) => modeNames[m] ?? m)
-                          .join(" / ") || "Chưa cập nhật hình thức"}
-                      </span>
-                      <span className="text-content-secondary">
-                        Chưa có đánh giá
-                      </span>
-                    </div>
-                    {(t.provinceName || t.districtName) && (
-                      <p className="mb-2 text-sm text-content-secondary">
-                        {[t.districtName, t.provinceName]
-                          .filter(Boolean)
-                          .join(", ")}
-                      </p>
-                    )}
-                    <p className="mb-4 text-sm font-medium">
-                      {t.experienceYears == null
-                        ? "Chưa cập nhật kinh nghiệm"
-                        : `${t.experienceYears} năm kinh nghiệm`}
-                    </p>
-                    <div className="mb-5 flex flex-wrap gap-1.5">
-                      {t.subjects.map((subject) => (
-                        <span
-                          key={subject.subjectId}
-                          className="rounded-full bg-surface-base px-2.5 py-1 text-xs text-content-secondary"
-                        >
-                          {subject.name}
-                        </span>
-                      ))}
-                    </div>
-                    <div className="mt-auto flex items-center justify-between gap-3 border-t border-border-default pt-4">
-                      <p
-                        className="font-bold"
-                        aria-label={`${t.sessionRateVnd.toLocaleString("vi-VN")} VNĐ/buổi`}
-                      >
-                        <span className="block whitespace-nowrap text-lg">
-                          {t.sessionRateVnd.toLocaleString("vi-VN")}đ
-                        </span>
-                        <span className="text-xs font-normal text-content-secondary">
-                          Học phí theo buổi
-                        </span>
-                      </p>
-                      <Button
-                        asChild
-                        variant="brand"
-                        shape="pill"
-                        className="shrink-0 whitespace-nowrap px-4"
-                      >
-                        <Link
-                          href={`/tutors/${t.id}`}
-                          aria-label={`Xem hồ sơ ${t.displayName}`}
-                        >
-                          Xem chi tiết
-                        </Link>
-                      </Button>
-                    </div>
-                  </Card>
+                    tutor={t}
+                    onBookTrial={(tutorId) => {
+                      setSelectedHireTutorId(tutorId);
+                      setIsHireOpen(true);
+                    }}
+                  />
                 ))}
               </div>
             )}
@@ -616,6 +542,15 @@ export function TutorSearchView({ queryString }: { queryString: string }) {
             </nav>
           </>
         ) : null}
+
+        <HireTutorDialog
+          isOpen={isHireOpen}
+          onClose={() => {
+            setIsHireOpen(false);
+            setSelectedHireTutorId(null);
+          }}
+          tutorId={selectedHireTutorId}
+        />
       </div>
     </div>
   );

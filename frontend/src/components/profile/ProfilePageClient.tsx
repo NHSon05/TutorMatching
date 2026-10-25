@@ -38,7 +38,7 @@ export function ProfilePageClient() {
     <div className="mx-auto w-full max-w-6xl space-y-6 text-content-primary">
       <header className="space-y-2">
         <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">Hồ sơ của tôi</h1>
-        <p className="text-sm text-content-secondary">{tutor ? "Giới thiệu chuyên môn của bạn và giữ thông tin liên hệ luôn chính xác." : "Một hồ sơ đầy đủ giúp hành trình học tập của bạn thuận tiện hơn."}</p>
+        <p className="text-base text-content-secondary">{tutor ? "Giới thiệu chuyên môn của bạn và giữ thông tin liên hệ luôn chính xác." : "Một hồ sơ đầy đủ giúp hành trình học tập của bạn thuận tiện hơn."}</p>
       </header>
 
       <div className="grid items-start gap-6 lg:grid-cols-[260px_minmax(0,1fr)]">
@@ -50,9 +50,9 @@ export function ProfilePageClient() {
               <div className="space-y-2">
                 <h2 className="wrap-break-word text-lg font-bold">{account.fullName}</h2>
                 <Badge variant={tutor ? "tutor" : "brand"}>{tutor ? "Gia sư" : "Học viên"}</Badge>
-                <p className="break-all text-xs text-content-secondary">{account.email}</p>
+                <p className="break-all text-sm text-content-secondary">{account.email}</p>
               </div>
-              <div className="space-y-2 border-t border-border-default pt-4 text-xs">
+              <div className="space-y-2 border-t border-border-default pt-4 text-sm">
                 <p className="text-content-secondary">Trạng thái tài khoản</p>
                 <Badge variant="success" dot>Đang hoạt động</Badge>
                 {tutor && account.tutorProfileStatus && <p className={accent}>{tutorStatuses[account.tutorProfileStatus]}</p>}
@@ -60,10 +60,10 @@ export function ProfilePageClient() {
             </div>
           </Card>
           <Card padding="small">
-            <h2 className="mb-2 text-sm font-semibold">Bạn kiểm soát thông tin của mình</h2>
-            <p className="text-xs leading-5 text-content-secondary">Email, số điện thoại và ngày sinh không hiển thị trên hồ sơ công khai. Chỉ bạn mới có thể cập nhật thông tin cá nhân tại đây.</p>
+            <h2 className="mb-2 text-base font-semibold">Bạn kiểm soát thông tin của mình</h2>
+            <p className="text-sm leading-5 text-content-secondary">Email, số điện thoại và ngày sinh không hiển thị trên hồ sơ công khai. Chỉ bạn mới có thể cập nhật thông tin cá nhân tại đây.</p>
           </Card>
-          <Link href={tutor ? "/tutor/dashboard" : "/"} className={`inline-flex text-sm font-semibold ${accent}`}>← Quay về tổng quan</Link>
+          <Link href={tutor ? "/tutor/dashboard" : "/"} className={`inline-flex text-base font-semibold ${accent}`}>← Quay về tổng quan</Link>
         </aside>
 
         <div className="min-w-0 space-y-6">
@@ -74,14 +74,14 @@ export function ProfilePageClient() {
                 <h2 className="text-lg font-bold">Mục tiêu học tập</h2>
                 <Badge variant="warning">Dữ liệu mẫu</Badge>
               </div>
-              <p className="mb-5 text-sm text-content-secondary">Minh họa cho hồ sơ học viên. Chưa có API lưu mục tiêu học tập; đây không phải dữ liệu cá nhân của bạn.</p>
+              <p className="mb-5 text-base text-content-secondary">Minh họa cho hồ sơ học viên. Chưa có API lưu mục tiêu học tập; đây không phải dữ liệu cá nhân của bạn.</p>
               <dl className="grid gap-5 rounded-xl bg-brand-50 p-5 sm:grid-cols-2">
-                <div><dt className="mb-1 text-xs text-content-secondary">Môn học quan tâm · mẫu</dt><dd className="text-sm font-semibold">Toán, Tiếng Anh</dd></div>
-                <div><dt className="mb-1 text-xs text-content-secondary">Mục tiêu · mẫu</dt><dd className="text-sm font-semibold">Củng cố kiến thức nền tảng</dd></div>
-                <div><dt className="mb-1 text-xs text-content-secondary">Hình thức học · mẫu</dt><dd className="text-sm font-semibold">Học trực tiếp, 1 kèm 1</dd></div>
-                <div><dt className="mb-1 text-xs text-content-secondary">Lịch mong muốn · mẫu</dt><dd className="text-sm font-semibold">Buổi tối trong tuần</dd></div>
+                <div><dt className="mb-1 text-sm text-content-secondary">Môn học quan tâm · mẫu</dt><dd className="text-base font-semibold">Toán, Tiếng Anh</dd></div>
+                <div><dt className="mb-1 text-sm text-content-secondary">Mục tiêu · mẫu</dt><dd className="text-base font-semibold">Củng cố kiến thức nền tảng</dd></div>
+                <div><dt className="mb-1 text-sm text-content-secondary">Hình thức học · mẫu</dt><dd className="text-base font-semibold">Học trực tiếp, 1 kèm 1</dd></div>
+                <div><dt className="mb-1 text-sm text-content-secondary">Lịch mong muốn · mẫu</dt><dd className="text-base font-semibold">Buổi tối trong tuần</dd></div>
               </dl>
-              <Link href="/tutors" className="mt-5 inline-flex text-sm font-semibold text-brand">Khám phá gia sư phù hợp →</Link>
+              <Link href="/tutors" className="mt-5 inline-flex text-base font-semibold text-brand">Khám phá gia sư phù hợp →</Link>
             </Card>
           )}
         </div>
