@@ -80,7 +80,10 @@ public sealed class TokenSessionMigrationTests(PostgreSqlFixture fixture)
         var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
         var userId = Guid.NewGuid();
         var stamp = Guid.NewGuid().ToString();
-        var now = factory.Clock.GetUtcNow();
+        var timestamp = factory.Clock.GetUtcNow();
+        var now = new DateTimeOffset(
+            timestamp.Ticks - timestamp.Ticks % TimeSpan.TicksPerMicrosecond,
+            timestamp.Offset);
         var activeId = Guid.NewGuid();
         var revokedId = Guid.NewGuid();
         await db.Database.ExecuteSqlInterpolatedAsync($"""
