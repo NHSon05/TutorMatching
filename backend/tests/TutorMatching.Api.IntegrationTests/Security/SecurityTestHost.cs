@@ -285,9 +285,12 @@ internal sealed class TestTokenSessions(ApplicationUser user, TimeProvider clock
 
 internal sealed class TestClock : TimeProvider
 {
-    private DateTimeOffset now = DateTimeOffset.UtcNow;
+    private DateTimeOffset now = TruncateToMicroseconds(DateTimeOffset.UtcNow);
     public override DateTimeOffset GetUtcNow() => now;
     public void Advance(TimeSpan amount) => now += amount;
+
+    private static DateTimeOffset TruncateToMicroseconds(DateTimeOffset value) =>
+        new(value.Ticks - value.Ticks % TimeSpan.TicksPerMicrosecond, value.Offset);
 }
 
 internal sealed class TestUserStore(ApplicationUser user) : IUserStore<ApplicationUser>, IUserSecurityStampStore<ApplicationUser>
