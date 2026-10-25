@@ -13,8 +13,7 @@ public sealed record RegisterAccountCommand(
 public sealed record RegisterAccountResult(
     bool Succeeded,
     AccountProfile? Account = null,
-    AccountFailure? Failure = null,
-    IReadOnlyDictionary<string, string[]>? Errors = null)
+    AccountFailure? Failure = null, IReadOnlyDictionary<string, string[]>? Errors = null)
 {
     public static RegisterAccountResult Success(AccountProfile account) =>
         new(true, Account: account);
