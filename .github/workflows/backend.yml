@@ -30,8 +30,8 @@ jobs:
         with:
           dotnet-version: "10.0.x"
 
-      - name: Replace NuGet packages
-        run: dotnet build TutorMatching.slnx --no-restore --configuration Release
+      - name: Restore NuGet packages
+        run: dotnet restore TutorMatching.slnx
 
       - name: Build
         run: dotnet build TutorMatching.slnx --no-restore --configuration Release
