@@ -14,7 +14,7 @@ describe("TutorDashboardClient - Conditional UI Rendering", () => {
   });
 
   it("renders ONLY Wireframe 1 (IncompleteProfileDashboard) when tutor profile is not completed", () => {
-    vi.mocked(useSession).mockReturnValue({
+    vi.mocked(useSession, { partial: true }).mockReturnValue({
       data: {
         id: "tutor-draft",
         fullName: "Nguyễn Văn Minh",
@@ -25,7 +25,7 @@ describe("TutorDashboardClient - Conditional UI Rendering", () => {
       },
       isLoading: false,
       error: null,
-    } as any);
+    });
 
     render(<TutorDashboardClient />);
 
@@ -68,7 +68,7 @@ describe("TutorDashboardClient - Conditional UI Rendering", () => {
   });
 
   it("renders ONLY Wireframe 2 (CompletedProfileDashboard) when tutor profile is APPROVED", () => {
-    vi.mocked(useSession).mockReturnValue({
+    vi.mocked(useSession, { partial: true }).mockReturnValue({
       data: {
         id: "tutor-approved",
         fullName: "Nguyễn Văn Minh",
@@ -79,7 +79,7 @@ describe("TutorDashboardClient - Conditional UI Rendering", () => {
       },
       isLoading: false,
       error: null,
-    } as any);
+    });
 
     render(<TutorDashboardClient />);
 
