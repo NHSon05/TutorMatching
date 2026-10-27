@@ -10,21 +10,26 @@ export function TutorGuard({ children }: { children: ReactNode }) {
   const pathname = usePathname();
   const { data: account, isLoading, error } = useSession();
 
-  const isOnboarding = pathname === "/tutor/onboarding" || pathname === "/tutor/offers" || pathname === "/tutor/profile-edit";
+  const isAllowedBeforeApproval =
+    pathname === "/tutor/dashboard" ||
+    pathname === "/tutor" ||
+    pathname === "/tutor/onboarding" ||
+    pathname === "/tutor/offers" ||
+    pathname === "/tutor/profile-edit";
   const isApproved = account?.tutorProfileStatus === "APPROVED";
 
   useEffect(() => {
     if (isLoading || error || !account) return;
     if (account.role !== "TUTOR") return;
 
-    // Profile and offer management are available before approval; teaching/dashboard routes remain gated.
-    if (!isApproved && !isOnboarding) {
+    // Profile, offers and dashboard are available before approval; teaching routes remain gated.
+    if (!isApproved && !isAllowedBeforeApproval) {
       router.replace("/tutor/onboarding");
     }
-  }, [account, error, isApproved, isLoading, isOnboarding, router]);
+  }, [account, error, isApproved, isLoading, isAllowedBeforeApproval, router]);
 
-  // Nếu là gia sư chưa được phê duyệt và đang ở route khác ngoài onboarding, chặn render để tránh chớp UI
-  if (!isLoading && account?.role === "TUTOR" && !isApproved && !isOnboarding) {
+  // Nếu là gia sư chưa được phê duyệt và đang ở route gated, chặn render để tránh chớp UI
+  if (!isLoading && account?.role === "TUTOR" && !isApproved && !isAllowedBeforeApproval) {
     return null;
   }
 

@@ -21,21 +21,21 @@ Sprint 2 được định nghĩa trong feature
 
 Phạm vi xác nhận ngày 2026-10-20: 11 hạng mục core; S2-10–11 hoãn sau MVP. Bảng này là bản tổng quan sprint; `spec.md` vẫn là nguồn yêu cầu, `plan.md` sở hữu thiết kế và `tasks.md` sẽ sở hữu công việc triển khai.
 
-| ID | Hạng mục | Tiêu chí nghiệm thu | Tham chiếu spec |
-|---|---|---|---|
-| S2-01 | Quản lý môn học | Admin thêm/sửa/ngừng sử dụng; người không có quyền bị chặn; ngừng dùng không xóa liên kết lịch sử | FR-006 |
-| S2-02 | Khu vực và trình độ | Danh mục khu vực dùng thống nhất cho nhập và lọc; kiểm tra quan hệ tỉnh–huyện; phân biệt bằng cấp gia sư với lớp/trình độ học viên | FR-001,006,015,017 |
-| S2-03 | Tạo/sửa hồ sơ | Lưu draft, kiểm tra dữ liệu khi gửi duyệt; có tên hiển thị, giới thiệu, trình độ, kinh nghiệm, thành tích, giá và hình thức; chỉ chủ hồ sơ được sửa | FR-001–005 |
-| S2-04 | Môn gia sư dạy | Chọn nhiều môn đang hoạt động; không trùng; lưu lớp/mức có thể dạy cho từng môn | FR-003,007; cần bổ sung tiêu chí lớp theo môn vào spec |
-| S2-05 | Lịch rảnh | Thêm/sửa/xóa; bắt đầu trước kết thúc; chặn chồng lấn, kiểm tra cả khi sửa; chỉ chủ hồ sơ thao tác | FR-008 |
-| S2-06 | Khóa học | Tên, môn, nội dung, số buổi, giá theo buổi, trạng thái; giữ lịch sử khi ngừng khóa học | FR-009–010; cần bổ sung số buổi và quy tắc giá vào spec |
-| S2-07 | Gửi và duyệt hồ sơ | Queue chờ duyệt; approve/request changes/reject; lý do bắt buộc khi không duyệt; lưu lịch sử, thông báo và chống ghi đè quyết định | FR-004,011–013 |
-| S2-08 | Công khai hồ sơ | List/detail chỉ trả APPROVED + ACTIVE; sửa core phải duyệt lại; không thể vượt kiểm tra bằng query status hoặc truy cập ID trực tiếp | FR-005,014,019 |
-| S2-09 | Tìm kiếm và bộ lọc | Tên, môn, trình độ, giá, hình thức, khu vực, thời gian và số buổi; kiểm tra tổ hợp, biên và đầu vào sai | FR-015–018 |
-| S2-10 | AI gợi ý | Sau MVP; không triển khai hoặc tính vào nghiệm thu Sprint 2 | Ngoài phạm vi |
-| S2-11 | Giải thích gợi ý AI | Sau MVP cùng S2-10 | Ngoài phạm vi |
-| S2-12 | Chi tiết gia sư | Hiện thông tin chuyên môn, môn, lịch rảnh, khóa học active; không lộ liên hệ riêng tư; hồ sơ mất điều kiện công khai trả unavailable | FR-019–021 |
-| S2-13 | Phân trang và kiểm thử | Count/sort/page nhất quán, tie-breaker ổn định; loading/error/empty; kiểm thử quyền, quyền sở hữu, privacy, bộ lọc và dữ liệu mẫu | FR-018,021–022; SC-002–007 |
+| ID    | Hạng mục               | Tiêu chí nghiệm thu                                                                                                                                 | Tham chiếu spec                                         |
+| ----- | ---------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------- |
+| S2-01 | Quản lý môn học        | Admin thêm/sửa/ngừng sử dụng; người không có quyền bị chặn; ngừng dùng không xóa liên kết lịch sử                                                   | FR-006                                                  |
+| S2-02 | Khu vực và trình độ    | Danh mục khu vực dùng thống nhất cho nhập và lọc; kiểm tra quan hệ tỉnh–huyện; phân biệt bằng cấp gia sư với lớp/trình độ học viên                  | FR-001,006,015,017                                      |
+| S2-03 | Tạo/sửa hồ sơ          | Lưu draft, kiểm tra dữ liệu khi gửi duyệt; có tên hiển thị, giới thiệu, trình độ, kinh nghiệm, thành tích, giá và hình thức; chỉ chủ hồ sơ được sửa | FR-001–005                                              |
+| S2-04 | Môn gia sư dạy         | Chọn nhiều môn đang hoạt động; không trùng; lưu lớp/mức có thể dạy cho từng môn                                                                     | FR-003,007; cần bổ sung tiêu chí lớp theo môn vào spec  |
+| S2-05 | Lịch rảnh              | Thêm/sửa/xóa; bắt đầu trước kết thúc; chặn chồng lấn, kiểm tra cả khi sửa; chỉ chủ hồ sơ thao tác                                                   | FR-008                                                  |
+| S2-06 | Khóa học               | Tên, môn, nội dung, số buổi, giá theo buổi, trạng thái; giữ lịch sử khi ngừng khóa học                                                              | FR-009–010; cần bổ sung số buổi và quy tắc giá vào spec |
+| S2-07 | Gửi và duyệt hồ sơ     | Queue chờ duyệt; approve/request changes/reject; lý do bắt buộc khi không duyệt; lưu lịch sử, thông báo và chống ghi đè quyết định                  | FR-004,011–013                                          |
+| S2-08 | Công khai hồ sơ        | List/detail chỉ trả APPROVED + ACTIVE; sửa core phải duyệt lại; không thể vượt kiểm tra bằng query status hoặc truy cập ID trực tiếp                | FR-005,014,019                                          |
+| S2-09 | Tìm kiếm và bộ lọc     | Tên, môn, trình độ, giá, hình thức, khu vực, thời gian và số buổi; kiểm tra tổ hợp, biên và đầu vào sai                                             | FR-015–018                                              |
+| S2-10 | AI gợi ý               | Sau MVP; không triển khai hoặc tính vào nghiệm thu Sprint 2                                                                                         | Ngoài phạm vi                                           |
+| S2-11 | Giải thích gợi ý AI    | Sau MVP cùng S2-10                                                                                                                                  | Ngoài phạm vi                                           |
+| S2-12 | Chi tiết gia sư        | Hiện thông tin chuyên môn, môn, lịch rảnh, khóa học active; không lộ liên hệ riêng tư; hồ sơ mất điều kiện công khai trả unavailable                | FR-019–021                                              |
+| S2-13 | Phân trang và kiểm thử | Count/sort/page nhất quán, tie-breaker ổn định; loading/error/empty; kiểm thử quyền, quyền sở hữu, privacy, bộ lọc và dữ liệu mẫu                   | FR-018,021–022; SC-002–007                              |
 
 ## Thứ tự triển khai đề xuất
 

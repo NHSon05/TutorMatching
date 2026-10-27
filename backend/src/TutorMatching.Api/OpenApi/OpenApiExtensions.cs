@@ -177,7 +177,7 @@ public static class OpenApiExtensions
             {
                 var cookieName = context.ApplicationServices.GetRequiredService<IConfiguration>()["Cookie:Name"]
                     ?? "tutormatch_session";
-                document.Info.Title = "TutorMatching Foundation and Accounts API";
+                document.Info.Title = "TutorMatching API";
                 document.Info.Version = "1.0.0";
                 document.Servers = [new OpenApiServer { Url = "/" }];
                 document.Components ??= new OpenApiComponents();

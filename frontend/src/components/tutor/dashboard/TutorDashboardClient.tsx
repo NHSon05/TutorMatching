@@ -1,97 +1,60 @@
 "use client";
 
-import Link from "next/link";
-import { Button } from "@/components/ui/button";
+import * as React from "react";
 import { useSession } from "@/hooks/use-session";
+import { Skeleton } from "@/components/ui/skeleton";
+import { IncompleteProfileDashboard } from "./IncompleteProfileDashboard";
+import { CompletedProfileDashboard } from "./CompletedProfileDashboard";
 
 export function TutorDashboardClient() {
-  const { data: account } = useSession();
+  const { data: account, isLoading } = useSession();
 
-  return (
-    <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900">
-            {`Xin chào, ${account?.fullName || "Gia sư"} 👋`}
-          </h1>
-          <p className="text-sm text-gray-500 mt-1">
-            Quản lý các lớp dạy, lời mời và hồ sơ gia sư của bạn.
-          </p>
+  // Hiển thị trạng thái Skeleton khi đang tải thông tin tài khoản
+  if (isLoading) {
+    return (
+      <div className="space-y-6 pb-12 animate-pulse">
+        <div className="flex justify-between items-center">
+          <div className="space-y-2">
+            <Skeleton width={200} height={32} />
+            <Skeleton width={320} height={20} />
+          </div>
+          <Skeleton width={120} height={40} />
         </div>
 
-        <div className="flex items-center gap-2">
-          <span className="text-xs px-3 py-1.5 bg-green-100 text-green-800 font-semibold rounded-full border border-green-200">
-            ✓ Hồ sơ đã được duyệt
-          </span>
-        </div>
-      </div>
-
-      {/* Thống kê gia sư */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
-        <div className="bg-white p-5 rounded-xl border border-gray-200 shadow-2xs">
-          <span className="text-xs font-semibold text-gray-500 uppercase">
-            Lớp đang dạy
-          </span>
-          <p className="text-3xl font-extrabold text-amber-600 mt-2">3</p>
-          <span className="text-xs text-gray-500 mt-1 block">Tổng 6 học viên</span>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <Skeleton height={110} />
+          <Skeleton height={110} />
+          <Skeleton height={110} />
+          <Skeleton height={110} />
         </div>
 
-        <div className="bg-white p-5 rounded-xl border border-gray-200 shadow-2xs">
-          <span className="text-xs font-semibold text-gray-500 uppercase">
-            Lời mời dạy mới
-          </span>
-          <p className="text-3xl font-extrabold text-brand mt-2">2</p>
-          <span className="text-xs text-gray-500 mt-1 block">Chờ phản hồi trong 24h</span>
-        </div>
-
-        <div className="bg-white p-5 rounded-xl border border-gray-200 shadow-2xs">
-          <span className="text-xs font-semibold text-gray-500 uppercase">
-            Đánh giá trung bình
-          </span>
-          <p className="text-3xl font-extrabold text-yellow-500 mt-2">5.0 ⭐</p>
-          <span className="text-xs text-gray-500 mt-1 block">Dựa trên 18 lượt đánh giá</span>
-        </div>
-      </div>
-
-      {/* Hành động nhanh */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-        <div className="bg-white p-6 rounded-xl border border-gray-200 shadow-2xs">
-          <h2 className="font-bold text-gray-900 text-base mb-3">
-            Lời mời nhận lớp mới nhất
-          </h2>
-          <div className="space-y-3">
-            <div className="p-3.5 bg-gray-50 rounded-lg flex items-center justify-between">
-              <div>
-                <h4 className="font-semibold text-sm text-gray-800">
-                  Kèm Tiếng Anh lớp 8 tại nhà
-                </h4>
-                <p className="text-xs text-gray-500">
-                  Phụ huynh: Nguyễn Văn A • Q. Cầu Giấy
-                </p>
-              </div>
-              <div className="flex gap-2">
-                <Button variant="tutor" size="small">
-                  Nhận
-                </Button>
-              </div>
-            </div>
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+          <div className="lg:col-span-7 space-y-4">
+            <Skeleton height={160} />
+            <Skeleton height={160} />
+          </div>
+          <div className="lg:col-span-5 space-y-4">
+            <Skeleton height={340} />
           </div>
         </div>
-
-        <div className="bg-white p-6 rounded-xl border border-gray-200 shadow-2xs flex flex-col justify-between">
-          <div>
-            <h2 className="font-bold text-gray-900 text-base mb-2">
-              Hoàn thiện hồ sơ gia sư
-            </h2>
-            <p className="text-xs text-gray-600 mb-4">
-              Cập nhật chứng chỉ, lịch rảnh trong tuần và khu vực nhận dạy để nhận thêm nhiều đề xuất lớp học phù hợp.
-            </p>
-          </div>
-          <Button asChild variant="tutor" isFullWidth>
-            <Link href="/tutor/profile-edit">Chỉnh sửa hồ sơ & Lịch dạy</Link>
-          </Button>
-        </div>
       </div>
-    </div>
-  );
+    );
+  }
+
+  /**
+   * Điều kiện phân định rõ ràng giữa 2 UI theo yêu cầu:
+   * - Wireframe 1 (IncompleteProfileDashboard): Khi gia sư chưa hoàn thiện hồ sơ (tutorProfileStatus !== "APPROVED")
+   * - Wireframe 2 (CompletedProfileDashboard): Khi gia sư đã hoàn thiện hồ sơ (tutorProfileStatus === "APPROVED")
+   *
+   * Chỉ một trong hai UI được hiển thị theo điều kiện, độc lập và tách bạch hoàn toàn.
+   */
+  const isProfileCompleted = account?.tutorProfileStatus === "APPROVED";
+
+  if (!isProfileCompleted) {
+    return <IncompleteProfileDashboard account={account} />;
+  }
+
+  return <CompletedProfileDashboard account={account} />;
 }
+
+export default TutorDashboardClient;

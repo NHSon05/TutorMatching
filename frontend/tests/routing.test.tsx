@@ -167,10 +167,10 @@ describe("TutorMatching Routing & Role Architecture", () => {
     expect(router.replace).toHaveBeenCalledWith("/");
   });
 
-  it("renders Tutor Dashboard", () => {
+  it("renders Tutor Dashboard", async () => {
     render(<TutorDashboardPage />);
-    expect(screen.getByText("Xin chào, Gia sư 👋")).toBeInTheDocument();
-    expect(screen.getByText("✓ Hồ sơ đã được duyệt")).toBeInTheDocument();
+    expect(await screen.findByRole("heading", { name: "Tổng quan" })).toBeInTheDocument();
+    expect(screen.getByText(/Chào Minh/)).toBeInTheDocument();
   });
 
   it("renders Admin Dashboard", () => {

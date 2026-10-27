@@ -1,5 +1,5 @@
-import TutorNavbar from "@/components/navigation/TutorNavbar";
 import { TutorGuard } from "@/components/tutor/TutorGuard";
+import { TutorLayoutShell } from "@/components/layouts/TutorLayoutShell";
 
 export default function TutorLayout({
   children,
@@ -8,12 +8,8 @@ export default function TutorLayout({
 }) {
   return (
     <TutorGuard>
-      <div className="min-h-screen flex flex-col bg-amber-50/20">
-        <TutorNavbar />
-        <main className="flex-1 max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-8">
-          {children}
-        </main>
-      </div>
+      <TutorLayoutShell>{children}</TutorLayoutShell>
     </TutorGuard>
   );
 }
+
