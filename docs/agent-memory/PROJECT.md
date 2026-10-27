@@ -9,7 +9,8 @@ Stable, compact facts for agents. Search by heading or keyword and read only the
 - Data-model proposal: `docs/DatabaseSchema.md`.
 - Spec Kit constitution: `.specify/memory/constitution.md`.
 - Sprint features: `001-foundation-accounts` has core auth/profile implementation; `002-tutor-discovery` phases 1–4 are implemented.
-  `003-hire-negotiation` and `004-messaging-admin-release` are defined and awaiting planning.
+  `003-hire-negotiation` has planning artifacts and 50 implementation tasks; analyze/implementation pending.
+  `004-messaging-admin-release` is defined and awaiting planning.
 - `005-database-snake-case` is implemented and applied to local PostgreSQL; physical names include Identity and EF history.
 - Shared AI usage guide: `docs/guides/AI-WORKFLOW.md`.
 - Sprint 1 persistence and Application ports are in place. Registration, JWT login/logout/refresh and authorization are implemented; browser E2E verification, profile editing and password reset remain pending in `specs/001-foundation-accounts/tasks.md`.

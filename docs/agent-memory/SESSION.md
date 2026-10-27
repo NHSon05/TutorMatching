@@ -1,20 +1,20 @@
 # Current Session Handoff
 
-Status: Idle. Tutor Dashboard refactored with conditional rendering for Wireframe 1 & Wireframe 2; tests and build verified.
-Updated: 2026-10-27
+Updated: 2026-10-28
+Status: Sprint 3 tasks generated; analyze and implementation pending.
 
-## Latest change and verification
+## Completed
 
-- Refactored Tutor Dashboard into two cleanly separated conditional components:
-  - `IncompleteProfileDashboard.tsx`: Wireframe 1 (profile completion checklist, empty states, Facebook leads note).
-  - `CompletedProfileDashboard.tsx`: Wireframe 2 (full schedule, action items, matched leads, contacts tracker).
-  - `TutorDashboardClient.tsx`: strictly conditional router displaying either Wireframe 1 or Wireframe 2 based on `account?.tutorProfileStatus === "APPROVED"`.
-  - Created `TutorSidebar.tsx` and `TutorLayoutShell.tsx` conforming to Design System tokens and wireframe sidebar layout.
-- Design System compliance: standard body typography is `text-base`; tokens from `docs/design-system/` (`Card`, `Button`, `Badge`, `Checkbox`, `IconButton`, `surface-*`, `content-*`, `border-*`).
-- Frontend test suite: 31 test files, 224 tests passing.
-- Production build: `next build` compiled cleanly with 0 TypeScript/lint errors.
+- `specs/003-hire-negotiation/tasks.md`: 50 unchecked tasks in setup, foundation,
+  five story phases and cross-cutting verification; dependencies, parallel examples and FR/SC coverage.
+- Story counts: US1 8, US2 8, US3 7, US4 5, US5 6; shared tasks 16.
+- Checked sequential IDs, checklist format, story labels, paths and diff whitespace.
+- Earlier planning artifacts and user-approved negotiation/cancellation rules retained.
+- No application code or migration changed; runtime tests have not run for this documentation task.
 
-## Future work
+## Next executable step
 
-- Sprint 3: hire request negotiation, messaging, and reviews.
-- Sprint 1 backlog: parent/student registration flow and password reset verification.
+- Run `$speckit-analyze` for `003-hire-negotiation`; resolve blocking findings before T001–T002.
+- Implement one phase/task at a time; record evidence before checking a task complete.
+- Include migration preflight, lock ordering, CORS Idempotency-Key, failure injection and races.
+- Git branch remains main; no commit or database migration performed.

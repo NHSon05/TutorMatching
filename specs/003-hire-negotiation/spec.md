@@ -4,13 +4,13 @@
 
 **Created**: 2026-10-02
 
-**Status**: Ready for clarification or planning
+**Status**: Clarified; implementation planning completed
 
 **Input**: Sprint 3 enables learners to send hire requests to available tutors, both parties to
 negotiate price and schedule, and authorized participants to move each request through a consistent
 and auditable lifecycle.
 
-## User Scenarios & Testing *(mandatory)*
+## User Scenarios & Testing _(mandatory)_
 
 ### User Story 1 - Send a hire request (Priority: P1)
 
@@ -136,63 +136,64 @@ attempt invalid transitions; verify confirmations, reasons, history and notifica
 - A notification fails after the primary state change is ready to commit.
 - A retry arrives after the original request succeeded but before its response reached the client.
 
-## Requirements *(mandatory)*
+## Requirements _(mandatory)_
 
 ### Functional Requirements
 
 - **FR-001**: Only an authenticated learner MUST be able to create a hire request, and the learner
-  MUST NOT hire their own account. *(Source: SRS FR-09, BR-02, BR-03, UC-09)*
+  MUST NOT hire their own account. _(Source: SRS FR-09, BR-02, BR-03, UC-09)_
 - **FR-002**: A request MUST identify one public, approved tutor on an active account and one active
-  subject or course offered by that tutor. *(Source: SRS UC-09, BR-01)*
+  subject or course offered by that tutor. _(Source: SRS UC-09, BR-01)_
 - **FR-003**: A request MUST contain a future start date, at least one schedule slot, 1-21 sessions
   per week, 30-240 minutes per session, teaching mode, required location, positive VND price and an
-  optional note. *(Source: SRS BR-04 through BR-06, BR-14, UC-09)*
+  optional note. _(Source: SRS BR-04 through BR-06, BR-14, UC-09)_
 - **FR-004**: Request schedules MUST be checked against the tutor's current availability before the
-  request is committed. *(Source: SRS UC-09 alternative A1)*
+  request is committed. _(Source: SRS UC-09 alternative A1)_
 - **FR-005**: A listed-price request MUST start as `PENDING`; a valid alternative-price request MUST
-  start as `NEGOTIATING`. *(Source: SRS UC-09)*
+  start as `NEGOTIATING`. _(Source: SRS UC-09)_
 - **FR-006**: Successful request creation MUST atomically create the request, its initial status
-  history, one linked conversation and a tutor notification. *(Source: SRS BR-08, UC-09, section
-  7.5)*
+  history, one linked conversation and a tutor notification. _(Source: SRS BR-08, UC-09, section
+  7.5)_
 - **FR-007**: Repeated delivery of the same create operation MUST return the original outcome
-  without creating duplicate business records. *(Source: Sprint 3 reliability requirement;
-  supports SRS section 7.5)*
+  without creating duplicate business records. _(Source: Sprint 3 reliability requirement;
+  supports SRS section 7.5)_
 - **FR-008**: Learners MUST see only requests they sent; tutors MUST see only requests addressed to
   them; authorized administrators MAY monitor requests without changing participant terms.
-  *(Source: SRS section 4.1, matrix 4.3, FR-14)*
+  _(Source: SRS section 4.1, matrix 4.3, FR-14)_
 - **FR-009**: Request lists MUST support stable pagination, status filtering and clear current-state
-  labels that do not rely on color alone. *(Source: SRS sections 7.1-7.2)*
+  labels that do not rely on color alone. _(Source: SRS sections 7.1-7.2)_
 - **FR-010**: Request detail MUST show current terms, participants' public identities, ordered
-  proposal history and ordered status history only to authorized viewers. *(Source: SRS FR-09
-  through FR-11, NFR-07)*
-- **FR-011**: Only the designated tutor MUST be able to accept, reject or counter a pending or
-  negotiating request. *(Source: SRS BR-07, UC-11)*
-- **FR-012**: Rejecting a request MUST require a reason and move it to `REJECTED`. *(Source: SRS
-  UC-11)*
+  proposal history and ordered status history only to authorized viewers. _(Source: SRS FR-09
+  through FR-11, NFR-07)_
+- **FR-011**: Only the designated tutor MUST be able to accept or reject the initial learner request.
+  Either participant MAY counter a pending or negotiating request; only the recipient of the latest
+  proposal MUST be able to accept that proposal. _(Source: SRS BR-07, UC-11)_
+- **FR-012**: Rejecting a request MUST require a reason and move it to `REJECTED`. _(Source: SRS
+  UC-11)_
 - **FR-013**: Either participant MUST be able to create a counter-proposal on a `PENDING` or
-  `NEGOTIATING` request using a valid price, schedule or both. *(Source: SRS FR-10, UC-10)*
+  `NEGOTIATING` request using a valid price, schedule or both. _(Source: SRS FR-10, UC-10)_
 - **FR-014**: Every proposal MUST be immutable and record sender, proposed price, proposed schedule,
-  optional note and creation time. *(Source: SRS BR-11, UC-10)*
+  optional note and creation time. _(Source: SRS BR-11, UC-10)_
 - **FR-015**: Accepting the latest valid proposal MUST save its price and schedule as the final
-  agreement and move the request to `ACCEPTED`. *(Source: SRS UC-10)*
+  agreement and move the request to `ACCEPTED`. _(Source: SRS UC-10)_
 - **FR-016**: `REJECTED`, `CANCELLED` and `COMPLETED` requests MUST reject further negotiation.
-  *(Source: SRS BR-09)*
+  _(Source: SRS BR-09)_
 - **FR-017**: The learner MUST be able to cancel their own `PENDING` or `NEGOTIATING` request;
-  cancellation of an `ACCEPTED` request MUST require confirmation and a reason. *(Source: SRS
-  BR-10, UC-11)*
+  either participant MAY cancel an `ACCEPTED` request after explicit confirmation and with a reason. _(Source: SRS
+  BR-10, UC-11)_
 - **FR-018**: Either participant MUST be able to mark an `ACCEPTED` request `COMPLETED` after an
   explicit confirmation, and all terminal-state actions MUST record actor, reason when applicable
-  and time. *(Source: SRS NFR-07, UC-11)*
+  and time. _(Source: SRS NFR-07, UC-11)_
 - **FR-019**: State changes MUST verify the expected current version and reject concurrent stale
-  updates rather than overwriting them. *(Source: SRS UC-11 alternative A1, section 7.5)*
+  updates rather than overwriting them. _(Source: SRS UC-11 alternative A1, section 7.5)_
 - **FR-020**: Each successful creation, proposal and state change MUST notify the other participant;
-  notification failure MUST NOT leave the core request in a partial state. *(Source: SRS FR-13,
-  UC-09 through UC-11, section 7.5)*
+  notification failure MUST NOT leave the core request in a partial state. _(Source: SRS FR-13,
+  UC-09 through UC-11, section 7.5)_
 - **FR-021**: Forms and state actions MUST show field errors, loading, conflict, success and
-  confirmation states while preserving valid input. *(Source: SRS sections 7.1 and 7.3)*
+  confirmation states while preserving valid input. _(Source: SRS sections 7.1 and 7.3)_
 - **FR-022**: Automated checks MUST cover role and ownership denial, schedule and numeric limits,
   duplicate submission, every valid and invalid transition, concurrent updates, history ordering
-  and notification failure. *(Source: SRS NFR-07, NFR-08, AC-04, AC-05, AC-07, AC-09)*
+  and notification failure. _(Source: SRS NFR-07, NFR-08, AC-04, AC-05, AC-07, AC-09)_
 
 ### Key Entities
 
@@ -209,7 +210,7 @@ attempt invalid transitions; verify confirmations, reasons, history and notifica
   Sprint 4.
 - **Notification**: A participant-facing event pointing to the affected request.
 
-## Success Criteria *(mandatory)*
+## Success Criteria _(mandatory)_
 
 ### Measurable Outcomes
 
@@ -239,3 +240,11 @@ attempt invalid transitions; verify confirmations, reasons, history and notifica
 - Either request participant may mark an accepted request complete; the action is explicit,
   confirmed, recorded and communicated to the other participant.
 - Payment, recurring lesson management, contracts, disputes and refunds are outside this feature.
+
+## Clarifications
+
+### Session 2026-10-28
+
+- Both participants may negotiate; only the recipient may accept the latest proposal.
+- Either participant may cancel an accepted request with confirmation and a reason.
+- These rules were explicitly confirmed by the user during Sprint 3 specification review.

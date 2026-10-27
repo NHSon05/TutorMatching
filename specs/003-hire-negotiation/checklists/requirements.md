@@ -33,3 +33,10 @@
 
 - Validated against SRS FR-09 through FR-11, FR-13, UC-09 through UC-11, BR-02 through BR-11,
   BR-14, NFR-07 and AC-04, AC-05, AC-07, AC-09.
+
+## Planning review — 2026-10-28
+
+- Identified FR-011/FR-013 conflict and unspecified actor for accepted cancellation.
+- User confirmed both-party negotiation, recipient-only latest-proposal acceptance and
+  either-party accepted cancellation with confirmation/reason; spec updated accordingly.
+- Planning artifacts generated; implementation acceptance evidence remains pending.
