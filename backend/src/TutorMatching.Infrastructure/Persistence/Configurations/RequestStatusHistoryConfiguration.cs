@@ -8,7 +8,8 @@ public sealed class RequestStatusHistoryConfiguration : IEntityTypeConfiguration
 {
     public void Configure(EntityTypeBuilder<RequestStatusHistory> builder)
     {
-        builder.ToTable("RequestStatusHistory");
+        builder.ToTable("RequestStatusHistory", t => t.HasCheckConstraint("ck_hire_event_sequence_actor", "sequence > 0 AND (is_legacy OR actor_user_id IS NOT NULL)"));
+        builder.HasIndex(x => new { x.HireRequestId, x.Sequence }).IsUnique();
         builder.HasKey(x => x.Id);
 
         builder.Property(x => x.FromStatusCode)
@@ -34,6 +35,6 @@ public sealed class RequestStatusHistoryConfiguration : IEntityTypeConfiguration
         builder.HasOne<ApplicationUser>()
             .WithMany()
             .HasForeignKey(x => x.ActorUserId)
-            .OnDelete(DeleteBehavior.SetNull);
+            .OnDelete(DeleteBehavior.Restrict);
     }
 }

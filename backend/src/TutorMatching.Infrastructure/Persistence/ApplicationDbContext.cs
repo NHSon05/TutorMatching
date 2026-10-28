@@ -30,6 +30,7 @@ public sealed class ApplicationDbContext(
     public DbSet<AvailabilitySlot> AvailabilitySlots => Set<AvailabilitySlot>();
     public DbSet<Course> Courses => Set<Course>();
     public DbSet<TutorProfileReview> TutorProfileReviews => Set<TutorProfileReview>();
+    public DbSet<HireCreateOperation> HireCreateOperations => Set<HireCreateOperation>();
     public DbSet<HireRequest> HireRequests => Set<HireRequest>();
     public DbSet<RequestSchedule> RequestSchedules => Set<RequestSchedule>();
     public DbSet<Negotiation> Negotiations => Set<Negotiation>();
@@ -56,6 +57,7 @@ public sealed class ApplicationDbContext(
         builder.ApplyConfiguration(new CourseConfiguration());
         builder.ApplyConfiguration(new TutorProfileReviewConfiguration());
         builder.ApplyConfiguration(new HireRequestConfiguration());
+        builder.ApplyConfiguration(new HireCreateOperationConfiguration());
         builder.ApplyConfiguration(new RequestScheduleConfiguration());
         builder.ApplyConfiguration(new NegotiationConfiguration());
         builder.ApplyConfiguration(new NegotiationScheduleConfiguration());
@@ -117,6 +119,7 @@ public sealed class ApplicationDbContext(
     private void ApplyAccountInvariants()
     {
         var now = DateTimeOffset.UtcNow;
+        ApplyHiringInvariants();
 
         foreach (var entry in ChangeTracker.Entries<ApplicationUser>())
         {
@@ -165,6 +168,35 @@ public sealed class ApplicationDbContext(
             }
         }
     }
+    private void ApplyHiringInvariants()
+    {
+        foreach (var entry in ChangeTracker.Entries())
+        {
+            if (entry.Entity is Negotiation or NegotiationSchedule or RequestStatusHistory or HireCreateOperation or RequestSchedule)
+            {
+                if (entry.State is EntityState.Modified or EntityState.Deleted)
+                    throw new InvalidOperationException("Hiring history and initial schedules are immutable.");
+                if (entry.State == EntityState.Added && entry.Entity is RequestSchedule schedule &&
+                    !ChangeTracker.Entries<HireRequest>().Any(r => r.State == EntityState.Added && r.Entity.Id == schedule.HireRequestId))
+                    throw new InvalidOperationException("Cannot append to persisted initial schedules.");
+                if (entry.State == EntityState.Added && entry.Entity is NegotiationSchedule proposalSchedule &&
+                    !ChangeTracker.Entries<Negotiation>().Any(n => n.State == EntityState.Added && n.Entity.Id == proposalSchedule.NegotiationId))
+                    throw new InvalidOperationException("Cannot append to a persisted proposal snapshot.");
+                if (entry.State == EntityState.Added && entry.Entity is RequestStatusHistory { ActorUserId: null, IsLegacy: false })
+                    throw new InvalidOperationException("New hiring events require an actor.");
+            }
+        }
+        foreach (var entry in ChangeTracker.Entries<HireRequest>().Where(e => e.State == EntityState.Modified))
+        {
+            foreach (var name in new[] { nameof(HireRequest.InitialTerms), nameof(HireRequest.ListedPriceVnd),
+                nameof(HireRequest.RequesterUserId), nameof(HireRequest.TutorProfileId), nameof(HireRequest.IsLegacy) })
+                if (entry.Property(name).IsModified) throw new InvalidOperationException("Initial hiring terms and participants are immutable.");
+            if (entry.Property(x => x.FinalAgreement).OriginalValue is not null && entry.Property(x => x.FinalAgreement).IsModified)
+                throw new InvalidOperationException("Accepted hiring agreement is immutable.");
+            entry.Entity.Version = Guid.NewGuid();
+        }
+    }
+
     public static string NormalizeSearchName(string value)
     {
         var decomposed = value.Trim().ToLowerInvariant().Replace('đ', 'd').Normalize(System.Text.NormalizationForm.FormD);

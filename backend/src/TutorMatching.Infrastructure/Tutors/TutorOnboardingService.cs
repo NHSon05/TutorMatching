@@ -222,10 +222,19 @@ public sealed class TutorOnboardingService(
         return SubmitResult.Success(profile.Status, now);
     }
 
-    public async Task<string> UpdateAvatarAsync(
-        Guid userId,
-        string avatarUrl,
-        CancellationToken cancellationToken = default)
+    public Task<string> UpdateAvatarAsync(Guid userId, string avatarUrl, CancellationToken cancellationToken = default) =>
+        dbContext.Database.CreateExecutionStrategy().ExecuteAsync(async () =>
+        {
+            // Avatar writes touch both rows; acquire the same profile → account order as hiring/review.
+            await using var tx = await dbContext.Database.BeginTransactionAsync(cancellationToken);
+            await dbContext.Database.ExecuteSqlInterpolatedAsync($"SELECT id FROM tutor_profiles WHERE user_id={userId} FOR UPDATE", cancellationToken);
+            await dbContext.Database.ExecuteSqlInterpolatedAsync($"SELECT id FROM user_accounts WHERE id={userId} FOR UPDATE", cancellationToken);
+            var result = await UpdateAvatarCoreAsync(userId, avatarUrl, cancellationToken);
+            await tx.CommitAsync(cancellationToken);
+            return result;
+        });
+
+    private async Task<string> UpdateAvatarCoreAsync(Guid userId, string avatarUrl, CancellationToken cancellationToken)
     {
         var user = await dbContext.Users.FirstOrDefaultAsync(u => u.Id == userId, cancellationToken)
             ?? throw new InvalidOperationException($"User {userId} not found.");

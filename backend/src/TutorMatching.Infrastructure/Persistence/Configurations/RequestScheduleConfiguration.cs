@@ -8,7 +8,7 @@ public sealed class RequestScheduleConfiguration : IEntityTypeConfiguration<Requ
 {
     public void Configure(EntityTypeBuilder<RequestSchedule> builder)
     {
-        builder.ToTable("RequestSchedules");
+        builder.ToTable("RequestSchedules", t => t.HasCheckConstraint("ck_requestschedule_window", "day_of_week BETWEEN 1 AND 7 AND start_time < end_time"));
         builder.HasKey(x => x.Id);
 
         builder.Property(x => x.DayOfWeek)

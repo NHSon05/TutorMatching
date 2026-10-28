@@ -8,7 +8,19 @@ public sealed class HireRequestConfiguration : IEntityTypeConfiguration<HireRequ
 {
     public void Configure(EntityTypeBuilder<HireRequest> builder)
     {
-        builder.ToTable("HireRequests");
+        builder.ToTable("HireRequests", t =>
+        {
+            t.HasCheckConstraint("ck_hire_request_values", "sessions_per_week BETWEEN 1 AND 21 AND duration_minutes BETWEEN 30 AND 240 AND proposed_price_vnd > 0 AND (listed_price_vnd IS NULL OR listed_price_vnd > 0) AND latest_proposal_sequence >= 0 AND next_event_sequence > 0");
+            t.HasCheckConstraint("ck_hire_request_status", "status_code IN ('PENDING','NEGOTIATING','ACCEPTED','REJECTED','CANCELLED','COMPLETED')");
+            t.HasCheckConstraint("ck_hire_request_mode", "teaching_mode_code IN ('ONLINE','OFFLINE','HYBRID')");
+            t.HasCheckConstraint("ck_hire_request_snapshot", "initial_terms IS NOT NULL AND (is_legacy OR listed_price_vnd IS NOT NULL) AND (status_code NOT IN ('ACCEPTED','COMPLETED') OR final_agreement IS NOT NULL)");
+        });
+        builder.Property(x => x.Version).IsConcurrencyToken();
+        builder.Property(x => x.InitialTerms).JsonSnapshot();
+        builder.Property(x => x.InitialTerms).IsRequired();
+        builder.Property(x => x.FinalAgreement).JsonSnapshot();
+        builder.HasIndex(x => new { x.RequesterUserId, x.StatusCode, x.CreatedAt, x.Id });
+        builder.HasIndex(x => new { x.TutorProfileId, x.StatusCode, x.CreatedAt, x.Id });
         builder.HasKey(x => x.Id);
 
         builder.Property(x => x.StartDate)

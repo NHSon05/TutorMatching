@@ -8,7 +8,10 @@ public sealed class NegotiationConfiguration : IEntityTypeConfiguration<Negotiat
 {
     public void Configure(EntityTypeBuilder<Negotiation> builder)
     {
-        builder.ToTable("Negotiations");
+        builder.ToTable("Negotiations", t => t.HasCheckConstraint("ck_negotiation_sequence", "sequence > 0 AND (proposed_price_vnd IS NULL OR proposed_price_vnd > 0)"));
+        builder.HasIndex(x => new { x.HireRequestId, x.Sequence }).IsUnique();
+        builder.Property(x => x.Terms).JsonSnapshot();
+        builder.Property(x => x.Terms).IsRequired();
         builder.HasKey(x => x.Id);
 
         builder.Property(x => x.Note)

@@ -8,6 +8,13 @@ namespace TutorMatching.Domain.Hiring;
 public sealed class HireRequest
 {
     public Guid Id { get; set; }
+    public Guid Version { get; set; } = Guid.NewGuid();
+    public bool IsLegacy { get; set; }
+    public int? ListedPriceVnd { get; set; }
+    public int LatestProposalSequence { get; set; }
+    public int NextEventSequence { get; set; } = 1;
+    public HireTerms InitialTerms { get; set; } = null!;
+    public FinalAgreement? FinalAgreement { get; set; }
     public Guid RequesterUserId { get; set; }
     public Guid TutorProfileId { get; set; }
     public Guid SubjectId { get; set; }

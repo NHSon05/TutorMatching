@@ -146,7 +146,7 @@ public static class ApiSecurityExtensions
         services.AddCors(options => options.AddPolicy(FrontendCorsPolicy, policy => policy
             .WithOrigins(origins)
             .WithMethods("GET", "HEAD", "POST", "PUT", "PATCH", "DELETE", "OPTIONS")
-            .WithHeaders("Content-Type", CsrfHeader, "Authorization", "Accept", "Origin", "X-Requested-With")
+            .WithHeaders("Content-Type", CsrfHeader, "Authorization", "Accept", "Origin", "X-Requested-With", "Idempotency-Key")
             .AllowCredentials()));
 
         // Anti CSRF
