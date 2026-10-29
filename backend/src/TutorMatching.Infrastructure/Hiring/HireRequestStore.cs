@@ -1,5 +1,6 @@
 using System.Collections.Immutable;
 using Microsoft.EntityFrameworkCore;
+using Npgsql;
 using TutorMatching.Application.Hiring;
 using TutorMatching.Domain.Hiring;
 using TutorMatching.Domain.Messaging;
@@ -12,14 +13,62 @@ namespace TutorMatching.Infrastructure.Hiring;
 
 public sealed class HireRequestStore(ApplicationDbContext db) : IHireRequestStore
 {
-    public async Task ExecuteAsync(HireWriteTarget target, Func<IHireWriteSession, CancellationToken, Task> action,
-        CancellationToken cancellationToken = default)
+    public async Task<HireCreationOutcome> CreateAsync(HireWriteTarget target, Guid key, string fingerprint,
+        Func<IHireWriteSession, CancellationToken, Task<HireCreationOutcome>> action, CancellationToken cancellationToken = default)
+    {
+        HireCreationOutcome? outcome = null;
+        try
+        {
+            await ExecuteCoreAsync(target, async (session, ct) => outcome = await action(session, ct), cancellationToken,
+                key, fingerprint, result => outcome = result);
+        }
+        catch (DbUpdateException e) when (e.InnerException is PostgresException
+            { SqlState: PostgresErrorCodes.UniqueViolation, ConstraintName: "pk_hire_create_operations" })
+        {
+            // Defensive recovery if another compatible writer did not take our advisory lock.
+            // ExecuteCoreAsync has already rolled back the losing aggregate and cleared tracking.
+            await ExecuteCoreAsync(target, (_, _) => throw new HireStoreException("idempotency_conflict"), cancellationToken,
+                key, fingerprint, result => outcome = result);
+        }
+        return outcome!;
+    }
+
+    public Task ExecuteAsync(HireWriteTarget target, Func<IHireWriteSession, CancellationToken, Task> action,
+        CancellationToken cancellationToken = default) => ExecuteCoreAsync(target, action, cancellationToken);
+
+    private async Task ExecuteCoreAsync(HireWriteTarget target, Func<IHireWriteSession, CancellationToken, Task> action,
+        CancellationToken cancellationToken, Guid? createKey = null, string? fingerprint = null,
+        Action<HireCreationOutcome>? replay = null)
     {
         // A clean scoped context avoids overwriting caller changes or trusting stale tracked entities.
-        if (db.ChangeTracker.Entries().Any()) throw new InvalidOperationException("Hiring writes require a clean scoped context.");
+        if (db.ChangeTracker.HasChanges()) throw new InvalidOperationException("Hiring writes require a clean scoped context.");
+        // Cookie validation may have loaded an unchanged Identity user in this scope.
+        // Detach reads so eligibility is reloaded under the locks below.
+        db.ChangeTracker.Clear();
         await using var tx = await db.Database.BeginTransactionAsync(cancellationToken);
         try
         {
+            if (createKey is { } key)
+            {
+                // Serialize the learner/key before profile locks, including requests targeting different tutors.
+                // A hash collision only serializes unrelated work; the durable composite PK is authoritative.
+                var identity = $"{target.ActorId:N}:{key:N}";
+                await db.Database.ExecuteSqlInterpolatedAsync($"SELECT pg_advisory_xact_lock(hashtextextended({identity}, 0))", cancellationToken);
+                var previous = await db.HireCreateOperations.AsNoTracking().SingleOrDefaultAsync(
+                    x => x.LearnerId == target.ActorId && x.IdempotencyKey == key, cancellationToken);
+                if (previous is not null)
+                {
+                    var caller = await db.Users.FromSqlInterpolated($"SELECT * FROM user_accounts WHERE id={target.ActorId} FOR SHARE")
+                        .AsNoTracking().SingleOrDefaultAsync(cancellationToken);
+                    if (caller is null || caller.Status != AccountStatus.ACTIVE || caller.DeletedAt is not null)
+                        throw new HireStoreException("unauthorized");
+                    if (caller.Role != AccountRole.LEARNER) throw new HireStoreException("forbidden");
+                    if (previous.PayloadFingerprint != fingerprint) throw new HireStoreException("idempotency_conflict");
+                    replay!(previous.Outcome);
+                    await tx.CommitAsync(cancellationToken);
+                    return;
+                }
+            }
             var profileId = target.TutorProfileId;
             HireRequest? hint = null;
             if (target.RequestId is { } id)
@@ -63,12 +112,12 @@ public sealed class HireRequestStore(ApplicationDbContext db) : IHireRequestStor
             var district = districtCode is null ? null : await db.Districts.FromSqlInterpolated($"SELECT * FROM districts WHERE district_code={districtCode} FOR SHARE")
                 .AsNoTracking().SingleOrDefaultAsync(cancellationToken);
             var price = courseId is null ? profile.SessionRateVnd : course?.PricePerSessionVnd;
-            if (target.RequireOffering && (profile.Status != TutorProfileStatus.APPROVED || tutor is null ||
+            if (target.RequireOffering && (profile.Status != TutorProfileStatus.APPROVED || profile.SessionRateVnd is null or <= 0 || tutor is null ||
                 tutor.Role != AccountRole.TUTOR || tutor.Status != AccountStatus.ACTIVE || tutor.DeletedAt is not null ||
                 subject?.IsActive != true || price is null or <= 0 ||
                 !await db.TutorSubjects.AnyAsync(s => s.TutorProfileId == profile.Id && s.SubjectId == subjectId, cancellationToken) ||
                 (courseId is not null && (course is null || course.TutorProfileId != profile.Id || course.SubjectId != subjectId ||
-                    course.StatusCode != "ACTIVE" || course.DeletedAt is not null))))
+                    course.StatusCode != "ACTIVE" || course.DeletedAt is not null || course.SessionCount <= 0 || string.IsNullOrEmpty(course.Name)))))
                 throw new HireStoreException("offering_changed");
             var windows = await db.AvailabilitySlots.AsNoTracking().Where(s => s.TutorProfileId == profile.Id && s.IsActive &&
                 s.AvailabilityType == "WEEKLY" && s.DayOfWeek != null)

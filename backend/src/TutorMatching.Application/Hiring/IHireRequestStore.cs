@@ -14,6 +14,8 @@ public sealed record HireOffering(Guid TutorUserId, int? ListedPriceVnd, Immutab
 
 public interface IHireRequestStore
 {
+    Task<HireCreationOutcome> CreateAsync(HireWriteTarget target, Guid key, string fingerprint,
+        Func<IHireWriteSession, CancellationToken, Task<HireCreationOutcome>> action, CancellationToken cancellationToken = default);
     // Callback stages only database work; no external effects or SaveChanges. Return projections after commit.
     Task ExecuteAsync(HireWriteTarget target, Func<IHireWriteSession, CancellationToken, Task> action,
         CancellationToken cancellationToken = default);

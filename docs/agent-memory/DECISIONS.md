@@ -99,3 +99,26 @@ Search by ADR ID, subsystem, or keyword. Add only durable decisions; keep each A
 - Decision: Require the displayed expectedVersion on all admin decision routes, including Sprint 1 approve/reject aliases; no unversioned compatibility bypass.
 - Decision: Keep full reasons in immutable action/version history, persist audit and Notification in the same transaction, and leave unknowable legacy reviewedVersion null.
 - Consequence: Older clients must fetch admin review detail and send its current version; stale/resubmitted profiles return409.
+
+## ADR-011 - Immutable hiring snapshots and conservative legacy migration
+
+- Date: 2026-10-28
+- Store original terms, effective proposals and accepted agreements as immutable JSONB value snapshots.
+- Persist Guid concurrency versions, ordered history/proposals and durable learner-scoped create identities.
+- Use one PostgreSQL transaction for business records and in-app notifications; no broker added.
+- Serialize hiring against profile edits; lock accounts and catalogs before the request row.
+- Preserve unknown legacy actors/listed prices as null; block upgrades with unverified accepted history.
+- Block downgrade once new hiring data would lose meaning in the earlier schema.
+- Evidence and rollout caveats: `specs/003-hire-negotiation/evidence.md` (Phase 2).
+
+
+## ADR-012 - Durable learner create replay before offering validation
+
+- Date: 2026-10-28
+- Serialize create by learner/key advisory transaction lock before profile/account/catalog locks.
+- Keep composite operation PK authoritative and roll back/reload unique-PK losers defensively.
+- Replays require an active learner and matching canonical payload; return original immutable 201.
+- Check current offering/date only on first execution so later state/price changes cannot break retry.
+- Normalize optional text and schedule ordering before hashing; persist result with all business rows.
+- UI freezes displayed offering during retry; explicit edits/offer refresh determine a new payload/key.
+- Evidence: `specs/003-hire-negotiation/evidence.md` (Phase 3).

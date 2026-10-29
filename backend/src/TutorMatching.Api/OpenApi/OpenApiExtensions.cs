@@ -34,6 +34,16 @@ public static class OpenApiExtensions
                             p.Schema = new OpenApiSchema { Type = JsonSchemaType.Array, Items = new OpenApiSchema { Type = JsonSchemaType.String, Format = "uuid" } };
                     }
                 }
+                if (context.Description.RelativePath == ApiRoutes.Prefix + "/hire-requests" && context.Description.HttpMethod == "POST")
+                {
+                    operation.OperationId = "createHireRequest";
+                    foreach (var parameter in operation.Parameters ?? [])
+                        if (parameter is OpenApiParameter { Name: "Idempotency-Key" } identity)
+                        {
+                            identity.Required = true;
+                            identity.Schema = new OpenApiSchema { Type = JsonSchemaType.String, Format = "uuid" };
+                        }
+                }
                 var consumes = context.Description.ActionDescriptor.EndpointMetadata
                     .OfType<ConsumesAttribute>()
                     .LastOrDefault();
@@ -51,6 +61,20 @@ public static class OpenApiExtensions
             });
             options.AddSchemaTransformer((schema, context, _) =>
             {
+                if (context.JsonTypeInfo.Type.Namespace == "TutorMatching.Application.Hiring")
+                {
+                    schema.AdditionalPropertiesAllowed = false;
+                    if (schema.Properties?.TryGetValue("teachingMode", out var modeProperty) == true && modeProperty is OpenApiSchema mode)
+                        mode.Enum = ["ONLINE", "OFFLINE", "HYBRID"];
+                    if (schema.Properties?.TryGetValue("status", out var statusProperty) == true && statusProperty is OpenApiSchema status)
+                        status.Enum = ["PENDING", "NEGOTIATING", "ACCEPTED", "REJECTED", "CANCELLED", "COMPLETED"];
+                    foreach (var field in new[] { "provinceCode", "districtCode", "locationDetail", "note", "courseId" })
+                        if (schema.Properties?.TryGetValue(field, out var property) == true && property is OpenApiSchema optional)
+                        {
+                            optional.Type = JsonSchemaType.String;
+                            if (field == "courseId") optional.Format = "uuid";
+                        }
+                }
                 if (new[] { typeof(TutorMatching.Application.Tutors.PublicTutorSummary), typeof(TutorMatching.Application.Tutors.PublicTutorDetail),
                     typeof(TutorMatching.Application.Tutors.PublicTutorPage), typeof(TutorMatching.Application.Tutors.PublicSubject),
                     typeof(TutorMatching.Application.Tutors.PublicAvailability), typeof(TutorMatching.Application.Tutors.PublicCourse) }.Contains(context.JsonTypeInfo.Type))
@@ -144,7 +168,7 @@ public static class OpenApiExtensions
                         role.Type = JsonSchemaType.String;
                         role.Enum = ["LEARNER", "TUTOR", "ADMIN"];
                     }
-                    if (schema.Properties?["status"] is OpenApiSchema status)
+                    if (schema.Properties?.TryGetValue("status", out var statusProperty) == true && statusProperty is OpenApiSchema status)
                     {
                         status.Type = JsonSchemaType.String;
                         status.Enum = ["ACTIVE", "LOCKED", "INACTIVE"];

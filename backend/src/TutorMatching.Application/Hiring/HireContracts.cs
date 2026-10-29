@@ -5,6 +5,7 @@ using System.Text.Json;
 namespace TutorMatching.Application.Hiring;
 
 // ==================== GENERAL DTO =============================
+[JsonNumberHandling(JsonNumberHandling.Strict)]
 [JsonUnmappedMemberHandling(JsonUnmappedMemberHandling.Disallow)]
 public sealed class HireSchedule
 {
@@ -16,6 +17,7 @@ public sealed class HireSchedule
     public string EndTime { get; init; } = null!;
 }
 
+[JsonNumberHandling(JsonNumberHandling.Strict)]
 [JsonUnmappedMemberHandling(JsonUnmappedMemberHandling.Disallow)]
 public sealed class HireTermsDto
 {
@@ -39,6 +41,7 @@ public sealed class HireTermsDto
     public HireSchedule[] Schedules { get; init; } = null!;
 }
 
+[JsonNumberHandling(JsonNumberHandling.Strict)]
 [JsonUnmappedMemberHandling(JsonUnmappedMemberHandling.Disallow)]
 public sealed class HireProposal
 {
@@ -54,6 +57,7 @@ public sealed class HireProposal
     public DateTimeOffset CreatedAt { get; init; }
 }
 
+[JsonNumberHandling(JsonNumberHandling.Strict)]
 [JsonUnmappedMemberHandling(JsonUnmappedMemberHandling.Disallow)]
 public sealed class HireAgreement
 {
@@ -71,6 +75,7 @@ public sealed class HireAgreement
     public string? DistrictName { get; init; }
 }
 
+[JsonNumberHandling(JsonNumberHandling.Strict)]
 [JsonUnmappedMemberHandling(JsonUnmappedMemberHandling.Disallow)]
 public sealed class HireEvent
 {
@@ -89,6 +94,7 @@ public sealed class HireEvent
 }
 
 
+[JsonNumberHandling(JsonNumberHandling.Strict)]
 [JsonUnmappedMemberHandling(JsonUnmappedMemberHandling.Disallow)]
 public sealed class HireIdentity
 {
@@ -101,6 +107,7 @@ public sealed class HireIdentity
 // ==============================================================
 
 // ====================== Client Request ========================
+[JsonNumberHandling(JsonNumberHandling.Strict)]
 [JsonUnmappedMemberHandling(JsonUnmappedMemberHandling.Disallow)]
 public sealed class CreateHireRequestCommand
 {
@@ -135,6 +142,7 @@ public sealed class CreateHireRequestCommand
 }
 
 
+[JsonNumberHandling(JsonNumberHandling.Strict)]
 [JsonUnmappedMemberHandling(JsonUnmappedMemberHandling.Disallow)]
 public sealed class ProposeHireRequestCommand : IValidatableObject
 {
@@ -155,6 +163,7 @@ public sealed class ProposeHireRequestCommand : IValidatableObject
 
 
 
+[JsonNumberHandling(JsonNumberHandling.Strict)]
 [JsonUnmappedMemberHandling(JsonUnmappedMemberHandling.Disallow)]
 public sealed class AcceptHireRequestCommand
 {
@@ -164,6 +173,7 @@ public sealed class AcceptHireRequestCommand
     public int? ProposalSequence { get; init; }
 }
 
+[JsonNumberHandling(JsonNumberHandling.Strict)]
 [JsonUnmappedMemberHandling(JsonUnmappedMemberHandling.Disallow)]
 public sealed class RejectHireRequestCommand
 {
@@ -173,6 +183,7 @@ public sealed class RejectHireRequestCommand
     public string Reason { get; init; } = null!;
 }
 
+[JsonNumberHandling(JsonNumberHandling.Strict)]
 [JsonUnmappedMemberHandling(JsonUnmappedMemberHandling.Disallow)]
 public sealed class CloseHireRequestCommand
 {
@@ -182,6 +193,7 @@ public sealed class CloseHireRequestCommand
     public bool Confirmed { get; init; }
 }
 
+[JsonNumberHandling(JsonNumberHandling.Strict)]
 [JsonUnmappedMemberHandling(JsonUnmappedMemberHandling.Disallow)]
 public sealed class HireAction
 {
@@ -192,6 +204,7 @@ public sealed class HireAction
 // ============================================================================
 
 // ======================== DTO Response ======================================
+[JsonNumberHandling(JsonNumberHandling.Strict)]
 [JsonUnmappedMemberHandling(JsonUnmappedMemberHandling.Disallow)]
 public sealed class HireCreated
 {
@@ -205,6 +218,7 @@ public sealed class HireCreated
     public Guid ConversationId { get; init; }
 }
 
+[JsonNumberHandling(JsonNumberHandling.Strict)]
 [JsonUnmappedMemberHandling(JsonUnmappedMemberHandling.Disallow)]
 public sealed class HireResult
 {
@@ -216,6 +230,7 @@ public sealed class HireResult
     public string Status { get; init; } = null!;
 }
 
+[JsonNumberHandling(JsonNumberHandling.Strict)]
 [JsonUnmappedMemberHandling(JsonUnmappedMemberHandling.Disallow)]
 public sealed class HireSummary
 {
@@ -233,6 +248,7 @@ public sealed class HireSummary
     public DateTimeOffset CreatedAt { get; init; }
 }
 
+[JsonNumberHandling(JsonNumberHandling.Strict)]
 [JsonUnmappedMemberHandling(JsonUnmappedMemberHandling.Disallow)]
 public sealed class HireDetail
 {
@@ -264,6 +280,7 @@ public sealed class HireDetail
     public string[] AllowedActions { get; init; } = null!;
 }
 
+[JsonNumberHandling(JsonNumberHandling.Strict)]
 [JsonUnmappedMemberHandling(JsonUnmappedMemberHandling.Disallow)]
 public sealed class HirePage
 {
@@ -273,6 +290,7 @@ public sealed class HirePage
     public string? NextCursor { get; init; }
 }
 
+[JsonNumberHandling(JsonNumberHandling.Strict)]
 [JsonUnmappedMemberHandling(JsonUnmappedMemberHandling.Disallow)]
 public sealed class HireProblem
 {

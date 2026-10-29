@@ -16,14 +16,14 @@ public sealed class DevelopmentTutorSeedTests(PostgreSqlFixture fixture)
         await using(var scope=factory.Services.CreateAsyncScope()) {
             var seed=scope.ServiceProvider.GetRequiredService<DevelopmentDataSeeder>();await seed.SeedAsync();await seed.SeedAsync();
             var db=scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-            Assert.Equal(10,await db.TutorProfiles.CountAsync());
-            var p=await db.TutorProfiles.FirstAsync();p.Bio="Owner edit";p.Status=TutorProfileStatus.DRAFT;await db.SaveChangesAsync();
+            Assert.Equal(20,await db.TutorProfiles.CountAsync());
+            var p=await db.TutorProfiles.FirstAsync(x=>x.Status==TutorProfileStatus.APPROVED);p.Bio="Owner edit";p.Status=TutorProfileStatus.DRAFT;await db.SaveChangesAsync();
             await seed.SeedAsync();db.ChangeTracker.Clear();
             Assert.Equal("Owner edit",(await db.TutorProfiles.SingleAsync(x=>x.Id==p.Id)).Bio);
             Assert.Equal(TutorProfileStatus.DRAFT,(await db.TutorProfiles.SingleAsync(x=>x.Id==p.Id)).Status);
         }
         using var client=factory.CreateApiClient();var page=await client.GetFromJsonAsync<JsonElement>("/api/v1/tutors");
-        Assert.Equal(9,page.GetProperty("totalCount").GetInt32());
+        Assert.Equal(15,page.GetProperty("totalCount").GetInt32());
         Assert.All(page.GetProperty("items").EnumerateArray(),item=>Assert.NotEmpty(item.GetProperty("subjects").EnumerateArray()));
     }
     [Fact]
@@ -57,13 +57,13 @@ public sealed class DevelopmentTutorSeedTests(PostgreSqlFixture fixture)
             await seed.SeedAsync();
             await seed.SeedAsync();
             db.ChangeTracker.Clear();
-            Assert.Equal(10, await db.TutorProfiles.CountAsync(p => p.Status == TutorProfileStatus.APPROVED && p.ApprovedAt != null));
+            Assert.Equal(16, await db.TutorProfiles.CountAsync(p => p.Status == TutorProfileStatus.APPROVED && p.ApprovedAt != null));
             Assert.Equal(subjectCount, await db.TutorSubjects.CountAsync());
             Assert.Equal(levelCount, await db.Set<TutorSubjectLevel>().CountAsync());
         }
         using var client = factory.CreateApiClient();
         var page = await client.GetFromJsonAsync<JsonElement>("/api/v1/tutors");
-        Assert.Equal(10, page.GetProperty("totalCount").GetInt32());
+        Assert.Equal(16, page.GetProperty("totalCount").GetInt32());
     }
 
     [Theory]
@@ -76,7 +76,7 @@ public sealed class DevelopmentTutorSeedTests(PostgreSqlFixture fixture)
         var seed = scope.ServiceProvider.GetRequiredService<DevelopmentDataSeeder>();
         var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
         await seed.SeedAsync();
-        var profile = await db.TutorProfiles.FirstAsync();
+        var profile = await db.TutorProfiles.FirstAsync(p=>p.Status==TutorProfileStatus.APPROVED);
         profile.Status = TutorProfileStatus.DRAFT;
         profile.ApprovedAt = null;
         profile.UpdatedAt = DateTimeOffset.UtcNow;
@@ -103,9 +103,9 @@ public sealed class DevelopmentTutorSeedTests(PostgreSqlFixture fixture)
             db.ChangeTracker.Clear();
             var subject=await db.Subjects.FirstAsync();subject.IsActive=false;await db.SaveChangesAsync();
             await seed.SeedAsync();
-            Assert.Equal(10,await db.TutorProfiles.CountAsync());Assert.Equal(10,await db.TutorProfiles.CountAsync(p=>p.Status==TutorProfileStatus.APPROVED));
+            Assert.Equal(20,await db.TutorProfiles.CountAsync());Assert.Equal(16,await db.TutorProfiles.CountAsync(p=>p.Status==TutorProfileStatus.APPROVED));
             Assert.False((await db.Subjects.SingleAsync(s=>s.Id==subject.Id)).IsActive);
-            Assert.Equal(10,await db.TutorSubjects.Select(s=>s.TutorProfileId).Distinct().CountAsync());
+            Assert.Equal(20,await db.TutorSubjects.Select(s=>s.TutorProfileId).Distinct().CountAsync());
         }
     }
 }

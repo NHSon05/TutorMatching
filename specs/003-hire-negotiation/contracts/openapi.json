@@ -16,9 +16,9 @@
         "operationId": "createHireRequest",
         "responses": {
           "400": {
-            "description": "Field or confirmation validation failed",
+            "description": "Field/confirmation validation failed or CSRF token invalid",
             "content": {
-              "application/json": {
+              "application/problem+json": {
                 "schema": {
                   "$ref": "#/components/schemas/Problem"
                 }
@@ -28,7 +28,7 @@
           "401": {
             "description": "Unauthenticated",
             "content": {
-              "application/json": {
+              "application/problem+json": {
                 "schema": {
                   "$ref": "#/components/schemas/Problem"
                 }
@@ -36,9 +36,9 @@
             }
           },
           "403": {
-            "description": "Role or CSRF denied",
+            "description": "Role denied",
             "content": {
-              "application/json": {
+              "application/problem+json": {
                 "schema": {
                   "$ref": "#/components/schemas/Problem"
                 }
@@ -48,7 +48,7 @@
           "404": {
             "description": "Missing or not owned; no private existence disclosure",
             "content": {
-              "application/json": {
+              "application/problem+json": {
                 "schema": {
                   "$ref": "#/components/schemas/Problem"
                 }
@@ -58,7 +58,7 @@
           "409": {
             "description": "Version/state/availability/listed-price/idempotency conflict",
             "content": {
-              "application/json": {
+              "application/problem+json": {
                 "schema": {
                   "$ref": "#/components/schemas/Problem"
                 }
@@ -68,7 +68,7 @@
           "500": {
             "description": "Transaction failed; no partial business writes",
             "content": {
-              "application/json": {
+              "application/problem+json": {
                 "schema": {
                   "$ref": "#/components/schemas/Problem"
                 }
@@ -131,9 +131,9 @@
             }
           },
           "400": {
-            "description": "Field or confirmation validation failed",
+            "description": "Field/confirmation validation failed or CSRF token invalid",
             "content": {
-              "application/json": {
+              "application/problem+json": {
                 "schema": {
                   "$ref": "#/components/schemas/Problem"
                 }
@@ -143,7 +143,7 @@
           "401": {
             "description": "Unauthenticated",
             "content": {
-              "application/json": {
+              "application/problem+json": {
                 "schema": {
                   "$ref": "#/components/schemas/Problem"
                 }
@@ -151,9 +151,9 @@
             }
           },
           "403": {
-            "description": "Role or CSRF denied",
+            "description": "Role denied",
             "content": {
-              "application/json": {
+              "application/problem+json": {
                 "schema": {
                   "$ref": "#/components/schemas/Problem"
                 }
@@ -163,7 +163,7 @@
           "404": {
             "description": "Missing or not owned; no private existence disclosure",
             "content": {
-              "application/json": {
+              "application/problem+json": {
                 "schema": {
                   "$ref": "#/components/schemas/Problem"
                 }
@@ -173,7 +173,7 @@
           "409": {
             "description": "Version/state/availability/listed-price/idempotency conflict",
             "content": {
-              "application/json": {
+              "application/problem+json": {
                 "schema": {
                   "$ref": "#/components/schemas/Problem"
                 }
@@ -183,7 +183,7 @@
           "500": {
             "description": "Transaction failed; no partial business writes",
             "content": {
-              "application/json": {
+              "application/problem+json": {
                 "schema": {
                   "$ref": "#/components/schemas/Problem"
                 }
@@ -254,9 +254,9 @@
             }
           },
           "400": {
-            "description": "Field or confirmation validation failed",
+            "description": "Field/confirmation validation failed or CSRF token invalid",
             "content": {
-              "application/json": {
+              "application/problem+json": {
                 "schema": {
                   "$ref": "#/components/schemas/Problem"
                 }
@@ -266,7 +266,7 @@
           "401": {
             "description": "Unauthenticated",
             "content": {
-              "application/json": {
+              "application/problem+json": {
                 "schema": {
                   "$ref": "#/components/schemas/Problem"
                 }
@@ -274,9 +274,9 @@
             }
           },
           "403": {
-            "description": "Role or CSRF denied",
+            "description": "Role denied",
             "content": {
-              "application/json": {
+              "application/problem+json": {
                 "schema": {
                   "$ref": "#/components/schemas/Problem"
                 }
@@ -286,7 +286,7 @@
           "404": {
             "description": "Missing or not owned; no private existence disclosure",
             "content": {
-              "application/json": {
+              "application/problem+json": {
                 "schema": {
                   "$ref": "#/components/schemas/Problem"
                 }
@@ -296,7 +296,7 @@
           "409": {
             "description": "Version/state/availability/listed-price/idempotency conflict",
             "content": {
-              "application/json": {
+              "application/problem+json": {
                 "schema": {
                   "$ref": "#/components/schemas/Problem"
                 }
@@ -306,7 +306,7 @@
           "500": {
             "description": "Transaction failed; no partial business writes",
             "content": {
-              "application/json": {
+              "application/problem+json": {
                 "schema": {
                   "$ref": "#/components/schemas/Problem"
                 }
@@ -342,9 +342,9 @@
             }
           },
           "400": {
-            "description": "Field or confirmation validation failed",
+            "description": "Field/confirmation validation failed or CSRF token invalid",
             "content": {
-              "application/json": {
+              "application/problem+json": {
                 "schema": {
                   "$ref": "#/components/schemas/Problem"
                 }
@@ -354,7 +354,7 @@
           "401": {
             "description": "Unauthenticated",
             "content": {
-              "application/json": {
+              "application/problem+json": {
                 "schema": {
                   "$ref": "#/components/schemas/Problem"
                 }
@@ -362,9 +362,9 @@
             }
           },
           "403": {
-            "description": "Role or CSRF denied",
+            "description": "Role denied",
             "content": {
-              "application/json": {
+              "application/problem+json": {
                 "schema": {
                   "$ref": "#/components/schemas/Problem"
                 }
@@ -374,7 +374,7 @@
           "404": {
             "description": "Missing or not owned; no private existence disclosure",
             "content": {
-              "application/json": {
+              "application/problem+json": {
                 "schema": {
                   "$ref": "#/components/schemas/Problem"
                 }
@@ -384,7 +384,7 @@
           "409": {
             "description": "Version/state/availability/listed-price/idempotency conflict",
             "content": {
-              "application/json": {
+              "application/problem+json": {
                 "schema": {
                   "$ref": "#/components/schemas/Problem"
                 }
@@ -394,7 +394,7 @@
           "500": {
             "description": "Transaction failed; no partial business writes",
             "content": {
-              "application/json": {
+              "application/problem+json": {
                 "schema": {
                   "$ref": "#/components/schemas/Problem"
                 }
@@ -451,9 +451,9 @@
             }
           },
           "400": {
-            "description": "Field or confirmation validation failed",
+            "description": "Field/confirmation validation failed or CSRF token invalid",
             "content": {
-              "application/json": {
+              "application/problem+json": {
                 "schema": {
                   "$ref": "#/components/schemas/Problem"
                 }
@@ -463,7 +463,7 @@
           "401": {
             "description": "Unauthenticated",
             "content": {
-              "application/json": {
+              "application/problem+json": {
                 "schema": {
                   "$ref": "#/components/schemas/Problem"
                 }
@@ -471,9 +471,9 @@
             }
           },
           "403": {
-            "description": "Role or CSRF denied",
+            "description": "Role denied",
             "content": {
-              "application/json": {
+              "application/problem+json": {
                 "schema": {
                   "$ref": "#/components/schemas/Problem"
                 }
@@ -483,7 +483,7 @@
           "404": {
             "description": "Missing or not owned; no private existence disclosure",
             "content": {
-              "application/json": {
+              "application/problem+json": {
                 "schema": {
                   "$ref": "#/components/schemas/Problem"
                 }
@@ -493,7 +493,7 @@
           "409": {
             "description": "Version/state/availability/listed-price/idempotency conflict",
             "content": {
-              "application/json": {
+              "application/problem+json": {
                 "schema": {
                   "$ref": "#/components/schemas/Problem"
                 }
@@ -503,7 +503,7 @@
           "500": {
             "description": "Transaction failed; no partial business writes",
             "content": {
-              "application/json": {
+              "application/problem+json": {
                 "schema": {
                   "$ref": "#/components/schemas/Problem"
                 }
@@ -560,9 +560,9 @@
             }
           },
           "400": {
-            "description": "Field or confirmation validation failed",
+            "description": "Field/confirmation validation failed or CSRF token invalid",
             "content": {
-              "application/json": {
+              "application/problem+json": {
                 "schema": {
                   "$ref": "#/components/schemas/Problem"
                 }
@@ -572,7 +572,7 @@
           "401": {
             "description": "Unauthenticated",
             "content": {
-              "application/json": {
+              "application/problem+json": {
                 "schema": {
                   "$ref": "#/components/schemas/Problem"
                 }
@@ -580,9 +580,9 @@
             }
           },
           "403": {
-            "description": "Role or CSRF denied",
+            "description": "Role denied",
             "content": {
-              "application/json": {
+              "application/problem+json": {
                 "schema": {
                   "$ref": "#/components/schemas/Problem"
                 }
@@ -592,7 +592,7 @@
           "404": {
             "description": "Missing or not owned; no private existence disclosure",
             "content": {
-              "application/json": {
+              "application/problem+json": {
                 "schema": {
                   "$ref": "#/components/schemas/Problem"
                 }
@@ -602,7 +602,7 @@
           "409": {
             "description": "Version/state/availability/listed-price/idempotency conflict",
             "content": {
-              "application/json": {
+              "application/problem+json": {
                 "schema": {
                   "$ref": "#/components/schemas/Problem"
                 }
@@ -612,7 +612,7 @@
           "500": {
             "description": "Transaction failed; no partial business writes",
             "content": {
-              "application/json": {
+              "application/problem+json": {
                 "schema": {
                   "$ref": "#/components/schemas/Problem"
                 }
@@ -669,9 +669,9 @@
             }
           },
           "400": {
-            "description": "Field or confirmation validation failed",
+            "description": "Field/confirmation validation failed or CSRF token invalid",
             "content": {
-              "application/json": {
+              "application/problem+json": {
                 "schema": {
                   "$ref": "#/components/schemas/Problem"
                 }
@@ -681,7 +681,7 @@
           "401": {
             "description": "Unauthenticated",
             "content": {
-              "application/json": {
+              "application/problem+json": {
                 "schema": {
                   "$ref": "#/components/schemas/Problem"
                 }
@@ -689,9 +689,9 @@
             }
           },
           "403": {
-            "description": "Role or CSRF denied",
+            "description": "Role denied",
             "content": {
-              "application/json": {
+              "application/problem+json": {
                 "schema": {
                   "$ref": "#/components/schemas/Problem"
                 }
@@ -701,7 +701,7 @@
           "404": {
             "description": "Missing or not owned; no private existence disclosure",
             "content": {
-              "application/json": {
+              "application/problem+json": {
                 "schema": {
                   "$ref": "#/components/schemas/Problem"
                 }
@@ -711,7 +711,7 @@
           "409": {
             "description": "Version/state/availability/listed-price/idempotency conflict",
             "content": {
-              "application/json": {
+              "application/problem+json": {
                 "schema": {
                   "$ref": "#/components/schemas/Problem"
                 }
@@ -721,7 +721,7 @@
           "500": {
             "description": "Transaction failed; no partial business writes",
             "content": {
-              "application/json": {
+              "application/problem+json": {
                 "schema": {
                   "$ref": "#/components/schemas/Problem"
                 }
@@ -778,9 +778,9 @@
             }
           },
           "400": {
-            "description": "Field or confirmation validation failed",
+            "description": "Field/confirmation validation failed or CSRF token invalid",
             "content": {
-              "application/json": {
+              "application/problem+json": {
                 "schema": {
                   "$ref": "#/components/schemas/Problem"
                 }
@@ -790,7 +790,7 @@
           "401": {
             "description": "Unauthenticated",
             "content": {
-              "application/json": {
+              "application/problem+json": {
                 "schema": {
                   "$ref": "#/components/schemas/Problem"
                 }
@@ -798,9 +798,9 @@
             }
           },
           "403": {
-            "description": "Role or CSRF denied",
+            "description": "Role denied",
             "content": {
-              "application/json": {
+              "application/problem+json": {
                 "schema": {
                   "$ref": "#/components/schemas/Problem"
                 }
@@ -810,7 +810,7 @@
           "404": {
             "description": "Missing or not owned; no private existence disclosure",
             "content": {
-              "application/json": {
+              "application/problem+json": {
                 "schema": {
                   "$ref": "#/components/schemas/Problem"
                 }
@@ -820,7 +820,7 @@
           "409": {
             "description": "Version/state/availability/listed-price/idempotency conflict",
             "content": {
-              "application/json": {
+              "application/problem+json": {
                 "schema": {
                   "$ref": "#/components/schemas/Problem"
                 }
@@ -830,7 +830,7 @@
           "500": {
             "description": "Transaction failed; no partial business writes",
             "content": {
-              "application/json": {
+              "application/problem+json": {
                 "schema": {
                   "$ref": "#/components/schemas/Problem"
                 }
@@ -1280,8 +1280,12 @@
             "minimum": 1
           },
           "actorId": {
-            "type": "string",
-            "format": "uuid"
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "uuid",
+            "description": "Null only when the original legacy event did not record an actor. New lifecycle events must record the authenticated actor."
           },
           "fromStatus": {
             "type": [
@@ -1557,6 +1561,9 @@
                 "type": "string"
               }
             }
+          },
+          "traceId": {
+            "type": "string"
           }
         },
         "required": [

@@ -9,7 +9,8 @@ Stable, compact facts for agents. Search by heading or keyword and read only the
 - Data-model proposal: `docs/DatabaseSchema.md`.
 - Spec Kit constitution: `.specify/memory/constitution.md`.
 - Sprint features: `001-foundation-accounts` has core auth/profile implementation; `002-tutor-discovery` phases 1–4 are implemented.
-  `003-hire-negotiation` has planning artifacts and 50 implementation tasks; analyze/implementation pending.
+  `003-hire-negotiation` Phases 1–3 / create US1 (T001–T019) are implemented; US2–US5 pending.
+  Hiring snapshot/version/idempotency migration applied to local PostgreSQL via DatabaseMigrator on 2026-10-29.
   `004-messaging-admin-release` is defined and awaiting planning.
 - `005-database-snake-case` is implemented and applied to local PostgreSQL; physical names include Identity and EF history.
 - Shared AI usage guide: `docs/guides/AI-WORKFLOW.md`.

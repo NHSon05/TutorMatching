@@ -46,11 +46,28 @@ public sealed class OpenApiContractTests(PostgreSqlFixture fixture)
             expected["paths"]![path.Key[expectedPrefix.Length..]] = path.Value!.DeepClone();
         foreach (var schema in discovery["components"]!["schemas"]!.AsObject())
             expected["components"]!["schemas"]![schema.Key] = schema.Value!.DeepClone();
+        var hiring = JsonNode.Parse(await File.ReadAllTextAsync(Path.Combine(AppContext.BaseDirectory, "Contracts", "hiring.json")))!;
         var actualOps = Operations(actual);
         var expectedOps = Operations(expected);
         Assert.NotEmpty(actualOps);
         foreach (var (key, operation) in actualOps)
         {
+            if (key == "POST /api/v1/hire-requests")
+            {
+                var planned = hiring["paths"]!["/api/v1/hire-requests"]!["post"]!;
+                Assert.Equal(planned["operationId"]!.GetValue<string>(), operation["operationId"]!.GetValue<string>());
+                Assert.Equal(planned["responses"]!.AsObject().Select(x => x.Key).Order(), operation["responses"]!.AsObject().Select(x => x.Key).Order());
+                CompareContent(hiring, planned["requestBody"]!, actual, operation["requestBody"]!);
+                CompareContent(hiring, planned["responses"]!["201"]!, actual, operation["responses"]!["201"]!);
+                Assert.Contains("cookieAuth", operation["security"]!.ToJsonString());
+                Assert.Contains("csrfHeader", operation["security"]!.ToJsonString());
+                var identity = operation["parameters"]!.AsArray().Single(p => p!["name"]!.GetValue<string>() == "Idempotency-Key")!;
+                Assert.True(identity["required"]!.GetValue<bool>());
+                Assert.Equal("uuid", identity["schema"]!["format"]!.GetValue<string>());
+                foreach (var code in new[] { "400", "401", "403", "404", "409", "500" })
+                    Assert.NotNull(operation["responses"]![code]!["content"]!["application/problem+json"]);
+                continue;
+            }
             if ((key.Contains("/api/v1/tutor") && key is not ("GET /api/v1/tutor/reviews" or "GET /api/v1/tutors" or "GET /api/v1/tutors/{id}")) || PendingOperations.Any(p => key.Contains(p))) continue;
             Assert.True(expectedOps.TryGetValue(key, out var contract), $"Undocumented operation: {key}");
             Assert.True(contract!["operationId"] is JsonValue, $"Missing contract operationId: {key}");
