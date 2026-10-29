@@ -5,6 +5,8 @@ import Image from "next/image";
 import { TextField } from "../ui";
 import type { DashboardTopBarProps, DashboardUser } from "./types";
 import { LogoutButton } from "../LogoutButton";
+import { SidebarToggleIcon } from "../icons";
+import { useUIStore } from "@/stores/use-ui-store";
 
 export type * from "./types";
 
@@ -18,18 +20,35 @@ const DEFAULT_USER: DashboardUser = {
 
 export function DashboardTopBar({ user = DEFAULT_USER }: DashboardTopBarProps) {
   const [searchValue, setSearchValue] = React.useState("");
+  const mode = useUIStore((state) => state.mode);
+  const toggleMode = useUIStore((state) => state.toggleMode);
+
+  const isCollapsed = mode === "collapsed";
 
   return (
     <div className="w-full flex flex-col  sm:flex-row sticky top-2 z-20 items-stretch sm:items-center justify-between gap-4 pb-6">
       {/* Search Input Bar */}
       <div className="flex-1 max-w-md">
-        <TextField
-          type="search"
-          value={searchValue}
-          onChange={(e) => setSearchValue(e.target.value)}
-          placeholder="Search projects"
-          width={360}
-        />
+        <div className="flex gap-2">
+          <button
+            type="button"
+            onClick={toggleMode}
+            aria-label={isCollapsed ? "Mở rộng thanh điều hướng" : "Thu gọn thanh điều hướng"}
+            title={isCollapsed ? "Mở rộng thanh điều hướng" : "Thu gọn thanh điều hướng"}
+            className={`p-2 rounded-lg text-gray-500 hover:text-gray-900 hover:bg-gray-100 dark:text-gray-400 dark:hover:text-white dark:hover:bg-gray-800 transition-colors ${
+              isCollapsed ? "mx-auto" : ""
+            }`}
+          >
+            <SidebarToggleIcon collapsed={isCollapsed} className="w-5 h-5" />
+          </button>
+          <TextField
+            type="search"
+            value={searchValue}
+            onChange={(e) => setSearchValue(e.target.value)}
+            placeholder="Search projects"
+            width={360}
+          />
+        </div>
       </div>
 
       {/* Right Controls: Live Badge, Theme Moon, Bell, Avatar */}
