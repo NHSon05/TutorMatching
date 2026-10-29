@@ -42,6 +42,44 @@ public sealed class HireRequest
     public Province? Province { get; set; }
     public District? District { get; set; }
 
+    public bool CanRespond(Guid actor, Guid tutor) => actor == tutor && StatusCode is "PENDING" or "NEGOTIATING";
+    public bool CanAcceptInitial(Guid actor, Guid tutor) => CanRespond(actor, tutor) && LatestProposalSequence == 0 && FinalAgreement is null;
+
+    public RequestStatusHistory AcceptInitial(Guid actor, Guid tutor, DateTimeOffset now, string? provinceName, string? districtName)
+    {
+        if (actor != tutor) throw new HireRuleException("forbidden");
+        if (!CanAcceptInitial(actor, tutor)) throw new HireRuleException("state_conflict");
+        FinalAgreement = new FinalAgreement(InitialTerms, actor, now, null, provinceName, districtName);
+        AgreedPriceVnd = InitialTerms.PriceVnd;
+        AcceptedAt = now.ToUniversalTime();
+        return Transition("ACCEPTED", actor, null, now);
+    }
+
+    public RequestStatusHistory Reject(Guid actor, Guid tutor, string? reason, DateTimeOffset now)
+    {
+        if (actor != tutor) throw new HireRuleException("forbidden");
+        if (!CanRespond(actor, tutor)) throw new HireRuleException("state_conflict");
+        if (!HireTerms.ValidReason(reason)) throw new HireRuleException("invalid_reason");
+        return Transition("REJECTED", actor, reason!.Trim(), now);
+    }
+
+    private RequestStatusHistory Transition(string status, Guid actor, string? reason, DateTimeOffset now)
+    {
+        var history = new RequestStatusHistory
+        {
+            Id = Guid.NewGuid(),
+            HireRequestId = Id,
+            ActorUserId = actor,
+            FromStatusCode = StatusCode,
+            ToStatusCode = status,
+            Reason = reason,
+            CreatedAt = now.ToUniversalTime()
+        };
+        StatusCode = status;
+        UpdatedAt = now.ToUniversalTime();
+        return history;
+    }
+
     public ICollection<RequestSchedule> Schedules { get; set; } = [];
     public ICollection<Negotiation> Negotiations { get; set; } = [];
     public ICollection<RequestStatusHistory> StatusHistories { get; set; } = [];

@@ -15,7 +15,9 @@ export function TutorGuard({ children }: { children: ReactNode }) {
     pathname === "/tutor" ||
     pathname === "/tutor/onboarding" ||
     pathname === "/tutor/offers" ||
-    pathname === "/tutor/profile-edit";
+    pathname === "/tutor/profile-edit" ||
+    pathname === "/tutor/requests" ||
+    pathname.startsWith("/tutor/requests/");
   const isApproved = account?.tutorProfileStatus === "APPROVED";
 
   useEffect(() => {

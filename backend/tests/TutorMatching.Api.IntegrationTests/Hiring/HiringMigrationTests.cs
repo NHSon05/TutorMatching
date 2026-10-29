@@ -47,10 +47,24 @@ public sealed class HiringMigrationTests(PostgreSqlFixture postgres)
         Assert.Single(proposals[1].Terms!.Schedules);
         Assert.Equal(2, request.LatestProposalSequence);
         Assert.Equal(3, request.NextEventSequence);
+        var conversation = await db.Conversations.SingleAsync(c => c.HireRequestId == id);
+        var queries = new TutorMatching.Infrastructure.Hiring.HireRequestQueries(db,
+            new LegacyLearner(request.RequesterUserId), scope.ServiceProvider.GetRequiredService<TutorMatching.Application.Abstractions.IClock>());
+        var detail = await queries.DetailAsync(id, CancellationToken.None);
+        Assert.Equal(conversation.Id, detail.ConversationId);
+        Assert.Equal(2, detail.History.Length);
         await DatabaseMigrationRunner.MigrateAsync(db, Previous);
         Assert.Equal(1, await db.Database.SqlQueryRaw<int>("SELECT count(*)::int AS \"Value\" FROM hire_requests").SingleAsync());
         await DatabaseMigrationRunner.MigrateAsync(db);
         Assert.Equal(2, await db.Negotiations.CountAsync());
+        Assert.Equal(conversation.Id, (await db.Conversations.SingleAsync(c => c.HireRequestId == id)).Id);
+    }
+
+    private sealed class LegacyLearner(Guid id) : TutorMatching.Application.Abstractions.ICurrentUser
+    {
+        public bool IsAuthenticated => true;
+        public Guid? UserId => id;
+        public TutorMatching.Domain.Users.AccountRole? Role => TutorMatching.Domain.Users.AccountRole.LEARNER;
     }
 
     [Fact]

@@ -274,3 +274,58 @@ changed/unavailable tutor schedules (409). No task beyond Phase 3 marked complet
   `to_regclass('hire_create_operations')` resolves, hire_requests remains empty.
 - No request was submitted on the user's behalf; end-to-end create after this local upgrade remains
   to be exercised through the UI. Earlier statements about not migrating locally describe prior checks.
+
+
+## Phase 4 — US2 review and respond (T020–T027)
+
+Implementation:
+- Domain `HireRequest` state transition rules:
+  - Added `CanRespond(Guid actor, Guid tutor)`: actor == tutor && status in ("PENDING", "NEGOTIATING").
+  - Added `CanAcceptInitial(Guid actor, Guid tutor)`: `CanRespond` && `LatestProposalSequence == 0` && `FinalAgreement == null`.
+  - Added `AcceptInitial(...)`: enforces actor == tutor, freezes `FinalAgreement` (copying InitialTerms, actor, UTC acceptedAt, province/district labels), sets `AgreedPriceVnd` and transition event to "ACCEPTED".
+  - Added `Reject(...)`: validates non-blank reason (1–1000 characters), transition event to "REJECTED" with reason.
+  - Added `HireRuleException` carrying error codes: "forbidden", "state_conflict", "invalid_reason".
+- Application use case `RespondToHireRequest`:
+  - Enforces `ICurrentUser` actor with `AccountRole.TUTOR`.
+  - Executes within `IHireRequestStore.ExecuteAsync`:
+    - On acceptance: validates proposalSequence is null, revalidates offering eligibility, future start date and weekly window capacity under row locks.
+    - On rejection: does not re-require offering validity (expired/unavailable requests can still be rejected), validates trimmed reason length.
+    - Emits one `RequestStatusHistory` and one recipient notification to learner.
+  - Returns `HireResult` (Id, Version, Status) projected after commit to reflect the rotated optimistic concurrency `Version`.
+- Queries `IHireRequestQueries` and `HireRequestQueries`:
+  - Participant-scoped list and detail queries running with `IsolationLevel.RepeatableRead` and `AsNoTracking()`.
+  - Enforces actor role (LEARNER or TUTOR) and matches against `RequesterUserId` or tutor profile `UserId`. Non-participants receive 404 without leaking request existence.
+  - Keyset cursor pagination over `(CreatedAt DESC, Id DESC)` with boundary validation, status filter, and `pageSize` bounded to 1–100 (default 20).
+  - Server-computed `allowedActions` based on actor role and request status.
+- API `HireRequestsController`:
+  - Scoped `[Authorize(Roles = "LEARNER")]` strictly to POST create.
+  - Added GET `/api/v1/hire-requests` for list (LEARNER and TUTOR).
+  - Added GET `/api/v1/hire-requests/{id}` for detail (LEARNER and TUTOR).
+  - Added POST `/api/v1/hire-requests/{id}/accept` (TUTOR role, requires matching `expectedVersion` and `proposalSequence: null`).
+  - Added POST `/api/v1/hire-requests/{id}/reject` (TUTOR role, requires matching `expectedVersion` and 1–1000 char reason).
+  - Registered `RespondToHireRequest` and `IHireRequestQueries` into DI.
+- Frontend Client & Hooks:
+  - Added types and methods `listHireRequests`, `getHireRequest`, `acceptHireRequest`, `rejectHireRequest` in `frontend/src/lib/api/hire-requests.ts`.
+  - Added TanStack Query hooks in `frontend/src/hooks/use-hire-requests.ts`: `useHireRequests`, `useHireRequestDetail`, `useAcceptHireRequest`, `useRejectHireRequest`.
+- Tutor UI:
+  - `TutorGuard`: permitted `/tutor/requests` so tutors can review/reject requests even if profile is not yet approved.
+  - `TutorSidebar`: added "Yêu cầu thuê" navigation item with inbox icon.
+  - `HireRequestDetail`: status badge, participant identities, initial & current terms, frozen final agreement display, full chronological history timeline, accept button, rejection reason form with live validation and character count, and 409 conflict handling with draft retention and refresh.
+  - `frontend/src/app/(tutor)/tutor/requests/page.tsx`: keyset paginated request list with status badges, loading skeletons, error card, and empty state.
+  - `frontend/src/app/(tutor)/tutor/requests/[id]/page.tsx`: detail view with conflict recovery, draft preservation, and accept/reject mutations.
+- Test suites created & verified:
+  - Domain: `InitialResponseTests.cs` (13 tests: state transitions, authorization, reason validation, agreement freezing).
+  - Integration: `TutorResponseTests.cs` (13 tests: initial acceptance, rejection, unauthorized blocking, 404 isolation, notification rollback, competing responders race, keyset pagination).
+  - Frontend: `hire-response.test.tsx` (9 tests: component rendering, action visibility, accept action, reason validation, 409 conflict banner and draft retention).
+  - Frontend pages: `hire-response-pages.test.tsx` (3 tests: keyset pagination navigation stack, 409 ApiError draft retention, private draft clearing on account switch).
+  - E2E: `hire-response.spec.ts` executed via `dotnet run --project backend/tests/performance/tutor-discovery -- --hire-response-browser /tmp/phase4-response-final`.
+    - Elapsed: 16,121 ms; verified 2 requests, 4 histories, 2 conversations, 2 operations, 4 notifications (2 to learner), frozen agreement price 150,000 VND.
+
+Verification summary:
+- Full backend: `dotnet test backend/TutorMatching.slnx` — **320/320 passed** (Domain 33, Application 50, API Integration 237), 0 failed, 0 skipped.
+- Full frontend: `npm --prefix frontend test` — **245/245 passed** (34 files), 0 failed.
+- Frontend lint: `npm --prefix frontend run lint` — passed.
+- Frontend build: `npm --prefix frontend run build` — passed.
+- E2E browser: `--hire-response-browser` passed (exit code 0); `--hire-browser` passed (exit code 0).
+
+**Phase 4 checkpoint: PASS.** T020–T027 checked complete. Next: Phase 5 / US3 (T028–T034) — Counter-proposal negotiation.

@@ -26,7 +26,9 @@ internal static class Runner
     private static readonly Guid MathId = Guid.Parse("02000000-0000-0000-0000-000000000001");
     public static async Task<int> Main(string[] args)
     {
-        var browser = args.Contains("--browser") || args.Contains("--hire-browser");
+        var hireCreation = args.Contains("--hire-browser");
+        var hireResponse = args.Contains("--hire-response-browser");
+        var browser = args.Contains("--browser") || hireCreation || hireResponse;
         var output = Path.GetFullPath(args.FirstOrDefault(a => !a.StartsWith("--")) ?? Path.Combine(Path.GetTempPath(), "tutor-discovery-" + Guid.NewGuid().ToString("N")));
         Directory.CreateDirectory(output);
         using var deadline = new CancellationTokenSource(TimeSpan.FromMinutes(10));
@@ -35,7 +37,11 @@ internal static class Runner
             .WithDatabase("discovery_performance").WithUsername("benchmark")
             .WithPassword(Guid.NewGuid().ToString("N")).Build();
         await database.StartAsync(token);
-        if (browser) return await BrowserFixture.Run(database.GetConnectionString(), output, token, args.Contains("--hire-browser"));
+        if (browser)
+        {
+            var scenario = hireResponse ? "hire-response" : (hireCreation ? "hire-creation" : "discovery");
+            return await BrowserFixture.Run(database.GetConnectionString(), output, token, scenario);
+        }
         var capture = new QueryCapture();
         await using var factory = new PerformanceFactory(database.GetConnectionString(), capture);
         using var client = factory.CreateClient(new WebApplicationFactoryClientOptions { AllowAutoRedirect = false });

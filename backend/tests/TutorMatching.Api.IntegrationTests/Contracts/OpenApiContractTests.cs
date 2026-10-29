@@ -68,6 +68,20 @@ public sealed class OpenApiContractTests(PostgreSqlFixture fixture)
                     Assert.NotNull(operation["responses"]![code]!["content"]!["application/problem+json"]);
                 continue;
             }
+            if (key is "GET /api/v1/hire-requests" or "GET /api/v1/hire-requests/{id}" or "POST /api/v1/hire-requests/{id}/accept" or "POST /api/v1/hire-requests/{id}/reject")
+            {
+                var (method, path) = key.Split(' ') switch { var parts => (parts[0].ToLowerInvariant(), parts[1]) };
+                var planned = hiring["paths"]![path]![method]!;
+                Assert.Equal(planned["operationId"]!.GetValue<string>(), operation["operationId"]!.GetValue<string>());
+                Assert.Equal(planned["responses"]!.AsObject().Select(x => x.Key).Order(), operation["responses"]!.AsObject().Select(x => x.Key).Order());
+                var security = (operation["security"] ?? actual["security"])!.ToJsonString();
+                Assert.Contains("cookieAuth", security);
+                if (method == "post")
+                    Assert.Contains("csrfHeader", security);
+                foreach (var code in new[] { "400", "401", "403", "404", "409", "500" })
+                    Assert.NotNull(operation["responses"]![code]!["content"]!["application/problem+json"]);
+                continue;
+            }
             if ((key.Contains("/api/v1/tutor") && key is not ("GET /api/v1/tutor/reviews" or "GET /api/v1/tutors" or "GET /api/v1/tutors/{id}")) || PendingOperations.Any(p => key.Contains(p))) continue;
             Assert.True(expectedOps.TryGetValue(key, out var contract), $"Undocumented operation: {key}");
             Assert.True(contract!["operationId"] is JsonValue, $"Missing contract operationId: {key}");

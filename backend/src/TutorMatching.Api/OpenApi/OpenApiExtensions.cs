@@ -34,15 +34,34 @@ public static class OpenApiExtensions
                             p.Schema = new OpenApiSchema { Type = JsonSchemaType.Array, Items = new OpenApiSchema { Type = JsonSchemaType.String, Format = "uuid" } };
                     }
                 }
-                if (context.Description.RelativePath == ApiRoutes.Prefix + "/hire-requests" && context.Description.HttpMethod == "POST")
+                if (context.Description.RelativePath == ApiRoutes.Prefix + "/hire-requests")
                 {
-                    operation.OperationId = "createHireRequest";
-                    foreach (var parameter in operation.Parameters ?? [])
-                        if (parameter is OpenApiParameter { Name: "Idempotency-Key" } identity)
-                        {
-                            identity.Required = true;
-                            identity.Schema = new OpenApiSchema { Type = JsonSchemaType.String, Format = "uuid" };
-                        }
+                    if (context.Description.HttpMethod == "POST")
+                    {
+                        operation.OperationId = "createHireRequest";
+                        foreach (var parameter in operation.Parameters ?? [])
+                            if (parameter is OpenApiParameter { Name: "Idempotency-Key" } identity)
+                            {
+                                identity.Required = true;
+                                identity.Schema = new OpenApiSchema { Type = JsonSchemaType.String, Format = "uuid" };
+                            }
+                    }
+                    else if (context.Description.HttpMethod == "GET")
+                    {
+                        operation.OperationId = "listHireRequests";
+                    }
+                }
+                else if (context.Description.RelativePath == ApiRoutes.Prefix + "/hire-requests/{id}" && context.Description.HttpMethod == "GET")
+                {
+                    operation.OperationId = "getHireRequest";
+                }
+                else if (context.Description.RelativePath == ApiRoutes.Prefix + "/hire-requests/{id}/accept" && context.Description.HttpMethod == "POST")
+                {
+                    operation.OperationId = "acceptHireRequest";
+                }
+                else if (context.Description.RelativePath == ApiRoutes.Prefix + "/hire-requests/{id}/reject" && context.Description.HttpMethod == "POST")
+                {
+                    operation.OperationId = "rejectHireRequest";
                 }
                 var consumes = context.Description.ActionDescriptor.EndpointMetadata
                     .OfType<ConsumesAttribute>()

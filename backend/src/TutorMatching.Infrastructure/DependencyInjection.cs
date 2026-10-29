@@ -71,6 +71,7 @@ public static class DependencyInjection
         services.AddScoped<Application.Tutors.ITutorOfferService, Tutors.TutorOfferService>();
         services.AddScoped<Application.Catalog.ICatalogService, Catalog.CatalogService>();
         services.AddScoped<Application.Hiring.IHireRequestStore, Hiring.HireRequestStore>();
+        services.AddScoped<Application.Hiring.IHireRequestQueries, Hiring.HireRequestQueries>();
         services.AddScoped<Application.Administration.IAdminService, Administration.AdminService>();
 
         return services;
