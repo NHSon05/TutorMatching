@@ -1,33 +1,33 @@
 "use client";
 
 import * as React from "react";
+import { HireRequestTimeline } from "./HireRequestTimeline";
+import { hireStatuses as statusConfig } from "./hire-status";
+import { NegotiationPanel } from "./NegotiationPanel";
+import { formatVietnamDateTime } from "@/lib/date-time";
 import type { HireDetail, HireTermsDto } from "@/lib/api/hire-requests";
 import { Badge, type BadgeVariant } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { TextArea } from "@/components/ui/text-area";
+import { CloseRequestDialog } from "./CloseRequestDialog";
 
 export interface HireRequestDetailProps {
   detail: HireDetail;
   onAccept?: () => void;
   onReject?: (reason: string) => void;
-  onRefresh?: () => void;
+  onCancel?: (reason?: string) => void | Promise<void>;
+  onComplete?: (reason?: string) => void | Promise<void>;
+  onRefresh?: () => void | Promise<HireDetail | undefined>;
   isAccepting?: boolean;
   isRejecting?: boolean;
+  isCancelling?: boolean;
+  isCompleending?: boolean;
   errorMessage?: string | null;
   isConflict?: boolean;
   reasonDraft?: string;
   onReasonDraftChange?: (reason: string) => void;
 }
-
-const statusConfig: Record<string, { label: string; variant: BadgeVariant }> = {
-  PENDING: { label: "Chờ phản hồi", variant: "warning" },
-  NEGOTIATING: { label: "Đang thương lượng", variant: "brand" },
-  ACCEPTED: { label: "Đã chấp nhận", variant: "success" },
-  REJECTED: { label: "Đã từ chối", variant: "error" },
-  CANCELLED: { label: "Đã hủy", variant: "gray" },
-  COMPLETED: { label: "Đã hoàn thành", variant: "success" },
-};
 
 const dayNames: Record<number, string> = {
   1: "Thứ 2",
@@ -49,29 +49,17 @@ function formatVnd(amount: number) {
   return new Intl.NumberFormat("vi-VN").format(amount) + " đ";
 }
 
-function formatDate(isoDate: string) {
-  if (!isoDate) return "";
-  try {
-    const d = new Date(isoDate);
-    return d.toLocaleDateString("vi-VN", {
-      year: "numeric",
-      month: "2-digit",
-      day: "2-digit",
-      hour: "2-digit",
-      minute: "2-digit",
-    });
-  } catch {
-    return isoDate;
-  }
-}
-
 export function HireRequestDetail({
   detail,
   onAccept,
   onReject,
+  onCancel,
+  onComplete,
   onRefresh,
   isAccepting = false,
   isRejecting = false,
+  isCancelling = false,
+  isCompleending = false,
   errorMessage = null,
   isConflict = false,
   reasonDraft,
@@ -80,6 +68,7 @@ export function HireRequestDetail({
   const [internalReason, setInternalReason] = React.useState("");
   const [reasonError, setReasonError] = React.useState<string | null>(null);
   const [showRejectForm, setShowRejectForm] = React.useState(false);
+  const [closeDialogAction, setCloseDialogAction] = React.useState<"cancel" | "complete" | null>(null);
 
   const reason = reasonDraft !== undefined ? reasonDraft : internalReason;
   const setReason = (val: string) => {
@@ -94,12 +83,16 @@ export function HireRequestDetail({
 
   const canAccept = detail.allowedActions.includes("accept");
   const canReject = detail.allowedActions.includes("reject");
+  const canCancel = detail.allowedActions.includes("cancel");
+  const canComplete = detail.allowedActions.includes("complete");
 
   const handleRejectSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     const trimmed = reason.trim();
     if (!trimmed) {
-      setReasonError("Nhập lý do từ 1 đến 1000 ký tự, không chỉ chứa khoảng trắng.");
+      setReasonError(
+        "Nhập lý do từ 1 đến 1000 ký tự, không chỉ chứa khoảng trắng."
+      );
       return;
     }
     if (trimmed.length > 1000) {
@@ -119,7 +112,9 @@ export function HireRequestDetail({
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <div>
             <span className="text-content-secondary">Ngày bắt đầu: </span>
-            <span className="font-medium text-content-primary">{terms.startDate}</span>
+            <span className="font-medium text-content-primary">
+              {terms.startDate}
+            </span>
           </div>
           <div>
             <span className="text-content-secondary">Học phí: </span>
@@ -128,9 +123,12 @@ export function HireRequestDetail({
             </span>
           </div>
           <div>
-            <span className="text-content-secondary">Tần suất & Thời lượng: </span>
+            <span className="text-content-secondary">
+              Tần suất & Thời lượng:{" "}
+            </span>
             <span className="font-medium text-content-primary">
-              {terms.sessionsPerWeek} buổi/tuần • {terms.durationMinutes} phút/buổi
+              {terms.sessionsPerWeek} buổi/tuần • {terms.durationMinutes}{" "}
+              phút/buổi
             </span>
           </div>
           <div>
@@ -139,7 +137,9 @@ export function HireRequestDetail({
               {modeNames[terms.teachingMode] || terms.teachingMode}
             </span>
           </div>
-          {(terms.locationDetail || terms.provinceCode || terms.districtCode) && (
+          {(terms.locationDetail ||
+            terms.provinceCode ||
+            terms.districtCode) && (
             <div className="sm:col-span-2">
               <span className="text-content-secondary">Địa điểm học: </span>
               <span className="font-medium text-content-primary">
@@ -152,14 +152,17 @@ export function HireRequestDetail({
         </div>
 
         <div>
-          <span className="text-content-secondary block mb-1 font-medium">Lịch học trong tuần:</span>
+          <span className="text-content-secondary block mb-1 font-medium">
+            Lịch học trong tuần:
+          </span>
           <div className="flex flex-wrap gap-2">
             {terms.schedules.map((s, idx) => (
               <span
                 key={idx}
                 className="inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-medium bg-gray-100 text-gray-800 border border-gray-200"
               >
-                {dayNames[s.dayOfWeek] || `Thứ ${s.dayOfWeek}`}: {s.startTime} - {s.endTime}
+                {dayNames[s.dayOfWeek] || `Thứ ${s.dayOfWeek}`}: {s.startTime} -{" "}
+                {s.endTime}
               </span>
             ))}
           </div>
@@ -179,33 +182,73 @@ export function HireRequestDetail({
                 <h1 className="text-2xl font-bold text-content-primary">
                   Chi tiết yêu cầu thuê gia sư
                 </h1>
-                <Badge role="status" aria-label="Trạng thái yêu cầu" variant={statusInfo.variant} appearance="solid" shape="pill">
+                <Badge
+                  role="status"
+                  aria-label="Trạng thái yêu cầu"
+                  variant={statusInfo.variant}
+                  appearance="solid"
+                  shape="pill"
+                >
                   {statusInfo.label}
                 </Badge>
               </div>
-              <p className="text-xs text-content-muted mt-1">Mã yêu cầu: {detail.id}</p>
+              <p className="text-xs text-content-muted mt-1">
+                Mã yêu cầu: {detail.id}
+              </p>
             </div>
             {onRefresh && (
               <Button
                 variant="secondary"
                 size="small"
                 onClick={onRefresh}
-                disabled={isAccepting || isRejecting}
+                disabled={isAccepting || isRejecting || isCancelling || isCompleending}
               >
                 Làm mới dữ liệu
               </Button>
             )}
           </div>
 
+          {/* Action buttons (cancel/complete) when permitted */}
+          {(canCancel || canComplete) && (
+            <div className="flex flex-wrap gap-2 mb-4">
+              {canComplete && (
+                <Button
+                  variant="success"
+                  size="small"
+                  onClick={() => setCloseDialogAction("complete")}
+                  isLoading={isCompleending}
+                  disabled={isAccepting || isRejecting || isCancelling || isCompleending}
+                >
+                  Hoàn tất việc học...
+                </Button>
+              )}
+              {canCancel && (
+                <Button
+                  variant="secondary"
+                  size="small"
+                  onClick={() => setCloseDialogAction("cancel")}
+                  isLoading={isCancelling}
+                  disabled={isAccepting || isRejecting || isCancelling || isCompleending}
+                >
+                  Hủy yêu cầu...
+                </Button>
+              )}
+            </div>
+          )}
+
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
             <div className="p-3 bg-surface-card rounded-xl border border-border-default">
-              <span className="text-content-secondary block text-xs">Học viên gửi yêu cầu</span>
+              <span className="text-content-secondary block text-xs">
+                Học viên gửi yêu cầu
+              </span>
               <span className="font-semibold text-content-primary text-base">
                 {detail.learner.displayName}
               </span>
             </div>
             <div className="p-3 bg-surface-card rounded-xl border border-border-default">
-              <span className="text-content-secondary block text-xs">Gia sư nhận yêu cầu</span>
+              <span className="text-content-secondary block text-xs">
+                Gia sư nhận yêu cầu
+              </span>
               <span className="font-semibold text-content-primary text-base">
                 {detail.tutor.displayName}
               </span>
@@ -221,9 +264,12 @@ export function HireRequestDetail({
           className="p-4 rounded-xl bg-amber-50 border border-amber-300 text-amber-900 text-sm flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3"
         >
           <div>
-            <p className="font-semibold">Dữ liệu yêu cầu đã được cập nhật bởi thao tác khác.</p>
+            <p className="font-semibold">
+              Dữ liệu yêu cầu đã được cập nhật bởi thao tác khác.
+            </p>
             <p className="text-amber-800 text-xs mt-0.5">
-              Nội dung bạn đang nhập đã được giữ lại. Vui lòng làm mới dữ liệu để kiểm tra trạng thái mới nhất trước khi gửi lại.
+              Nội dung bạn đang nhập đã được giữ lại. Vui lòng làm mới dữ liệu
+              để kiểm tra trạng thái mới nhất trước khi gửi lại.
             </p>
           </div>
           {onRefresh && (
@@ -256,28 +302,60 @@ export function HireRequestDetail({
               <CardTitle className="text-lg font-bold text-emerald-900">
                 Thỏa thuận đã thống nhất (Final Agreement)
               </CardTitle>
-              <Badge variant="success" appearance="solid">Đã chốt</Badge>
+              <Badge variant="success" appearance="solid">
+                Đã chốt
+              </Badge>
             </div>
             <p className="text-xs text-emerald-800">
-              Được chấp nhận lúc {formatDate(detail.finalAgreement.acceptedAt)}
+              Được chấp nhận lúc{" "}
+              {formatVietnamDateTime(detail.finalAgreement.acceptedAt)}
             </p>
           </CardHeader>
           <CardContent className="space-y-2 text-sm text-emerald-950">
+            <p>Ngày bắt đầu: {detail.finalAgreement.terms.startDate}</p>
+            <p>
+              {detail.finalAgreement.terms.sessionsPerWeek} buổi/tuần •{" "}
+              {detail.finalAgreement.terms.durationMinutes} phút/buổi
+            </p>
+            <p>
+              Hình thức học:{" "}
+              {modeNames[detail.finalAgreement.terms.teachingMode] ||
+                detail.finalAgreement.terms.teachingMode}
+            </p>
+            {(detail.finalAgreement.terms.locationDetail ||
+              detail.finalAgreement.terms.provinceCode ||
+              detail.finalAgreement.terms.districtCode) && (
+              <p>
+                Địa điểm học:{" "}
+                {[
+                  detail.finalAgreement.terms.locationDetail,
+                  detail.finalAgreement.terms.districtCode,
+                  detail.finalAgreement.terms.provinceCode,
+                ]
+                  .filter(Boolean)
+                  .join(", ")}
+              </p>
+            )}
             <div>
-              <span className="text-emerald-800 font-medium">Học phí thống nhất: </span>
+              <span className="text-emerald-800 font-medium">
+                Học phí thống nhất:{" "}
+              </span>
               <span className="font-bold text-base">
                 {formatVnd(detail.finalAgreement.terms.priceVnd)} / buổi
               </span>
             </div>
             <div>
-              <span className="text-emerald-800 font-medium">Lịch học chốt: </span>
+              <span className="text-emerald-800 font-medium">
+                Lịch học chốt:{" "}
+              </span>
               <div className="flex flex-wrap gap-2 mt-1">
                 {detail.finalAgreement.terms.schedules.map((s, idx) => (
                   <span
                     key={idx}
                     className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-emerald-100 text-emerald-900 border border-emerald-200"
                   >
-                    {dayNames[s.dayOfWeek] || `Thứ ${s.dayOfWeek}`}: {s.startTime} - {s.endTime}
+                    {dayNames[s.dayOfWeek] || `Thứ ${s.dayOfWeek}`}:{" "}
+                    {s.startTime} - {s.endTime}
                   </span>
                 ))}
               </div>
@@ -289,11 +367,21 @@ export function HireRequestDetail({
       {/* Initial & Current Terms */}
       {renderTerms(detail.currentTerms, "Điều khoản hiện tại")}
 
-      {detail.proposals.length > 0 && (
-        renderTerms(detail.initialTerms, "Điều khoản ban đầu")
-      )}
+      {detail.proposals.length > 0 &&
+        renderTerms(detail.initialTerms, "Điều khoản ban đầu")}
 
-      {/* Response Actions for Tutor */}
+      {onRefresh &&
+        (detail.allowedActions.includes("propose") ||
+          detail.proposals.length > 0) && (
+          <NegotiationPanel
+            key={detail.id}
+            detail={detail}
+            onRefresh={async () => (await onRefresh()) || undefined}
+            disabled={isAccepting || isRejecting}
+          />
+        )}
+
+      {/* Response Actions for participants */}
       {(canAccept || canReject) && (
         <Card className="border-role-tutor/40">
           <CardHeader>
@@ -301,7 +389,8 @@ export function HireRequestDetail({
               Phản hồi yêu cầu
             </CardTitle>
             <p className="text-xs text-content-secondary">
-              Bạn có thể chấp nhận điều khoản ban đầu hoặc từ chối yêu cầu này.
+              Kiểm tra điều khoản hiện tại trước khi phản hồi. Chỉ bên nhận được
+              chấp nhận đề xuất mới nhất.
             </p>
           </CardHeader>
           <CardContent className="space-y-4">
@@ -313,7 +402,9 @@ export function HireRequestDetail({
                   isLoading={isAccepting}
                   disabled={isAccepting || isRejecting}
                 >
-                  Chấp nhận yêu cầu
+                  {detail.proposals.length
+                    ? "Chấp nhận đề xuất mới nhất"
+                    : "Chấp nhận yêu cầu"}
                 </Button>
               )}
               {canReject && !showRejectForm && (
@@ -329,7 +420,10 @@ export function HireRequestDetail({
 
             {/* Rejection Form */}
             {canReject && showRejectForm && (
-              <form onSubmit={handleRejectSubmit} className="mt-4 p-4 rounded-xl border border-rose-200 bg-rose-50/50 space-y-3">
+              <form
+                onSubmit={handleRejectSubmit}
+                className="mt-4 p-4 rounded-xl border border-rose-200 bg-rose-50/50 space-y-3"
+              >
                 <TextArea
                   label="Lý do từ chối (bắt buộc)"
                   placeholder="Nhập lý do từ chối để học viên nắm thông tin (1–1000 ký tự)..."
@@ -370,48 +464,23 @@ export function HireRequestDetail({
         </Card>
       )}
 
-      {/* History Timeline */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-lg font-semibold">Lịch sử trạng thái</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-4">
-            {detail.history.map((event) => {
-              const toInfo = statusConfig[event.toStatus] || { label: event.toStatus, variant: "gray" };
-              return (
-                <div
-                  key={event.sequence}
-                  className="flex items-start gap-3 p-3 rounded-xl bg-surface-card border border-border-default text-sm"
-                >
-                  <div className="w-7 h-7 rounded-full bg-gray-100 flex items-center justify-center font-bold text-xs text-content-secondary shrink-0 mt-0.5">
-                    #{event.sequence}
-                  </div>
-                  <div className="flex-1 space-y-1">
-                    <div className="flex flex-wrap items-center gap-2">
-                      <span className="font-medium text-content-primary">
-                        Chuyển sang:
-                      </span>
-                      <Badge variant={toInfo.variant} appearance="subtitle" size="small">
-                        {toInfo.label}
-                      </Badge>
-                      <span className="text-xs text-content-muted ml-auto">
-                        {formatDate(event.createdAt)}
-                      </span>
-                    </div>
-                    {event.reason && (
-                      <p className="text-xs text-rose-800 bg-rose-50 p-2 rounded-lg border border-rose-200 mt-1">
-                        <span className="font-semibold">Lý do: </span>
-                        {event.reason}
-                      </p>
-                    )}
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        </CardContent>
-      </Card>
+      <HireRequestTimeline detail={detail} />
+
+      <CloseRequestDialog
+        isOpen={closeDialogAction !== null}
+        onClose={() => setCloseDialogAction(null)}
+        action={closeDialogAction}
+        isAccepted={detail.status === "ACCEPTED"}
+        isLoading={isCancelling || isCompleending}
+        onConfirm={async ({ reason }) => {
+          if (closeDialogAction === "cancel") {
+            await onCancel?.(reason);
+          } else if (closeDialogAction === "complete") {
+            await onComplete?.(reason);
+          }
+          setCloseDialogAction(null);
+        }}
+      />
     </div>
   );
 }

@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import Image from "next/image";
+import Link from "next/link";
 import { TextField } from "../ui";
 import type { DashboardTopBarProps, DashboardUser } from "./types";
 import { LogoutButton } from "../LogoutButton";
@@ -27,14 +28,28 @@ export function DashboardTopBar({ user = DEFAULT_USER }: DashboardTopBarProps) {
 
   return (
     <div className="w-full flex flex-col  sm:flex-row sticky top-2 z-20 items-stretch sm:items-center justify-between gap-4 pb-6">
+      <Link
+        href="/learner/requests"
+        className="md:hidden text-brand font-semibold"
+      >
+        Yêu cầu thuê
+      </Link>
       {/* Search Input Bar */}
       <div className="flex-1 max-w-md">
         <div className="flex gap-2">
           <button
             type="button"
             onClick={toggleMode}
-            aria-label={isCollapsed ? "Mở rộng thanh điều hướng" : "Thu gọn thanh điều hướng"}
-            title={isCollapsed ? "Mở rộng thanh điều hướng" : "Thu gọn thanh điều hướng"}
+            aria-label={
+              isCollapsed
+                ? "Mở rộng thanh điều hướng"
+                : "Thu gọn thanh điều hướng"
+            }
+            title={
+              isCollapsed
+                ? "Mở rộng thanh điều hướng"
+                : "Thu gọn thanh điều hướng"
+            }
             className={`p-2 rounded-lg text-gray-500 hover:text-gray-900 hover:bg-gray-100 dark:text-gray-400 dark:hover:text-white dark:hover:bg-gray-800 transition-colors ${
               isCollapsed ? "mx-auto" : ""
             }`}
@@ -121,7 +136,7 @@ export function DashboardTopBar({ user = DEFAULT_USER }: DashboardTopBarProps) {
             className="object-cover"
           />
         </div>
-        <LogoutButton/>
+        <LogoutButton />
       </div>
     </div>
   );

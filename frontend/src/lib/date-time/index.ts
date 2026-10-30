@@ -19,3 +19,16 @@ export function sortWeeklySchedules<
       a.dayOfWeek - b.dayOfWeek || a.startTime.localeCompare(b.startTime)
   );
 }
+
+export function formatVietnamDateTime(isoDate: string): string {
+  const date = new Date(isoDate);
+  if (Number.isNaN(date.getTime())) return isoDate;
+  return new Intl.DateTimeFormat("vi-VN", {
+    timeZone: "Asia/Ho_Chi_Minh",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+  }).format(date);
+}

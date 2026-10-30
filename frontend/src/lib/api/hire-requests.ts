@@ -52,7 +52,14 @@ export interface HireEvent {
 export interface HireSummary {
   id: string;
   version: string;
-  status: "PENDING" | "NEGOTIATING" | "ACCEPTED" | "REJECTED" | "CANCELLED" | "COMPLETED" | string;
+  status:
+    | "PENDING"
+    | "NEGOTIATING"
+    | "ACCEPTED"
+    | "REJECTED"
+    | "CANCELLED"
+    | "COMPLETED"
+    | string;
   learner: HireIdentity;
   tutor: HireIdentity;
   createdAt: string;
@@ -61,7 +68,14 @@ export interface HireSummary {
 export interface HireDetail {
   id: string;
   version: string;
-  status: "PENDING" | "NEGOTIATING" | "ACCEPTED" | "REJECTED" | "CANCELLED" | "COMPLETED" | string;
+  status:
+    | "PENDING"
+    | "NEGOTIATING"
+    | "ACCEPTED"
+    | "REJECTED"
+    | "CANCELLED"
+    | "COMPLETED"
+    | string;
   learner: HireIdentity;
   tutor: HireIdentity;
   createdAt: string;
@@ -71,7 +85,9 @@ export interface HireDetail {
   proposals: HireProposal[];
   history: HireEvent[];
   conversationId: string;
-  allowedActions: Array<"accept" | "reject" | "propose" | "cancel" | "complete" | string>;
+  allowedActions: Array<
+    "accept" | "reject" | "propose" | "cancel" | "complete" | string
+  >;
 }
 
 export interface HirePage {
@@ -157,12 +173,50 @@ export async function acceptHireRequest(
   id: string,
   body: AcceptHireRequest
 ): Promise<HireResult> {
-  return (await http.post<HireResult>(`/hire-requests/${id}/accept`, body)).data;
+  return (await http.post<HireResult>(`/hire-requests/${id}/accept`, body))
+    .data;
 }
 
 export async function rejectHireRequest(
   id: string,
   body: RejectHireRequest
 ): Promise<HireResult> {
-  return (await http.post<HireResult>(`/hire-requests/${id}/reject`, body)).data;
+  return (await http.post<HireResult>(`/hire-requests/${id}/reject`, body))
+    .data;
+}
+
+export interface ProposeHireRequest {
+  expectedVersion: string;
+  priceVnd?: number;
+  schedules?: HireSchedule[];
+  note?: string;
+}
+
+export async function proposeHireRequest(
+  id: string,
+  body: ProposeHireRequest
+): Promise<HireResult> {
+  return (await http.post<HireResult>(`/hire-requests/${id}/proposals`, body))
+    .data;
+}
+
+export interface CloseHireRequest {
+  expectedVersion: string;
+  confirmed: true;
+  reason?: string;
+}
+
+export async function cancelHireRequest(
+  id: string,
+  body: CloseHireRequest
+): Promise<HireResult> {
+  return (await http.post<HireResult>(`/hire-requests/${id}/cancel`, body)).data;
+}
+
+export async function completeHireRequest(
+  id: string,
+  body: CloseHireRequest
+): Promise<HireResult> {
+  return (await http.post<HireResult>(`/hire-requests/${id}/complete`, body))
+    .data;
 }

@@ -159,7 +159,7 @@ export const Checkbox = React.forwardRef<HTMLInputElement, CheckboxProps>(
               {...props}
             />
             <div
-              className={`flex items-center justify-center shrink-0 border transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 ${
+              className={`flex items-center justify-center shrink-0 border transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 pointer-events-none ${
                 currentSize.box
               } ${
                 hasError

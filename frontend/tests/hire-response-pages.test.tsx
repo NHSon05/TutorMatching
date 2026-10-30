@@ -15,6 +15,8 @@ vi.mock("@/hooks/use-hire-requests", () => ({
   useHireRequestDetail: () => mocks.detail(),
   useAcceptHireRequest: () => ({ mutateAsync: mocks.accept, isPending: false }),
   useRejectHireRequest: () => ({ mutateAsync: mocks.reject, isPending: false }),
+  useCancelHireRequest: () => ({ mutateAsync: vi.fn(), isPending: false }),
+  useCompleteHireRequest: () => ({ mutateAsync: vi.fn(), isPending: false }),
 }));
 
 const terms = { startDate: "2030-01-01", sessionsPerWeek: 1, durationMinutes: 60,

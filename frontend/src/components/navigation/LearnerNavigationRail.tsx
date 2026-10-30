@@ -88,6 +88,7 @@ export function LearnerNavigationRail() {
           </div>
         }
       >
+          <NavItem id="hire-requests" label="Yêu cầu thuê" href="/learner/requests" icon={<TutorsIcon />} selected={pathname.startsWith("/learner/requests")} />
           <NavItem
             id="dashboard"
             label="Trang chủ"

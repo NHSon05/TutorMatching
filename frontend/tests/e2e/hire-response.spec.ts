@@ -86,7 +86,7 @@ test("learner creates two requests, tutor reviews list, accepts first and reject
   await expect(page.getByText("Yêu cầu thuê gia sư")).toBeVisible();
 
   // Both requests must be visible in the list
-  const detailLinks = page.getByRole("button", { name: "Xem chi tiết →" });
+  const detailLinks = page.getByRole("link", { name: "Xem chi tiết →" });
   await expect(detailLinks).toHaveCount(2);
 
   // 7. Tutor reviews & ACCEPTS the first request
@@ -113,7 +113,7 @@ test("learner creates two requests, tutor reviews list, accepts first and reject
   await expect(page).toHaveURL(/\/tutor\/requests$/);
 
   // The second request is still PENDING
-  const remainingDetailButtons = page.getByRole("button", { name: "Xem chi tiết →" });
+  const remainingDetailButtons = page.getByRole("link", { name: "Xem chi tiết →" });
   await remainingDetailButtons.nth(1).click();
   await expect(page).toHaveURL(/\/tutor\/requests\/[a-f0-9-]+/);
   await expect(page.getByRole("status", { name: "Trạng thái yêu cầu" })).toHaveText("Chờ phản hồi");
