@@ -8,6 +8,8 @@ public sealed class HireRequestConfiguration : IEntityTypeConfiguration<HireRequ
 {
     public void Configure(EntityTypeBuilder<HireRequest> builder)
     {
+        builder.Ignore(x => x.LatestProposal);
+        builder.Ignore(x => x.CurrentTerms);
         builder.ToTable("HireRequests", t =>
         {
             t.HasCheckConstraint("ck_hire_request_values", "sessions_per_week BETWEEN 1 AND 21 AND duration_minutes BETWEEN 30 AND 240 AND proposed_price_vnd > 0 AND (listed_price_vnd IS NULL OR listed_price_vnd > 0) AND latest_proposal_sequence >= 0 AND next_event_sequence > 0");

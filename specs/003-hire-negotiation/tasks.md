@@ -1,7 +1,7 @@
 # Tasks: Hire Requests and Negotiation
 
 **Input**: [spec.md](spec.md), [plan.md](plan.md), [research.md](research.md), [data-model.md](data-model.md), [OpenAPI](contracts/openapi.json), [quickstart.md](quickstart.md).
-**Created**: 2026-10-28. **Status**: Phases 1–2 complete (T001–T011); user stories pending.
+**Created**: 2026-10-28. **Status**: Phases 1–7 complete (T001–T045); Phase 8 final gates pending.
 **Tests**: Required by FR-022 and constitution IV. Write failing behavior tests before or with implementation; record actual passing evidence before checking tasks off.
 
 ## Format and execution rules
@@ -75,25 +75,25 @@ Goal: designated tutor can inspect and respond without negotiation or messaging.
 
 Goal: immutable proposals and recipient-only latest acceptance. Independent test: alternate proposals and accept latest; original terms/history and final agreement remain intact. Covers FR-013–016,019–022.
 
-- [ ] T028 [P] [US3] Add proposal domain tests in `backend/tests/TutorMatching.Domain.UnitTests/Hiring/NegotiationTests.cs`: positive price or valid schedules required, “Require at least one changed price or schedule”, inherited omitted terms, immutable versions, sender/obsolete acceptance denial, future date and closed-state denial.
-- [ ] T029 [P] [US3] Add proposal API tests in `backend/tests/TutorMatching.Api.IntegrationTests/Hiring/NegotiationEndpointTests.cs`: both participants, full ordered snapshots, latest sequence, recipient-only acceptance, concurrent counter/accept, revalidated availability and notification rollback.
-- [ ] T030 [P] [US3] Add negotiation UI tests in `frontend/tests/hire-negotiation.test.tsx` covering preserved inputs, conflict refresh without blind resubmission, latest recipient action and proposal history.
-- [ ] T031 [US3] Implement immutable proposal creation and recipient acceptance in `backend/src/TutorMatching.Domain/Hiring/HireRequest.cs`, `Negotiation.cs` and `backend/src/TutorMatching.Application/Hiring/NegotiateHireRequest.cs`; distinguish initial acceptance from proposalSequence and prohibit changes after ACCEPTED.
-- [ ] T032 [US3] Persist numbered full proposal/schedule snapshots, NEGOTIATING-to-NEGOTIATING events, accepted snapshot and recipient notifications in `backend/src/TutorMatching.Infrastructure/Hiring/HireRequestStore.cs`; reject stale version/sequence under the shared lock protocol with no partial writes.
-- [ ] T033 [US3] Expose POST proposals and extend accept in `backend/src/TutorMatching.Api/Controllers/HireRequestsController.cs`; extend `frontend/src/lib/api/hire-requests.ts` and add `frontend/src/components/hiring/NegotiationPanel.tsx` integrated into HireRequestDetail.
-- [ ] T034 [US3] Add learner detail entry at `frontend/src/app/(public)/learner/requests/[id]/page.tsx` using existing auth guards and shared detail; run `frontend/tests/e2e/hire-negotiation.spec.ts` and T028–T030 for both roles, recording independent evidence in `specs/003-hire-negotiation/evidence.md`.
+- [x] T028 [P] [US3] Add proposal domain tests in `backend/tests/TutorMatching.Domain.UnitTests/Hiring/NegotiationTests.cs`: positive price or valid schedules required, “Require at least one changed price or schedule”, inherited omitted terms, immutable versions, sender/obsolete acceptance denial, future date and closed-state denial.
+- [x] T029 [P] [US3] Add proposal API tests in `backend/tests/TutorMatching.Api.IntegrationTests/Hiring/NegotiationEndpointTests.cs`: both participants, full ordered snapshots, latest sequence, recipient-only acceptance, concurrent counter/accept, revalidated availability and notification rollback.
+- [x] T030 [P] [US3] Add negotiation UI tests in `frontend/tests/hire-negotiation.test.tsx` covering preserved inputs, conflict refresh without blind resubmission, latest recipient action and proposal history.
+- [x] T031 [US3] Implement immutable proposal creation and recipient acceptance in `backend/src/TutorMatching.Domain/Hiring/HireRequest.cs`, `Negotiation.cs` and `backend/src/TutorMatching.Application/Hiring/NegotiateHireRequest.cs`; distinguish initial acceptance from proposalSequence and prohibit changes after ACCEPTED.
+- [x] T032 [US3] Persist numbered full proposal/schedule snapshots, NEGOTIATING-to-NEGOTIATING events, accepted snapshot and recipient notifications in `backend/src/TutorMatching.Infrastructure/Hiring/HireRequestStore.cs`; reject stale version/sequence under the shared lock protocol with no partial writes.
+- [x] T033 [US3] Expose POST proposals and extend accept in `backend/src/TutorMatching.Api/Controllers/HireRequestsController.cs`; extend `frontend/src/lib/api/hire-requests.ts` and add `frontend/src/components/hiring/NegotiationPanel.tsx` integrated into HireRequestDetail.
+- [x] T034 [US3] Add learner detail entry at `frontend/src/app/(public)/learner/requests/[id]/page.tsx` using existing auth guards and shared detail; run `frontend/tests/e2e/hire-negotiation.spec.ts` and T028–T030 for both roles, recording independent evidence in `specs/003-hire-negotiation/evidence.md`.
 
-**Checkpoint**: both parties exchange offers; only recipient accepts latest; race loser cannot overwrite winner.
+**Checkpoint — PASS (2026-10-29)**: both parties exchange immutable offers; only recipient accepts latest; race loser cannot overwrite winner. Domain/API/UI checks and isolated two-role browser journey pass; see evidence.md, Phase 5.
 
 ## Phase 6: US4 — Track status and history (P2)
 
 Goal: complete participant tracking experience. Independent test: seeded requests in every state, filters/pages and chronological histories for both roles. Covers FR-008–010,021–022.
 
-- [ ] T035 [P] [US4] Add stable cursor/status/ownership/history tests in `backend/tests/TutorMatching.Api.IntegrationTests/Hiring/HireQueryTests.cs`: tied timestamps, inserts between pages, status-membership changes, malformed/filter-mismatched cursor, pageSize 1–100 default 20, sequence ordering, and no contact/credential data.
-- [ ] T036 [P] [US4] Add list/history UI tests in `frontend/tests/hire-tracking.test.tsx` for filters, next-page reset, empty/loading/error states, readable labels, keyboard access and private-cache clearing on account switch.
-- [ ] T037 [US4] Complete query indexes/projections and opaque cursor handling in `backend/src/TutorMatching.Infrastructure/Hiring/HireRequestStore.cs`: `(CreatedAt DESC, Id DESC)` with upper boundary and bound status; always apply current participant scope, never trust cursor ownership; keep details transactionally consistent.
-- [ ] T038 [US4] Create `frontend/src/app/(public)/learner/requests/page.tsx`, shared `frontend/src/components/hiring/HireRequestList.tsx` and `HireRequestTimeline.tsx`; reuse for tutor requests and both details, expose original/current/final terms, text states and chronological proposal/status history; connect request navigation in existing learner/tutor shells.
-- [ ] T039 [US4] Run seeded tracking journey in `frontend/tests/e2e/hire-tracking.spec.ts` and T035–T036 with all six states and unrelated accounts; record stable pagination and identity-isolation outcomes in `specs/003-hire-negotiation/evidence.md`.
+- [x] T035 [P] [US4] Add stable cursor/status/ownership/history tests in `backend/tests/TutorMatching.Api.IntegrationTests/Hiring/HireQueryTests.cs`: tied timestamps, inserts between pages, status-membership changes, malformed/filter-mismatched cursor, pageSize 1–100 default 20, sequence ordering, and no contact/credential data.
+- [x] T036 [P] [US4] Add list/history UI tests in `frontend/tests/hire-tracking.test.tsx` for filters, next-page reset, empty/loading/error states, readable labels, keyboard access and private-cache clearing on account switch.
+- [x] T037 [US4] Complete query indexes/projections and opaque cursor handling in `backend/src/TutorMatching.Infrastructure/Hiring/HireRequestQueries.cs` (query adapter extracted in Phase 4): `(CreatedAt DESC, Id DESC)` with upper boundary and bound status; always apply current participant scope, never trust cursor ownership; keep details transactionally consistent.
+- [x] T038 [US4] Create `frontend/src/app/(public)/learner/requests/page.tsx`, shared `frontend/src/components/hiring/HireRequestList.tsx` and `HireRequestTimeline.tsx`; reuse for tutor requests and both details, expose original/current/final terms, text states and chronological proposal/status history; connect request navigation in existing learner/tutor shells.
+- [x] T039 [US4] Run seeded tracking journey in `frontend/tests/e2e/hire-tracking.spec.ts` and T035–T036 with all six states and unrelated accounts; record stable pagination and identity-isolation outcomes in `specs/003-hire-negotiation/evidence.md`.
 
 **Checkpoint**: both roles can find and understand their own requests without a messaging or admin UI.
 
@@ -101,14 +101,14 @@ Goal: complete participant tracking experience. Independent test: seeded request
 
 Goal: close requests according to confirmed permissions. Independent test: all allowed and disallowed terminal actions, reasons, confirmation, events and recipient notifications. Covers FR-016–022.
 
-- [ ] T040 [P] [US5] Add exhaustive actor/state/action tests in `backend/tests/TutorMatching.Domain.UnitTests/Hiring/CloseHireRequestTests.cs`: learner-only cancellation before acceptance; either participant after acceptance with nonblank reason max 1000; confirmed true required; completion ACCEPTED-only; terminal states reject every action.
-- [ ] T041 [P] [US5] Add terminal endpoint tests in `backend/tests/TutorMatching.Api.IntegrationTests/Hiring/CloseHireRequestTests.cs` covering stale version, competing cancel/complete, retry after lost response, history/notification counts, rollback, and cancellation/rejection of expired open requests.
-- [ ] T042 [P] [US5] Add terminal confirmation UI tests in `frontend/tests/hire-close.test.tsx` for dismissed confirmation, missing reason, conflict recovery, loading/success and terminal controls.
-- [ ] T043 [US5] Implement closing rules in `backend/src/TutorMatching.Domain/Hiring/HireRequest.cs` and `backend/src/TutorMatching.Application/Hiring/CloseHireRequest.cs`, transactional persistence in `backend/src/TutorMatching.Infrastructure/Hiring/HireRequestStore.cs`, and POST cancel/complete in `backend/src/TutorMatching.Api/Controllers/HireRequestsController.cs`; preserve accepted snapshot after cancellation/completion.
-- [ ] T044 [US5] Add close mutations to `frontend/src/lib/api/hire-requests.ts` and `frontend/src/components/hiring/CloseRequestDialog.tsx`, integrated with both details; completion explicitly attests teaching concluded, and accepted cancellation requires confirmation and reason.
-- [ ] T045 [US5] Run `frontend/tests/e2e/hire-close.spec.ts` and T040–T042 for both actors and every lifecycle state, then record the complete transition matrix and failure outcomes in `specs/003-hire-negotiation/evidence.md`.
+- [x] T040 [P] [US5] Add exhaustive actor/state/action tests in `backend/tests/TutorMatching.Domain.UnitTests/Hiring/CloseHireRequestTests.cs`: learner-only cancellation before acceptance; either participant after acceptance with nonblank reason max 1000; confirmed true required; completion ACCEPTED-only; terminal states reject every action.
+- [x] T041 [P] [US5] Add terminal endpoint tests in `backend/tests/TutorMatching.Api.IntegrationTests/Hiring/CloseHireRequestTests.cs` covering stale version, competing cancel/complete, retry after lost response, history/notification counts, rollback, and cancellation/rejection of expired open requests.
+- [x] T042 [P] [US5] Add terminal confirmation UI tests in `frontend/tests/hire-close.test.tsx` for dismissed confirmation, missing reason, conflict recovery, loading/success and terminal controls.
+- [x] T043 [US5] Implement closing rules in `backend/src/TutorMatching.Domain/Hiring/HireRequest.cs` and `backend/src/TutorMatching.Application/Hiring/CloseHireRequest.cs`, transactional persistence in `backend/src/TutorMatching.Infrastructure/Hiring/HireRequestStore.cs`, and POST cancel/complete in `backend/src/TutorMatching.Api/Controllers/HireRequestsController.cs`; preserve accepted snapshot after cancellation/completion.
+- [x] T044 [US5] Add close mutations to `frontend/src/lib/api/hire-requests.ts` and `frontend/src/components/hiring/CloseRequestDialog.tsx`, integrated with both details; completion explicitly attests teaching concluded, and accepted cancellation requires confirmation and reason.
+- [x] T045 [US5] Run `frontend/tests/e2e/hire-close.spec.ts` and T040–T042 for both actors and every lifecycle state, then record the complete transition matrix and failure outcomes in `specs/003-hire-negotiation/evidence.md`.
 
-**Checkpoint**: no invalid or concurrent action overwrites a terminal state; all valid actions produce one history event/notification.
+**Checkpoint — PASS (2026-10-30)**: no invalid or concurrent action overwrites a terminal state; all valid actions produce one history event/notification. Domain/API/UI checks and Playwright browser journey passed; see evidence.md, Phase 7.
 
 ## Phase 8: Polish and cross-cutting verification
 

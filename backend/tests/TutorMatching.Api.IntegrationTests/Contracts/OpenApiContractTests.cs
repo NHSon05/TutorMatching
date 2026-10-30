@@ -68,12 +68,14 @@ public sealed class OpenApiContractTests(PostgreSqlFixture fixture)
                     Assert.NotNull(operation["responses"]![code]!["content"]!["application/problem+json"]);
                 continue;
             }
-            if (key is "GET /api/v1/hire-requests" or "GET /api/v1/hire-requests/{id}" or "POST /api/v1/hire-requests/{id}/accept" or "POST /api/v1/hire-requests/{id}/reject")
+            if (key is "GET /api/v1/hire-requests" or "GET /api/v1/hire-requests/{id}" or "POST /api/v1/hire-requests/{id}/accept" or "POST /api/v1/hire-requests/{id}/reject" or "POST /api/v1/hire-requests/{id}/proposals" or "POST /api/v1/hire-requests/{id}/cancel" or "POST /api/v1/hire-requests/{id}/complete")
             {
                 var (method, path) = key.Split(' ') switch { var parts => (parts[0].ToLowerInvariant(), parts[1]) };
                 var planned = hiring["paths"]![path]![method]!;
                 Assert.Equal(planned["operationId"]!.GetValue<string>(), operation["operationId"]!.GetValue<string>());
                 Assert.Equal(planned["responses"]!.AsObject().Select(x => x.Key).Order(), operation["responses"]!.AsObject().Select(x => x.Key).Order());
+                if (path.EndsWith("/proposals") || path.EndsWith("/cancel") || path.EndsWith("/complete"))
+                    CompareContent(hiring, planned["requestBody"]!, actual, operation["requestBody"]!);
                 var security = (operation["security"] ?? actual["security"])!.ToJsonString();
                 Assert.Contains("cookieAuth", security);
                 if (method == "post")
@@ -173,13 +175,14 @@ public sealed class OpenApiContractTests(PostgreSqlFixture fixture)
                 .SequenceEqual(actualArray.Select(item => item!.ToJsonString()).Order());
         }
 
-        if (expected is JsonValue expectedValue &&
-            expectedValue.TryGetValue<string>(out var text) &&
-            bool.TryParse(text, out var expectedBoolean) &&
-            actual is JsonValue actualValue &&
-            actualValue.TryGetValue<bool>(out var actualBoolean))
+        if ((expected is JsonValue expectedValue && expectedValue.TryGetValue<bool>(out var expBool) &&
+             actual is JsonValue actualValue && (actualValue.TryGetValue<bool>(out var actBool) && expBool == actBool ||
+                                                 actualValue.TryGetValue<string>(out var actStr) && bool.TryParse(actStr, out var parsedActBool) && expBool == parsedActBool)) ||
+            (expected is JsonValue expValStr && expValStr.TryGetValue<string>(out var text) && bool.TryParse(text, out var expectedBoolean) &&
+             actual is JsonValue actVal && (actVal.TryGetValue<bool>(out var actualBoolean) && expectedBoolean == actualBoolean ||
+                                           actVal.TryGetValue<string>(out var actString) && bool.TryParse(actString, out var actParsed) && expectedBoolean == actParsed)))
         {
-            return expectedBoolean == actualBoolean;
+            return true;
         }
 
         if (expected is JsonValue numericExpected &&

@@ -24,8 +24,5 @@ Sprint 3 được định nghĩa trong feature
 
 ## Bước tiếp theo
 
-Đã review và làm rõ specification, hoàn thành kế hoạch thiết kế ngày 2026-10-28.
-Đã hoàn thành Phase 1–3 (T001–T019): nền tảng và gửi yêu cầu thuê thật, retry không trùng.
-Backend toàn bộ đạt 293 test; kiểm tra cuối create/security đạt 39 test. Frontend đạt 226 test; E2E gửi/retry đạt.
-Tiếp theo: Phase 4 / US2 (T020–T027); xem [evidence](../../specs/003-hire-negotiation/evidence.md).
-Migration mới chưa áp dụng vào database người dùng.
+Đã hoàn thành Phase 1–7 (T001–T045): gửi yêu cầu, phản hồi, thương lượng giá/lịch, theo dõi trạng thái/lịch sử và hủy/hoàn tất yêu cầu theo đúng thẩm quyền. Toàn bộ kiểm thử domain, API integration, UI component và E2E browser Playwright đều đã pass và được ghi nhận trong [evidence](../../specs/003-hire-negotiation/evidence.md).
+Tiếp theo: Phase 8 (T046–T050) — kiểm tra chéo bảo mật OpenAPI, kiểm thử tải 100 người dùng đồng thời và nghiệm thu feature-wide.

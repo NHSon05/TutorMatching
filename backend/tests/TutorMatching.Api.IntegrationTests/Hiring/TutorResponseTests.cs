@@ -65,7 +65,7 @@ public sealed class TutorResponseTests(PostgreSqlFixture postgres)
         });
         var detail = (await tutor.GetFromJsonAsync<JsonObject>($"/api/v1/hire-requests/{created["id"]}"))!;
         Assert.Equal(alternate ? 120000 : 150000, detail["finalAgreement"]!["terms"]!["priceVnd"]!.GetValue<int>());
-        Assert.Empty(detail["allowedActions"]!.AsArray());
+        Assert.Equal(new[] { "cancel", "complete" }, detail["allowedActions"]!.AsArray().Select(a => a!.GetValue<string>()));
         Assert.Empty(detail["proposals"]!.AsArray());
         Assert.Equal(new[] { 1, 2 }, detail["history"]!.AsArray().Select(e => e!["sequence"]!.GetValue<int>()));
         Assert.Equal(HttpStatusCode.Conflict, (await Respond(tutor, created)).StatusCode);

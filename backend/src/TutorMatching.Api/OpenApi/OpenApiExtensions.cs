@@ -63,6 +63,18 @@ public static class OpenApiExtensions
                 {
                     operation.OperationId = "rejectHireRequest";
                 }
+                else if (context.Description.RelativePath == ApiRoutes.Prefix + "/hire-requests/{id}/proposals" && context.Description.HttpMethod == "POST")
+                {
+                    operation.OperationId = "proposalsHireRequest";
+                }
+                else if (context.Description.RelativePath == ApiRoutes.Prefix + "/hire-requests/{id}/cancel" && context.Description.HttpMethod == "POST")
+                {
+                    operation.OperationId = "cancelHireRequest";
+                }
+                else if (context.Description.RelativePath == ApiRoutes.Prefix + "/hire-requests/{id}/complete" && context.Description.HttpMethod == "POST")
+                {
+                    operation.OperationId = "completeHireRequest";
+                }
                 var consumes = context.Description.ActionDescriptor.EndpointMetadata
                     .OfType<ConsumesAttribute>()
                     .LastOrDefault();
@@ -93,6 +105,22 @@ public static class OpenApiExtensions
                             optional.Type = JsonSchemaType.String;
                             if (field == "courseId") optional.Format = "uuid";
                         }
+                }
+                if (context.JsonTypeInfo.Type == typeof(TutorMatching.Application.Hiring.CloseHireRequestCommand))
+                {
+                    if (schema.Properties?["reason"] is OpenApiSchema reason) reason.Type = JsonSchemaType.String;
+                    if (schema.Properties?["confirmed"] is OpenApiSchema confirmed)
+                    {
+                        confirmed.Type = JsonSchemaType.Boolean;
+                        confirmed.Const = "true";
+                    }
+                }
+                if (context.JsonTypeInfo.Type == typeof(TutorMatching.Application.Hiring.ProposeHireRequestCommand))
+                {
+                    if (schema.Properties?["priceVnd"] is OpenApiSchema price) price.Type = JsonSchemaType.Integer;
+                    if (schema.Properties?["schedules"] is OpenApiSchema schedules) schedules.Type = JsonSchemaType.Array;
+                    schema.AnyOf = [new OpenApiSchema { Required = new HashSet<string> { "priceVnd" } },
+                        new OpenApiSchema { Required = new HashSet<string> { "schedules" } }];
                 }
                 if (new[] { typeof(TutorMatching.Application.Tutors.PublicTutorSummary), typeof(TutorMatching.Application.Tutors.PublicTutorDetail),
                     typeof(TutorMatching.Application.Tutors.PublicTutorPage), typeof(TutorMatching.Application.Tutors.PublicSubject),

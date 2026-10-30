@@ -10,37 +10,37 @@ FR-001–007 and SC-002 have US1 implementation evidence below. FR-020–022 and
 have create-only evidence; their other story cases remain pending. SC-001 has a timed synthetic
 browser check, not a human usability study. Remaining entries are planned evidence destinations.
 
-| Requirement | Observable result | Tasks | Planned evidence |
-| --- | --- | --- | --- |
-| FR-001 | Learner-only create; no self-hire | T012,T015,T017 | CreateHireRequestTests |
-| FR-002 | Approved active tutor and offered active subject/course | T012,T015 | CreateHireRequestTests |
-| FR-003 | Future date, schedules, frequency/duration, mode/location, VND | T003,T005,T012 | HireTermsTests; CreateHireRequestTests |
-| FR-004 | Current availability validated under serialization | T010,T013 | HireCreationReliabilityTests |
-| FR-005 | Listed price PENDING; alternate NEGOTIATING | T012,T015,T019 | CreateHireRequestTests; hire-creation.spec.ts |
-| FR-006 | Atomic request/history/conversation/notification | T013,T016 | HireCreationReliabilityTests |
-| FR-007 | Durable replay without duplicate rows | T013,T016,T019 | HireCreationReliabilityTests |
-| FR-008 | Participant-only reads; admin monitoring deferred (MAY) | T021,T035,T046 | TutorResponseTests; HireQueryTests; HiringContractTests |
-| FR-009 | Stable pages/status filter/text labels | T035–T039 | HireQueryTests; hire-tracking.test.tsx |
-| FR-010 | Safe identities, ordered detail and histories | T021,T024,T035,T038 | TutorResponseTests; HireQueryTests |
-| FR-011 | Tutor initial response; recipient accepts latest proposal | T020,T023,T028–T034 | InitialResponseTests; NegotiationEndpointTests |
-| FR-012 | Reason required for rejection | T020–T027 | InitialResponseTests; TutorResponseTests |
-| FR-013 | Both participants can counter | T028–T034 | NegotiationTests; NegotiationEndpointTests |
-| FR-014 | Immutable full proposal versions | T006,T028,T032 | NegotiationTests; NegotiationEndpointTests |
-| FR-015 | Accepted latest terms frozen | T028–T034 | NegotiationEndpointTests |
-| FR-016 | Terminal requests reject negotiation | T028,T040 | NegotiationTests; CloseHireRequestTests |
-| FR-017 | Learner open cancellation; either accepted with reason | T040–T045 | CloseHireRequestTests; hire-close.spec.ts |
-| FR-018 | Confirmed completion, actor/reason/time recorded | T040–T045 | CloseHireRequestTests |
-| FR-019 | Expected version and competing actions | T010,T021,T029,T041 | TutorResponseTests; NegotiationEndpointTests; CloseHireRequestTests |
-| FR-020 | Recipient notification; no partial state on failure | T013,T021,T029,T041 | Story transaction failure suites |
-| FR-021 | Preserve input; loading/errors/conflicts/confirmation | T014,T022,T030,T036,T042 | Story UI suites |
-| FR-022 | Required denial/boundary/race/order/failure tests | T012–T048 | Story suites and final cross-cutting run |
-| SC-001 | Create in <= three minutes | T019 | Timed synthetic create journey |
-| SC-002 | Exactly one create outcome in all retry cases | T013,T019 | Concurrent create row counts |
-| SC-003 | Zero unauthorized reads/writes | T021,T035,T046 | Authorization matrix |
-| SC-004 | All permitted/disallowed transitions tested | T020,T028,T040,T045 | Exhaustive lifecycle matrix |
-| SC-005 | Stable history under races | T029,T035,T041 | Concurrent action history assertions |
-| SC-006 | 95% interactions <= 3 seconds, 100 users | T047 | Load harness and error/latency report |
-| SC-007 | Five journeys independent of Sprint 4 | T019,T027,T034,T039,T045,T048 | Independent browser checkpoints |
+| Requirement | Observable result                                              | Tasks                         | Planned evidence                                                    |
+| ----------- | -------------------------------------------------------------- | ----------------------------- | ------------------------------------------------------------------- |
+| FR-001      | Learner-only create; no self-hire                              | T012,T015,T017                | CreateHireRequestTests                                              |
+| FR-002      | Approved active tutor and offered active subject/course        | T012,T015                     | CreateHireRequestTests                                              |
+| FR-003      | Future date, schedules, frequency/duration, mode/location, VND | T003,T005,T012                | HireTermsTests; CreateHireRequestTests                              |
+| FR-004      | Current availability validated under serialization             | T010,T013                     | HireCreationReliabilityTests                                        |
+| FR-005      | Listed price PENDING; alternate NEGOTIATING                    | T012,T015,T019                | CreateHireRequestTests; hire-creation.spec.ts                       |
+| FR-006      | Atomic request/history/conversation/notification               | T013,T016                     | HireCreationReliabilityTests                                        |
+| FR-007      | Durable replay without duplicate rows                          | T013,T016,T019                | HireCreationReliabilityTests                                        |
+| FR-008      | Participant-only reads; admin monitoring deferred (MAY)        | T021,T035,T046                | TutorResponseTests; HireQueryTests; HiringContractTests             |
+| FR-009      | Stable pages/status filter/text labels                         | T035–T039                     | HireQueryTests; hire-tracking.test.tsx                              |
+| FR-010      | Safe identities, ordered detail and histories                  | T021,T024,T035,T038           | TutorResponseTests; HireQueryTests                                  |
+| FR-011      | Tutor initial response; recipient accepts latest proposal      | T020,T023,T028–T034           | InitialResponseTests; NegotiationEndpointTests                      |
+| FR-012      | Reason required for rejection                                  | T020–T027                     | InitialResponseTests; TutorResponseTests                            |
+| FR-013      | Both participants can counter                                  | T028–T034                     | NegotiationTests; NegotiationEndpointTests                          |
+| FR-014      | Immutable full proposal versions                               | T006,T028,T032                | NegotiationTests; NegotiationEndpointTests                          |
+| FR-015      | Accepted latest terms frozen                                   | T028–T034                     | NegotiationEndpointTests                                            |
+| FR-016      | Terminal requests reject negotiation                           | T028,T040                     | NegotiationTests; CloseHireRequestTests                             |
+| FR-017      | Learner open cancellation; either accepted with reason         | T040–T045                     | CloseHireRequestTests; hire-close.spec.ts                           |
+| FR-018      | Confirmed completion, actor/reason/time recorded               | T040–T045                     | CloseHireRequestTests                                               |
+| FR-019      | Expected version and competing actions                         | T010,T021,T029,T041           | TutorResponseTests; NegotiationEndpointTests; CloseHireRequestTests |
+| FR-020      | Recipient notification; no partial state on failure            | T013,T021,T029,T041           | Story transaction failure suites                                    |
+| FR-021      | Preserve input; loading/errors/conflicts/confirmation          | T014,T022,T030,T036,T042      | Story UI suites                                                     |
+| FR-022      | Required denial/boundary/race/order/failure tests              | T012–T048                     | Story suites and final cross-cutting run                            |
+| SC-001      | Create in <= three minutes                                     | T019                          | Timed synthetic create journey                                      |
+| SC-002      | Exactly one create outcome in all retry cases                  | T013,T019                     | Concurrent create row counts                                        |
+| SC-003      | Zero unauthorized reads/writes                                 | T021,T035,T046                | Authorization matrix                                                |
+| SC-004      | All permitted/disallowed transitions tested                    | T020,T028,T040,T045           | Exhaustive lifecycle matrix                                         |
+| SC-005      | Stable history under races                                     | T029,T035,T041                | Concurrent action history assertions                                |
+| SC-006      | 95% interactions <= 3 seconds, 100 users                       | T047                          | Load harness and error/latency report                               |
+| SC-007      | Five journeys independent of Sprint 4                          | T019,T027,T034,T039,T045,T048 | Independent browser checkpoints                                     |
 
 ## Analyze and source/contract review
 
@@ -50,10 +50,10 @@ verification support delivery). No remaining critical/high blocker after A1 reme
 is a planning metric, not completed feature coverage. Duplication count: 0 actionable issues.
 Ambiguity/inconsistency count: 2 findings below; no constitution exception introduced.
 
-| ID | Severity | Locations | Finding and disposition |
-| --- | --- | --- | --- |
-| A1 | High, resolved | contracts/openapi.json Event.actorId; Domain/Hiring/RequestStatusHistory.cs ActorUserId; data-model.md migration | Existing history permits null actor, but contract prohibited it while migration forbids inventing facts. Contract now permits null for legacy events only; new events still require authenticated actor. T004/T009/T046 must preserve/test this distinction. |
-| A2 | Medium, documented | contracts/openapi.json responses; Api/Controllers/TutorOffersController.cs | Sprint 3 documents validation 400; existing offers use 422. Different feature contracts may differ. Implement hiring's explicit 400 contract and verify runtime parity at T009/T046; do not reuse offers' mapping blindly. |
+| ID  | Severity           | Locations                                                                                                        | Finding and disposition                                                                                                                                                                                                                                      |
+| --- | ------------------ | ---------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| A1  | High, resolved     | contracts/openapi.json Event.actorId; Domain/Hiring/RequestStatusHistory.cs ActorUserId; data-model.md migration | Existing history permits null actor, but contract prohibited it while migration forbids inventing facts. Contract now permits null for legacy events only; new events still require authenticated actor. T004/T009/T046 must preserve/test this distinction. |
+| A2  | Medium, documented | contracts/openapi.json responses; Api/Controllers/TutorOffersController.cs                                       | Sprint 3 documents validation 400; existing offers use 422. Different feature contracts may differ. Implement hiring's explicit 400 contract and verify runtime parity at T009/T046; do not reuse offers' mapping blindly.                                   |
 
 Existing conversation mapping already enforces unique HireRequestId. Current hiring entities lack
 version/idempotency/final snapshot implementation; these remain Phase 2 work. Tutor offers lock
@@ -97,12 +97,12 @@ changing their public setup or introducing a production service.
 
 Command: `dotnet test backend/tests/TutorMatching.Api.IntegrationTests --no-restore --filter FullyQualifiedName~HiringFixtureTests --verbosity minimal`
 
-| Test | Proves | Result |
-| --- | --- | --- |
-| SeedsPublicOfferingAndIndependentAuthenticatedActors | Real per-role sessions, public tutor eligibility, relational offerings and empty hiring baseline | PASS |
-| RaceUsesTwoConnectionsAndIndependentTransactions | Distinct PostgreSQL backend PIDs and separately committed writes | PASS |
-| NotificationFailureRollsBackEarlierWriteAndLeaseRestoresWrites | Actual database failure rolls back an earlier saved row; writes work after cleanup | PASS |
-| FactoryIsolationKeepsFaultInjectionAndRowsLocal | Trigger/data cannot leak to a different factory database | PASS |
+| Test                                                           | Proves                                                                                           | Result |
+| -------------------------------------------------------------- | ------------------------------------------------------------------------------------------------ | ------ |
+| SeedsPublicOfferingAndIndependentAuthenticatedActors           | Real per-role sessions, public tutor eligibility, relational offerings and empty hiring baseline | PASS   |
+| RaceUsesTwoConnectionsAndIndependentTransactions               | Distinct PostgreSQL backend PIDs and separately committed writes                                 | PASS   |
+| NotificationFailureRollsBackEarlierWriteAndLeaseRestoresWrites | Actual database failure rolls back an earlier saved row; writes work after cleanup               | PASS   |
+| FactoryIsolationKeepsFaultInjectionAndRowsLocal                | Trigger/data cannot leak to a different factory database                                         | PASS   |
 
 Initial new-suite run: 3 passed, 1 failed because the test used lowercase role and expected 200 for an
 existing endpoint that requires canonical uppercase role and returns 204. Fixed the test to match
@@ -120,27 +120,27 @@ this traceability matrix as passing feature tests.
 
 Scope: T003–T011 only; HTTP hiring workflows and frontend remain Phase 3 onward.
 
-| Task | Implemented foundation | Verification |
-| --- | --- | --- |
-| T003/T005 | Domain HireTerms uses immutable weekly windows; numeric/text bounds, minute precision, full availability coverage/capacity, local future date, offered mode and valid location. FinalAgreement normalizes accepted time to UTC. | HireTermsTests: 11 new cases (Domain suite 20/20). Initial test-first run failed to compile because HireTerms did not yet exist; passing result follows implementation. |
-| T004/T008 | `20261027173545_HireNegotiationFoundation` plus designer/snapshot; preflight before DDL, recoverable legacy snapshots, sequence ordering `(created_at,id)`, unknown actors/price retained, safe downgrade guard. | HiringMigrationTests 3/3: empty/current model parity; legacy upgrade/downgrade/re-upgrade; unrecoverable agreement aborts without schema or row loss. |
-| T006/T007 | Guid concurrency token, original/final/proposal JSON snapshots, immutable history and schedule writes, per-request sequences, durable creation identity/outcome, indexes/checks/FKs. | HiringFoundationTests exercise immutable initial/final data, late schedule append denial, duplicate request identity, original outcome replay and no-op version stability. |
-| T009 | Explicit command/response DTOs and transaction port in Application/Hiring. Required-vs-nullable fields, numeric/text bounds, unknown JSON members and minute-format schedule times align with contract. | HireContractTests 5/5; includes null legacy actor, required acceptance sequence, unknown actor injection, explicit confirmation, overflowing/noninteger price and optional-field null rejection. |
-| T010 | Profile/account/catalog/request lock order, live role/account/participant checks, expectedVersion and one commit for request/history/conversation/notification/operation; clears tracked changes on rollback. | Concurrent writers produce one success/one conflict; notification failure leaves no aggregate rows; account/catalog/profile writers cannot bypass held locks; later availability changes are read fresh. |
-| T011 | Scoped IHireRequestStore registered through AddInfrastructure already called by Program; explicit CORS Idempotency-Key allowlist. Existing auth/CSRF pipeline retained. | DI resolution and allowed/untrusted-origin preflight tests. No placeholder hiring routes or unused handlers added. |
+| Task      | Implemented foundation                                                                                                                                                                                                          | Verification                                                                                                                                                                                             |
+| --------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| T003/T005 | Domain HireTerms uses immutable weekly windows; numeric/text bounds, minute precision, full availability coverage/capacity, local future date, offered mode and valid location. FinalAgreement normalizes accepted time to UTC. | HireTermsTests: 11 new cases (Domain suite 20/20). Initial test-first run failed to compile because HireTerms did not yet exist; passing result follows implementation.                                  |
+| T004/T008 | `20261027173545_HireNegotiationFoundation` plus designer/snapshot; preflight before DDL, recoverable legacy snapshots, sequence ordering `(created_at,id)`, unknown actors/price retained, safe downgrade guard.                | HiringMigrationTests 3/3: empty/current model parity; legacy upgrade/downgrade/re-upgrade; unrecoverable agreement aborts without schema or row loss.                                                    |
+| T006/T007 | Guid concurrency token, original/final/proposal JSON snapshots, immutable history and schedule writes, per-request sequences, durable creation identity/outcome, indexes/checks/FKs.                                            | HiringFoundationTests exercise immutable initial/final data, late schedule append denial, duplicate request identity, original outcome replay and no-op version stability.                               |
+| T009      | Explicit command/response DTOs and transaction port in Application/Hiring. Required-vs-nullable fields, numeric/text bounds, unknown JSON members and minute-format schedule times align with contract.                         | HireContractTests 5/5; includes null legacy actor, required acceptance sequence, unknown actor injection, explicit confirmation, overflowing/noninteger price and optional-field null rejection.         |
+| T010      | Profile/account/catalog/request lock order, live role/account/participant checks, expectedVersion and one commit for request/history/conversation/notification/operation; clears tracked changes on rollback.                   | Concurrent writers produce one success/one conflict; notification failure leaves no aggregate rows; account/catalog/profile writers cannot bypass held locks; later availability changes are read fresh. |
+| T011      | Scoped IHireRequestStore registered through AddInfrastructure already called by Program; explicit CORS Idempotency-Key allowlist. Existing auth/CSRF pipeline retained.                                                         | DI resolution and allowed/untrusted-origin preflight tests. No placeholder hiring routes or unused handlers added.                                                                                       |
 
 ### Lock-order audit
 
-| Writer | Actual order / compatibility |
-| --- | --- |
-| HireRequestStore | Profile FOR UPDATE → caller/tutor accounts sorted by UUID FOR SHARE → subject/course/province/district FOR SHARE → request FOR UPDATE. Checks run after locks. Caller must be active; offering eligibility is optional only for later closing use cases. |
-| TutorOfferService | Profile FOR UPDATE before availability/course changes. Hiring uses the same profile row to protect complete availability reads and offered subject/course membership. |
-| TutorOnboardingService draft/submit | Profile lock before profile/subject updates; compatible with hiring. |
-| TutorOnboardingService avatar | Found implicit mixed profile/account update order. Changed to explicit profile → account locks in one transaction; targeted test verifies it waits on the profile and updates both avatar fields after release. |
-| TutorReviewService | Profile → tutor account; compatible with hiring's shared account locks. |
-| IdentityAccountService profile edits | Profile lock before account update when the tutor name changes; account-only edits do not acquire profile locks afterward. Registration creates new rows. |
-| CatalogService | Updates catalog rows and audit only; no later profile lock. Hiring's FOR SHARE blocks concurrent catalog UPDATE until commit. |
-| Token sessions / Identity writes | Session/account operations do not subsequently lock tutor profiles; no cycle with hiring, which does not lock sessions. |
+| Writer                               | Actual order / compatibility                                                                                                                                                                                                                             |
+| ------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| HireRequestStore                     | Profile FOR UPDATE → caller/tutor accounts sorted by UUID FOR SHARE → subject/course/province/district FOR SHARE → request FOR UPDATE. Checks run after locks. Caller must be active; offering eligibility is optional only for later closing use cases. |
+| TutorOfferService                    | Profile FOR UPDATE before availability/course changes. Hiring uses the same profile row to protect complete availability reads and offered subject/course membership.                                                                                    |
+| TutorOnboardingService draft/submit  | Profile lock before profile/subject updates; compatible with hiring.                                                                                                                                                                                     |
+| TutorOnboardingService avatar        | Found implicit mixed profile/account update order. Changed to explicit profile → account locks in one transaction; targeted test verifies it waits on the profile and updates both avatar fields after release.                                          |
+| TutorReviewService                   | Profile → tutor account; compatible with hiring's shared account locks.                                                                                                                                                                                  |
+| IdentityAccountService profile edits | Profile lock before account update when the tutor name changes; account-only edits do not acquire profile locks afterward. Registration creates new rows.                                                                                                |
+| CatalogService                       | Updates catalog rows and audit only; no later profile lock. Hiring's FOR SHARE blocks concurrent catalog UPDATE until commit.                                                                                                                            |
+| Token sessions / Identity writes     | Session/account operations do not subsequently lock tutor profiles; no cycle with hiring, which does not lock sessions.                                                                                                                                  |
 
 `WriteScopeHoldsEligibilityLocksUntilCommit` uses a bounded PostgreSQL lock timeout for profile,
 caller account and subject updates, then verifies a subsequent availability edit is observed.
@@ -188,10 +188,10 @@ Final rollback refinement: `dotnet test backend/tests/TutorMatching.Api.Integrat
 and new source/docs. No extension hooks configured. Next: T012–T019 / US1; call domain validation
 under the locked offering and implement durable replay orchestration before exposing POST create.
 
-
 ## Phase 3 — US1 create and replay (T012–T019)
 
 Implementation:
+
 - Application `CreateHireRequest` derives the learner from ICurrentUser, normalizes optional strings
   and sorted minute-precision schedules, hashes the full canonical payload (including displayed price),
   validates under current offering locks and creates PENDING at listed price / NEGOTIATING otherwise.
@@ -213,6 +213,7 @@ Implementation:
   Tutor detail now opens this real form.
 
 Verification record:
+
 - API red baseline before endpoint: 15/15 failed as expected. First implementation exposed the tracked
   Identity context issue; fixed and verified by actual authenticated HTTP requests.
 - Create/security acceptance: initial expanded run 32/32 passed; final focused suite listed below.
@@ -224,7 +225,7 @@ Verification record:
   additionally verify 400 structural errors versus 409 current-availability conflicts.
 - `npx tsc --noEmit` and ESLint on changed frontend sources/tests passed; `git diff --check` passed.
 - `dotnet run --project backend/tests/performance/tutor-discovery --no-restore -- --hire-browser
-  /tmp/hiring-browser-evidence-final` — browser journey passed, with real API and disposable PostgreSQL.
+/tmp/hiring-browser-evidence-final` — browser journey passed, with real API and disposable PostgreSQL.
   The existing Next dev server on port 3000 was reused; all browser API traffic was routed to isolated
   API port 5108. No developer account/database writes. Fixture seeds only synthetic accounts.
 - Final browser elapsed: **4,614 ms**, two deliveries / one idempotency key; database counts exactly
@@ -247,7 +248,6 @@ Final checkpoint: **T012–T019 complete**. Final create/reliability/security re
 --verbosity quiet` — **39/39 passed** after separating invalid requested schedules (400) from
 changed/unavailable tutor schedules (409). No task beyond Phase 3 marked complete.
 
-
 ### US1 form state refactor — 2026-10-29
 
 - `useHireRequestForm` owns validation, payload construction, catalog queries, API effects and
@@ -263,7 +263,6 @@ changed/unavailable tutor schedules (409). No task beyond Phase 3 marked complet
   - ESLint on the two form hook/reducer files, dialog/detail components and changed tests: pass.
 - Existing full-suite and browser evidence above predates this refactor; they were not rerun here.
 
-
 ### Local schema repair — 2026-10-29
 
 - Reported create failure: PostgreSQL 42P01, missing `hire_create_operations`.
@@ -275,10 +274,10 @@ changed/unavailable tutor schedules (409). No task beyond Phase 3 marked complet
 - No request was submitted on the user's behalf; end-to-end create after this local upgrade remains
   to be exercised through the UI. Earlier statements about not migrating locally describe prior checks.
 
-
 ## Phase 4 — US2 review and respond (T020–T027)
 
 Implementation:
+
 - Domain `HireRequest` state transition rules:
   - Added `CanRespond(Guid actor, Guid tutor)`: actor == tutor && status in ("PENDING", "NEGOTIATING").
   - Added `CanAcceptInitial(Guid actor, Guid tutor)`: `CanRespond` && `LatestProposalSequence == 0` && `FinalAgreement == null`.
@@ -322,6 +321,7 @@ Implementation:
     - Elapsed: 16,121 ms; verified 2 requests, 4 histories, 2 conversations, 2 operations, 4 notifications (2 to learner), frozen agreement price 150,000 VND.
 
 Verification summary:
+
 - Full backend: `dotnet test backend/TutorMatching.slnx` — **320/320 passed** (Domain 33, Application 50, API Integration 237), 0 failed, 0 skipped.
 - Full frontend: `npm --prefix frontend test` — **245/245 passed** (34 files), 0 failed.
 - Frontend lint: `npm --prefix frontend run lint` — passed.
@@ -329,3 +329,115 @@ Verification summary:
 - E2E browser: `--hire-response-browser` passed (exit code 0); `--hire-browser` passed (exit code 0).
 
 **Phase 4 checkpoint: PASS.** T020–T027 checked complete. Next: Phase 5 / US3 (T028–T034) — Counter-proposal negotiation.
+
+## Phase 5 / US3 — negotiation checkpoint (2026-10-29)
+
+Checklist: requirements.md 16 checked / 0 unchecked. Explicit feature-directory override selected
+003-hire-negotiation because the shared Spec Kit default still points at 002. No extension hooks found.
+Existing ignore files cover generated backend/frontend artifacts. Phase 4 prerequisites were complete.
+
+| Tasks     | Implementation and independent evidence                                                                                                                                                                                                                                                                                                                                                                                              |
+| --------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| T028/T031 | Domain `Propose`/`AcceptProposal` enforce changed positive price or valid schedules, inherited omitted terms, immutable prior snapshots, open state, future date, latest sequence and recipient. `NegotiationTests`: 11 cases pass as part of Domain 44/44.                                                                                                                                                                          |
+| T029/T032 | Shared profile/account/catalog/request lock protocol now loads proposal history under the request lock. Existing AddProposal assigns sequence and stages full relational schedules; agreement/events/notification commit together. API tests cover both actors, ownership/admin/CSRF, unchanged/invalid terms, revalidation, concurrent counter/accept and notification rollback for proposal and acceptance. 11 new API cases pass. |
+| T030/T033 | POST proposals and recipient accept wired with documented OpenAPI ID/schema; API client and TanStack mutation hooks. NegotiationPanel uses useNegotiationForm reducer, retains draft/version on errors, requires explicit refresh after 409, never automatically resubmits. Ordered proposal snapshots show sender, price, schedule, note and time. Five new component tests and nine response regressions pass (14/14).             |
+| T034      | Shared HireRequestPage serves tutor and new AuthGuard-protected /learner/requests/[id]. Accept sends latest proposal sequence; server allowedActions controls recipient button. Real browser journey switches learner/tutor, creates request, proposes price 175000, counters Monday 19:00–20:00, accepts sequence 2 and reloads accepted state.                                                                                     |
+
+### Commands and results
+
+- `dotnet test backend/TutorMatching.slnx --no-restore`: Domain 44/44, Application 50/50,
+  API 247/248 initially passed; the one failure was the contract test's operation allowlist missing
+  POST proposals. Added contract coverage and runtime operation ID/optional non-null proposal schema.
+- After that fix: `dotnet test backend/tests/TutorMatching.Api.IntegrationTests --no-restore --filter
+'FullyQualifiedName~OpenApiContractTests|FullyQualifiedName~NegotiationEndpointTests'`: 12/12 pass.
+  Full suite was not repeated after this targeted contract-only correction.
+- `npm --prefix frontend test -- --maxWorkers=2`: 253/253 pass across 36 files.
+- Final negotiation refresh-busy/draft test refinement: focused negotiation + response suite 14/14 pass.
+- Frontend `npx tsc --noEmit`, changed-file ESLint, and `ISOLATED_E2E=1 npm run build`: pass;
+  the isolated .next-e2e output avoids touching the active dev server's build directory.
+- `dotnet run --no-restore --project backend/tests/performance/tutor-discovery --
+/tmp/hire-negotiation-phase5-retry --hire-negotiation-browser`: exit 0.
+  Synthetic browser journey 17,767ms; post-run database assertions: 2 proposals, 4 status events,
+  4 notifications, 1 conversation, accepted sequence 2 and immutable first-proposal schedule.
+  This timing is not a human study or load benchmark.
+- Initial browser run hit the design-system checkbox's hidden-input click interception; selecting
+  its visible label resolved the test interaction. Date-expiry API test needed renewed login after
+  advancing the test clock; no authentication bypass was introduced.
+- Initial sandboxed .NET run could not bind test IPC; successful runs used approved escalated
+  execution and disposable Testcontainers databases. Existing Vite/node and NuGet audit warnings
+  remain outside this phase. No application package upgrade was made.
+
+No new schema migration or user-database write was needed for Phase 5. Existing proposal snapshot,
+sequence and agreement mappings are reused; derived domain properties are explicitly excluded from EF.
+Phase 5 handoff: Phase 6 / US4 T035–T039 (completed below).
+
+
+## Phase 6 — US4 participant status and history (2026-10-30)
+
+Scope: T035–T039; FR-008–010 and tracking portions of FR-021–022 / SC-007.
+
+| Task | Implementation and evidence |
+| --- | --- |
+| T035 | `HireQueryTests`: 11 PostgreSQL tests pass. UUID tie ordering, newer insertion between pages, current status membership, malformed/filter-mismatched cursors, default20/max100/min1 and invalid limits, both participant roles, all six states, ordered tied-time events, no contact/credential fields, outsider cursor replay and detail404. |
+| T036 | `hire-tracking.test.tsx`: 5 tests pass using real list hook and QueryClient with mocked transport/session. Tests keyboard radio filtering, cursor reset, account remount, detail links, loading/error/retry/empty, six text labels, cache cancellation/removal including late responses, sequence ordering and unknown legacy actor fallback. Existing page tests retain previous/first navigation coverage. |
+| T037 | Reviewed and verified existing `HireRequestQueries` adapter (extracted before this phase): repeatable-read list/detail, current participant scope on every request, descending `(CreatedAt, Id)`, upper boundary and bound status in validated opaque cursor, safe projection. Existing participant/status/time/ID indexes satisfy planned model. No new query rewrite or migration needed; cursor possession never grants access. Corrected task path to actual query adapter. |
+| T038 | Shared `HireRequestList` + `useHireRequestList` reducer serves learner and tutor. All six statuses have text labels. Filter change resets cursor stack; account/audience key remounts list state. Shared `HireRequestTimeline` renders ordered proposals and events with actor/time/reason; detail shows current/original and frozen final terms, including final start date, frequency, duration, mode and location. Learner navigation covers desktop rail and mobile top bar. Proposal history moved from action panel to read-only timeline. |
+| T039 | Isolated PostgreSQL/Chrome journey passed: 24 synthetic requests, all six states for both roles, pages20+4 without overlap, filters reset to page1, both detail histories and original/final terms, unrelated learner/tutor lists empty and direct detail404. Browser journey 10,442ms; one Playwright test passed. |
+
+Reproducible checks from repository root:
+
+```sh
+dotnet test backend/tests/TutorMatching.Api.IntegrationTests --no-restore --filter FullyQualifiedName~HireQueryTests
+dotnet test backend/tests/TutorMatching.Api.IntegrationTests --no-restore --filter 'FullyQualifiedName~Hiring|FullyQualifiedName~OpenApiContractTests'
+npm --prefix frontend test
+(cd frontend && npx tsc --noEmit)
+(cd frontend && npx eslint src/components/hiring src/hooks/use-hire-request-list.ts src/components/learner/DashboardTopBar.tsx src/components/navigation/LearnerNavbar.tsx src/components/navigation/LearnerNavigationRail.tsx 'src/app/(public)/learner/requests' 'src/app/(tutor)/tutor/requests' tests/hire-tracking.test.tsx tests/e2e/hire-tracking.spec.ts)
+(cd frontend && ISOLATED_E2E=1 npm run build)
+# Requires existing frontend at localhost:3000; fixture starts isolated API on :5108.
+dotnet run --project backend/tests/performance/tutor-discovery -- --hire-tracking-browser /tmp/hire-phase6-e2e
+git diff --check
+```
+
+Results: API query **11/11**, hiring+OpenAPI regression **93/93**, full frontend **258/258 (37 files)**;
+TypeScript, scoped ESLint, isolated production build and diff whitespace checks pass.
+Initial verification caught an incorrect fixture clock accessor and a history test's exact `#1` text;
+both corrected. A TypeScript run overlapped build cleanup of generated `.next-e2e` types; rerun
+sequentially after build passed. No remaining observed check failure.
+
+Fixtures use generated credentials and isolated databases; no user database changes. Tracking seed
+includes CANCELLED/COMPLETED solely for read coverage; their action workflows remain Phase 7.
+Status history and proposal history retain their independent sequence order; tied timestamps do not
+invent an ordering between the two streams. Private cache clearing reuses `replaceSession`.
+Phase-scoped requirements review found no remaining US4 gap; feature-wide convergence/final gates
+remain in Phase 8 after closure implementation. Next: Phase 7 / US5 T040–T045 (completed below).
+
+## Phase 7 — US5 cancel or complete (2026-10-30)
+
+Scope: T040–T045; FR-016–022, SC-004, SC-005, SC-007.
+
+| Task | Implementation and evidence |
+| --- | --- |
+| T040 | `CloseHireRequestTests` (Domain): 49 unit tests pass. Exhaustive lifecycle matrix: learner-only cancel before acceptance; either actor cancel after acceptance with nonblank reason (max 1000 characters); confirmation required; completion ACCEPTED-only; terminal states (REJECTED, CANCELLED, COMPLETED) reject all actions. Preserves initial terms, final agreement snapshot, accepted timestamp and concurrency token. |
+| T041 | `CloseHireRequestTests` (API Integration): 35 PostgreSQL integration tests pass. Concurrency token check, competing cancel/complete race (exactly 1 winner, 1 conflict), retry after lost response without duplicate history/notification, notification write failure rollback, validation bounds (blank/overlong reason, confirmation omission), unauthorized role / unrelated actor 404, and cancellation/rejection of expired requests. |
+| T042 | `hire-close.test.tsx`: 5 tests pass. Renders cancel dialog and handles dismissed confirmation; enforces required reason for cancelling ACCEPTED requests; permits completion with explicit attestation and optional reason; loading and conflict recovery in `HireRequestDetail`; close buttons hidden on terminal states. |
+| T043 | Implementation: Domain methods `CanCancel`, `CanComplete`, `Cancel`, `Complete` with `CancelReason` and `CompletedAt` properties in `HireRequest.cs`; use-case orchestrator `CloseHireRequest.cs` registered in DI; atomic persistence with status sequence event and recipient notification in `HireRequestStore.cs`; endpoints POST `/api/v1/hire-requests/{id}/cancel` and `/complete` in `HireRequestsController.cs`. |
+| T044 | Client & UI: `cancelHireRequest` and `completeHireRequest` in `frontend/src/lib/api/hire-requests.ts`; `CloseRequestDialog.tsx` with confirmed attestation, required reason for accepted cancellation, error display; integrated with `HireRequestDetail.tsx` and query invalidation. |
+| T045 | Playwright E2E browser journey (`--hire-close-browser`): 1/1 pass (12.4s). Synthetic learner creates 2 requests, tutor accepts both; learner completes request #1 and cancels request #2 with reason; verifies text status transitions ("Đã hoàn thành", "Đã hủy"), close button removal, persistence across page reload; database counts verify 2 requests, 6 status events, 6 notifications, matching cancel reason and UTC completion timestamp. Timing artifact: 11,810ms. |
+
+Reproducible checks from repository root:
+
+```sh
+dotnet test backend/tests/TutorMatching.Domain.UnitTests --no-build --filter FullyQualifiedName~CloseHireRequestTests
+dotnet test backend/tests/TutorMatching.Api.IntegrationTests --no-build --filter FullyQualifiedName~CloseHireRequestTests
+dotnet test backend/tests/TutorMatching.Api.IntegrationTests --no-build --filter 'FullyQualifiedName~Hiring|FullyQualifiedName~OpenApiContractTests'
+npm --prefix frontend test
+npx --prefix frontend tsc -p frontend/tsconfig.json --noEmit
+npm --prefix frontend run lint
+npm --prefix frontend run build
+dotnet run --no-build --project backend/tests/performance/tutor-discovery -- --hire-close-browser /tmp/hire-phase7-e2e
+git diff --check
+```
+
+Results: Domain unit tests **49/49**, API integration Close tests **35/35**, full hiring+OpenAPI regression **128/128**, full frontend **263/263 (38 files)**; TypeScript compiler, ESLint, production build, Playwright browser E2E (12.4s) and diff whitespace checks pass cleanly.
+Next: Phase 8 (Polish and cross-cutting verification: T046–T050).
+

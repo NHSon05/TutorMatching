@@ -14,7 +14,7 @@ namespace TutorMatching.Api.Controllers;
 [ProducesResponseType(typeof(ProblemDetails), 404, "application/problem+json")]
 [ProducesResponseType(typeof(ProblemDetails), 409, "application/problem+json")]
 [ProducesResponseType(typeof(ProblemDetails), 500, "application/problem+json")]
-public sealed class HireRequestsController(CreateHireRequest create, RespondToHireRequest respond, IHireRequestQueries queries) : ControllerBase
+public sealed class HireRequestsController(CreateHireRequest create, RespondToHireRequest respond, NegotiateHireRequest negotiate, CloseHireRequest close, IHireRequestQueries queries) : ControllerBase
 {
     [HttpGet, Authorize(Roles = "LEARNER,TUTOR")]
     [ProducesResponseType(typeof(HirePage), 200, "application/json")]
@@ -25,7 +25,7 @@ public sealed class HireRequestsController(CreateHireRequest create, RespondToHi
     [ProducesResponseType(typeof(HireDetail), 200, "application/json")]
     public Task<IActionResult> Detail(Guid id, CancellationToken ct) => Run(() => queries.DetailAsync(id, ct));
 
-    [HttpPost("{id:guid}/accept"), Authorize(Roles = "TUTOR")]
+    [HttpPost("{id:guid}/accept"), Authorize(Roles = "LEARNER,TUTOR")]
     [Consumes("application/json")]
     [ProducesResponseType(typeof(HireResult), 200, "application/json")]
     public Task<IActionResult> Accept(Guid id, AcceptHireRequestCommand command, CancellationToken ct) => Run(() => respond.AcceptAsync(id, command, ct));
@@ -34,6 +34,21 @@ public sealed class HireRequestsController(CreateHireRequest create, RespondToHi
     [Consumes("application/json")]
     [ProducesResponseType(typeof(HireResult), 200, "application/json")]
     public Task<IActionResult> Reject(Guid id, RejectHireRequestCommand command, CancellationToken ct) => Run(() => respond.RejectAsync(id, command, ct));
+
+    [HttpPost("{id:guid}/proposals"), Authorize(Roles = "LEARNER,TUTOR")]
+    [Consumes("application/json")]
+    [ProducesResponseType(typeof(HireResult), 200, "application/json")]
+    public Task<IActionResult> Propose(Guid id, ProposeHireRequestCommand command, CancellationToken ct) => Run(() => negotiate.ExecuteAsync(id, command, ct));
+
+    [HttpPost("{id:guid}/cancel"), Authorize(Roles = "LEARNER,TUTOR")]
+    [Consumes("application/json")]
+    [ProducesResponseType(typeof(HireResult), 200, "application/json")]
+    public Task<IActionResult> Cancel(Guid id, CloseHireRequestCommand command, CancellationToken ct) => Run(() => close.CancelAsync(id, command, ct));
+
+    [HttpPost("{id:guid}/complete"), Authorize(Roles = "LEARNER,TUTOR")]
+    [Consumes("application/json")]
+    [ProducesResponseType(typeof(HireResult), 200, "application/json")]
+    public Task<IActionResult> Complete(Guid id, CloseHireRequestCommand command, CancellationToken ct) => Run(() => close.CompleteAsync(id, command, ct));
 
     private async Task<IActionResult> Run<T>(Func<Task<T>> action)
     {

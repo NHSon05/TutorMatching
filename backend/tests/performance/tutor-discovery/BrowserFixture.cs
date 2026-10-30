@@ -23,7 +23,7 @@ internal static class BrowserFixture
 
     public static async Task<int> Run(string connectionString, string output, CancellationToken token, string scenario = "discovery")
     {
-        var hiring = scenario is "hire-creation" or "hire-response";
+        var hiring = scenario is "hire-creation" or "hire-response" or "hire-negotiation" or "hire-tracking" or "hire-close";
         var password = "Fixture-" + Guid.NewGuid().ToString("N");
         var builder = WebApplication.CreateBuilder();
         builder.Environment.EnvironmentName = "Development";
@@ -43,6 +43,8 @@ internal static class BrowserFixture
         builder.Services.AddScoped<RegisterAccountHandler>();
         builder.Services.AddScoped<TutorMatching.Application.Hiring.CreateHireRequest>();
         builder.Services.AddScoped<TutorMatching.Application.Hiring.RespondToHireRequest>();
+        builder.Services.AddScoped<TutorMatching.Application.Hiring.NegotiateHireRequest>();
+        builder.Services.AddScoped<TutorMatching.Application.Hiring.CloseHireRequest>();
         builder.Services.AddScoped<TutorMatching.Application.Users.Profile.CurrentProfileHandler>();
         builder.Services.AddScoped<TutorMatching.Application.Authentication.Sessions.SessionHandler>();
         builder.Services.AddInfrastructure(builder.Configuration);
@@ -88,15 +90,19 @@ internal static class BrowserFixture
         }
 
         if (hiring) await HiringBrowserSeed.Seed(app.Services, token);
+        if (scenario == "hire-tracking") await HiringTrackingBrowserSeed.Seed(app.Services, password, token);
 
         using var probeClient = new HttpClient { BaseAddress = new Uri("http://localhost:5108") };
         var probe = await probeClient.GetAsync(hiring ? "/api/v1/auth/csrf" : "/auth/csrf", token);
-        Console.WriteLine($"[BrowserFixture Probe] CSRF: {probe.StatusCode} {await probe.Content.ReadAsStringAsync(token)}");
+        Console.WriteLine($"[BrowserFixture Probe] CSRF: {probe.StatusCode}");
 
         var root = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "../../../../../../../"));
         var start = new ProcessStartInfo("npm") { WorkingDirectory = root, UseShellExecute = false };
         var specFile = scenario switch
         {
+            "hire-close" => "hire-close.spec.ts",
+            "hire-tracking" => "hire-tracking.spec.ts",
+            "hire-negotiation" => "hire-negotiation.spec.ts",
             "hire-response" => "hire-response.spec.ts",
             "hire-creation" => "hire-creation.spec.ts",
             _ => "tutor-discovery.spec.ts"
@@ -187,6 +193,50 @@ internal static class BrowserFixture
                 FinalAgreementPrice = accepted.FinalAgreement.Terms.PriceVnd
             };
             await File.WriteAllTextAsync(Path.Combine(output, "hire-response-counts.json"), System.Text.Json.JsonSerializer.Serialize(responseCounts), token);
+        }
+        if (scenario == "hire-negotiation" && process.ExitCode == 0)
+        {
+            await using var scope = app.Services.CreateAsyncScope();
+            var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+            var request = await db.HireRequests.SingleAsync(token);
+            var proposals = await db.Negotiations.OrderBy(p => p.Sequence).ToListAsync(token);
+            var counts = new { Proposals = proposals.Count, Events = await db.RequestStatusHistories.CountAsync(token),
+                Notifications = await db.Notifications.CountAsync(token), Conversations = await db.Conversations.CountAsync(token) };
+            if (request.StatusCode != "ACCEPTED" || request.FinalAgreement?.ProposalSequence != 2 ||
+                request.FinalAgreement.Terms.PriceVnd != 175000 || proposals.Count != 2 ||
+                proposals[0].Terms.Schedules[0].StartTime != new TimeOnly(18, 0) ||
+                request.FinalAgreement.Terms.Schedules[0].StartTime != new TimeOnly(19, 0) ||
+                counts.Events != 4 || counts.Notifications != 4 || counts.Conversations != 1)
+                throw new InvalidOperationException("Negotiation browser snapshots/counts do not match expected outcomes.");
+            await File.WriteAllTextAsync(Path.Combine(output, "hire-negotiation-counts.json"), System.Text.Json.JsonSerializer.Serialize(counts), token);
+        }
+        else if (scenario == "hire-close" && process.ExitCode == 0)
+        {
+            await using var scope = app.Services.CreateAsyncScope();
+            var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+            var requests = await db.HireRequests.ToListAsync(token);
+            if (requests.Count != 2) throw new InvalidOperationException($"Expected 2 hire requests, got {requests.Count}");
+            var cancelled = requests.SingleOrDefault(r => r.StatusCode == "CANCELLED");
+            var completed = requests.SingleOrDefault(r => r.StatusCode == "COMPLETED");
+            if (cancelled is null || completed is null)
+                throw new InvalidOperationException("Expected 1 CANCELLED and 1 COMPLETED hire request.");
+            if (string.IsNullOrWhiteSpace(cancelled.CancelReason))
+                throw new InvalidOperationException("Cancelled request must preserve nonblank cancel reason.");
+            if (completed.CompletedAt is null)
+                throw new InvalidOperationException("Completed request must record completion timestamp.");
+            if (completed.FinalAgreement is null || cancelled.FinalAgreement is null)
+                throw new InvalidOperationException("Final agreement snapshot must be preserved after cancellation/completion.");
+            var counts = new
+            {
+                Requests = requests.Count,
+                CancelledId = cancelled.Id,
+                CompletedId = completed.Id,
+                Events = await db.RequestStatusHistories.CountAsync(token),
+                Notifications = await db.Notifications.CountAsync(token),
+                CancelReason = cancelled.CancelReason,
+                CompletedAt = completed.CompletedAt
+            };
+            await File.WriteAllTextAsync(Path.Combine(output, "hire-close-counts.json"), System.Text.Json.JsonSerializer.Serialize(counts), token);
         }
         await app.StopAsync(token);
         return process.ExitCode;

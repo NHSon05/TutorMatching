@@ -91,11 +91,19 @@ public sealed class HireRequestQueries(ApplicationDbContext db, ICurrentUser use
                 ToStatus = e.ToStatusCode, Reason = e.Reason, CreatedAt = e.CreatedAt }).ToArrayAsync(ct);
         var conversation = await db.Conversations.Where(c => c.HireRequestId == id).Select(c => c.Id).SingleAsync(ct);
         var actions = new List<string>();
-        if (request.CanRespond(actor.Id, profile.UserId))
+        request.Negotiations = proposals;
+        if (request.CanRespond(actor.Id, profile.UserId)) actions.Add("reject");
+        if (request.CanPropose(actor.Id, profile.UserId))
         {
-            if (request.CanAcceptInitial(actor.Id, profile.UserId) && proposals.Count == 0 && await CanAccept(request, profile, ct)) actions.Add("accept");
-            actions.Add("reject");
+            if (await CanAccept(request, profile, ct, proposing: true)) actions.Add("propose");
+            if (await CanAccept(request, profile, ct))
+            {
+                if (request.CanAcceptInitial(actor.Id, profile.UserId) ||
+                    request.CanAcceptProposal(actor.Id, profile.UserId, request.LatestProposalSequence)) actions.Add("accept");
+            }
         }
+        if (request.CanCancel(actor.Id, profile.UserId)) actions.Add("cancel");
+        if (request.CanComplete(actor.Id, profile.UserId)) actions.Add("complete");
         var agreement = request.FinalAgreement;
         var result = new HireDetail
         {
@@ -112,20 +120,21 @@ public sealed class HireRequestQueries(ApplicationDbContext db, ICurrentUser use
         return result;
     }
 
-    private async Task<bool> CanAccept(HireRequest request, TutorProfile profile, CancellationToken ct)
+    private async Task<bool> CanAccept(HireRequest request, TutorProfile profile, CancellationToken ct, bool proposing = false)
     {
+        if (!await db.Users.AnyAsync(u => u.Id == profile.UserId && u.Role == AccountRole.TUTOR && u.Status == AccountStatus.ACTIVE && u.DeletedAt == null, ct)) return false;
         if (profile.Status != TutorProfileStatus.APPROVED || profile.SessionRateVnd is null or <= 0 ||
             !await db.Subjects.AnyAsync(s => s.Id == request.SubjectId && s.IsActive, ct) ||
             !await db.TutorSubjects.AnyAsync(s => s.TutorProfileId == profile.Id && s.SubjectId == request.SubjectId, ct)) return false;
         if (request.CourseId is { } course && !await db.Courses.AnyAsync(c => c.Id == course && c.TutorProfileId == profile.Id &&
             c.SubjectId == request.SubjectId && c.StatusCode == "ACTIVE" && c.DeletedAt == null && c.PricePerSessionVnd > 0 && c.SessionCount > 0 && c.Name != "", ct)) return false;
-        var terms = request.InitialTerms;
+        var terms = request.CurrentTerms;
         var location = terms.ProvinceCode is null && terms.DistrictCode is null ||
             await db.Districts.AnyAsync(d => d.DistrictCode == terms.DistrictCode && d.ProvinceCode == terms.ProvinceCode && d.IsActive &&
                 db.Provinces.Any(p => p.ProvinceCode == d.ProvinceCode && p.IsActive), ct);
         var slots = await db.AvailabilitySlots.AsNoTracking().Where(s => s.TutorProfileId == profile.Id && s.IsActive &&
             s.AvailabilityType == "WEEKLY" && s.DayOfWeek != null).Select(s => new WeeklyWindow(s.DayOfWeek!.Value, s.StartTime, s.EndTime)).ToListAsync(ct);
-        return terms.Validate(clock.UtcNow, slots, profile.TeachingModes, location).Count == 0;
+        return terms.Validate(clock.UtcNow, proposing ? terms.Schedules : slots, profile.TeachingModes, location).Count == 0;
     }
 
     private static HireTermsDto Terms(HireTerms terms) => new()

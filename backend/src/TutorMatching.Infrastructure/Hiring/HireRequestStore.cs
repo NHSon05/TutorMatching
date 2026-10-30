@@ -132,6 +132,7 @@ public sealed class HireRequestStore(ApplicationDbContext db) : IHireRequestStor
                     throw new HireStoreException("version_conflict");
                 if (target.ExpectedVersion is null || target.ExpectedVersion == Guid.Empty || request.Version != target.ExpectedVersion)
                     throw new HireStoreException("version_conflict");
+                await db.Entry(request).Collection(r => r.Negotiations).LoadAsync(cancellationToken);
             }
             var offering = new HireOffering(profile.UserId, price, profile.TeachingModes.ToImmutableArray(), windows.ToImmutableArray(),
                 (provinceCode is null && districtCode is null) || (province?.IsActive == true && district?.IsActive == true && district.ProvinceCode == provinceCode),

@@ -2,7 +2,7 @@
 
 **Feature**: `003-hire-negotiation` | **Date**: 2026-10-28 | **Spec**: [spec.md](spec.md)
 **Git branch**: `main` (existing checkout; no new branch created).
-**Status**: Phases 1–3 / US1 (T001–T019) complete; US2–US5 and final gates pending.
+**Status**: Phases 1–5 / US1–US3 (T001–T034) complete; US4–US5 and final gates pending.
 
 ## Summary
 

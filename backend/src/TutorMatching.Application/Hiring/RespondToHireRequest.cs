@@ -15,7 +15,7 @@ public sealed class RespondToHireRequest(IHireRequestStore store, ICurrentUser u
     private async Task<HireResult> ExecuteAsync(Guid id, Guid version, bool accept, int? proposalSequence, string? reason, CancellationToken ct)
     {
         if (user.UserId is not { } actor) throw new HireStoreException("unauthorized");
-        if (user.Role != AccountRole.TUTOR) throw new HireStoreException("forbidden");
+        if ((!accept || proposalSequence is null) ? user.Role != AccountRole.TUTOR : user.Role is not (AccountRole.LEARNER or AccountRole.TUTOR)) throw new HireStoreException("forbidden");
         if (!accept && !HireTerms.ValidReason(reason))
             throw new HireValidationException(new Dictionary<string, string[]> { ["reason"] = ["Nhập lý do từ 1 đến 1000 ký tự, không chỉ chứa khoảng trắng."] });
         HireRequest? request = null;
@@ -25,19 +25,23 @@ public sealed class RespondToHireRequest(IHireRequestStore store, ICurrentUser u
             var now = clock.UtcNow;
             if (accept)
             {
-                if (proposalSequence is not null || !request.CanAcceptInitial(actor, session.Offering.TutorUserId))
+                if (proposalSequence is { } sequence
+                    ? !request.CanAcceptProposal(actor, session.Offering.TutorUserId, sequence)
+                    : !request.CanAcceptInitial(actor, session.Offering.TutorUserId))
                     throw new HireStoreException("state_conflict");
-                var errors = request.InitialTerms.Validate(now, session.Offering.Availability, session.Offering.Modes, session.Offering.ValidLocation);
+                var errors = (proposalSequence is null ? request.InitialTerms : request.CurrentTerms).Validate(now, session.Offering.Availability, session.Offering.Modes, session.Offering.ValidLocation);
                 if (errors.Count != 0) throw new HireStoreException("availability_changed");
             }
             try
             {
                 var history = accept
-                    ? request.AcceptInitial(actor, session.Offering.TutorUserId, now, session.Offering.ProvinceName, session.Offering.DistrictName)
+                    ? proposalSequence is { } acceptedSequence
+                        ? request.AcceptProposal(actor, session.Offering.TutorUserId, acceptedSequence, now, session.Offering.ProvinceName, session.Offering.DistrictName)
+                        : request.AcceptInitial(actor, session.Offering.TutorUserId, now, session.Offering.ProvinceName, session.Offering.DistrictName)
                     : request.Reject(actor, session.Offering.TutorUserId, reason, now);
                 session.AddStatusEvent(history);
                 session.NotifyOtherParticipant(accept ? "HIRE_REQUEST_ACCEPTED" : "HIRE_REQUEST_REJECTED",
-                    accept ? "Gia sư đã chấp nhận yêu cầu thuê." : "Gia sư đã từ chối yêu cầu thuê.", now);
+                    accept ? "Điều khoản thuê gia sư đã được chấp nhận." : "Gia sư đã từ chối yêu cầu thuê.", now);
             }
             catch (HireRuleException e) { throw new HireStoreException(e.Code); }
             return Task.CompletedTask;

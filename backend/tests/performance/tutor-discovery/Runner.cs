@@ -28,7 +28,10 @@ internal static class Runner
     {
         var hireCreation = args.Contains("--hire-browser");
         var hireResponse = args.Contains("--hire-response-browser");
-        var browser = args.Contains("--browser") || hireCreation || hireResponse;
+        var hireNegotiation = args.Contains("--hire-negotiation-browser");
+        var hireTracking = args.Contains("--hire-tracking-browser");
+        var hireClose = args.Contains("--hire-close-browser");
+        var browser = args.Contains("--browser") || hireCreation || hireResponse || hireNegotiation || hireTracking || hireClose;
         var output = Path.GetFullPath(args.FirstOrDefault(a => !a.StartsWith("--")) ?? Path.Combine(Path.GetTempPath(), "tutor-discovery-" + Guid.NewGuid().ToString("N")));
         Directory.CreateDirectory(output);
         using var deadline = new CancellationTokenSource(TimeSpan.FromMinutes(10));
@@ -39,7 +42,7 @@ internal static class Runner
         await database.StartAsync(token);
         if (browser)
         {
-            var scenario = hireResponse ? "hire-response" : (hireCreation ? "hire-creation" : "discovery");
+            var scenario = hireClose ? "hire-close" : hireTracking ? "hire-tracking" : hireNegotiation ? "hire-negotiation" : hireResponse ? "hire-response" : (hireCreation ? "hire-creation" : "discovery");
             return await BrowserFixture.Run(database.GetConnectionString(), output, token, scenario);
         }
         var capture = new QueryCapture();

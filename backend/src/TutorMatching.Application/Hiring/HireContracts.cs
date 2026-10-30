@@ -191,6 +191,8 @@ public sealed class CloseHireRequestCommand
     public Guid ExpectedVersion { get; init; }
     [JsonPropertyName("confirmed"), JsonRequired, Required, Range(typeof(bool), "true", "true")]
     public bool Confirmed { get; init; }
+    [JsonPropertyName("reason"), JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull), StringLength(1000, MinimumLength = 1), JsonConverter(typeof(NonNullIfPresentConverter<string>))]
+    public string? Reason { get; init; }
 }
 
 [JsonNumberHandling(JsonNumberHandling.Strict)]
