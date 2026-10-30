@@ -19,6 +19,12 @@ public static class ApiProblems
         };
 
         problem.Extensions["traceId"] = context.TraceIdentifier;
+        if (context.Request.Path.StartsWithSegments("/api/v1/hire-requests"))
+        {
+            problem.Extensions["code"] = status switch { 400 => "invalid_request", 401 => "unauthorized",
+                403 => "forbidden", 404 => "not_found", 409 => "conflict", _ => "server_error" };
+            context.Response.Headers.CacheControl = "no-store";
+        }
 
         return problem;
     }

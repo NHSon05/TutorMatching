@@ -8,7 +8,7 @@ public sealed class NegotiationScheduleConfiguration : IEntityTypeConfiguration<
 {
     public void Configure(EntityTypeBuilder<NegotiationSchedule> builder)
     {
-        builder.ToTable("NegotiationSchedules");
+        builder.ToTable("NegotiationSchedules", t => t.HasCheckConstraint("ck_negotiationschedule_window", "day_of_week BETWEEN 1 AND 7 AND start_time < end_time"));
         builder.HasKey(x => x.Id);
 
         builder.Property(x => x.DayOfWeek)

@@ -14,6 +14,12 @@ public static class ApiErrorExtensions
                 context.ProblemDetails.Extensions["traceId"] =
                     context.HttpContext.TraceIdentifier;
 
+                if (context.HttpContext.Request.Path.StartsWithSegments("/api/v1/hire-requests"))
+                {
+                    context.HttpContext.Response.Headers.CacheControl = "no-store";
+                    context.ProblemDetails.Extensions.TryAdd("code", context.ProblemDetails.Status switch
+                    { 400 => "invalid_request", 401 => "unauthorized", 403 => "forbidden", 404 => "not_found", 409 => "conflict", _ => "server_error" });
+                }
                 if (context.ProblemDetails.Status >= 500)
                 {
                     context.ProblemDetails.Title =
@@ -30,10 +36,14 @@ public static class ApiErrorExtensions
         {
             options.InvalidModelStateResponseFactory = context =>
             {
+                var hiring = context.HttpContext.Request.Path.StartsWithSegments("/api/v1/hire-requests");
+                string Field(string key) => hiring
+                    ? string.Join('.', key.TrimStart('$', '.').Split('.').Select(System.Text.Json.JsonNamingPolicy.CamelCase.ConvertName))
+                    : key;
                 var errors = context.ModelState
                     .Where(entry => entry.Value is { Errors.Count: > 0 })
                     .ToDictionary(
-                        entry => entry.Key,
+                        entry => Field(entry.Key),
                         entry => new[]
                         {
                             "Giá trị không hợp lệ hoặc thiếu trường bắt buộc."
@@ -42,12 +52,14 @@ public static class ApiErrorExtensions
                 var problem = new ValidationProblemDetails(errors)
                 {
                     Type = "about:blank",
-                    Status = StatusCodes.Status422UnprocessableEntity,
+                    Status = hiring
+                        ? 400 : StatusCodes.Status422UnprocessableEntity,
                     Title = "Dữ liệu không hợp lệ."
                 };
 
                 problem.Extensions["traceId"] =
                     context.HttpContext.TraceIdentifier;
+                if (problem.Status == 400) problem.Extensions["code"] = "validation_failed";
 
                 return ApiProblems.ToResult(problem);
             };

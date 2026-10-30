@@ -306,6 +306,48 @@ namespace TutorMatching.Infrastructure.Persistence.Migrations
                     b.ToTable("courses", (string)null);
                 });
 
+            modelBuilder.Entity("TutorMatching.Domain.Hiring.HireCreateOperation", b =>
+                {
+                    b.Property<Guid>("LearnerId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("learner_id");
+
+                    b.Property<Guid>("IdempotencyKey")
+                        .HasColumnType("uuid")
+                        .HasColumnName("idempotency_key");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<string>("Outcome")
+                        .IsRequired()
+                        .HasColumnType("jsonb")
+                        .HasColumnName("outcome");
+
+                    b.Property<string>("PayloadFingerprint")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)")
+                        .HasColumnName("payload_fingerprint");
+
+                    b.Property<Guid>("RequestId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("request_id");
+
+                    b.HasKey("LearnerId", "IdempotencyKey")
+                        .HasName("pk_hire_create_operations");
+
+                    b.HasIndex("RequestId")
+                        .IsUnique()
+                        .HasDatabaseName("ix_hire_create_operations_request_id");
+
+                    b.ToTable("hire_create_operations", null, t =>
+                        {
+                            t.HasCheckConstraint("ck_hire_operation_fingerprint", "payload_fingerprint ~ '^[0-9a-f]{64}$'");
+                        });
+                });
+
             modelBuilder.Entity("TutorMatching.Domain.Hiring.HireRequest", b =>
                 {
                     b.Property<Guid>("Id")
@@ -349,10 +391,35 @@ namespace TutorMatching.Infrastructure.Persistence.Migrations
                         .HasColumnType("integer")
                         .HasColumnName("duration_minutes");
 
+                    b.Property<string>("FinalAgreement")
+                        .HasColumnType("jsonb")
+                        .HasColumnName("final_agreement");
+
+                    b.Property<string>("InitialTerms")
+                        .IsRequired()
+                        .HasColumnType("jsonb")
+                        .HasColumnName("initial_terms");
+
+                    b.Property<bool>("IsLegacy")
+                        .HasColumnType("boolean")
+                        .HasColumnName("is_legacy");
+
+                    b.Property<int>("LatestProposalSequence")
+                        .HasColumnType("integer")
+                        .HasColumnName("latest_proposal_sequence");
+
+                    b.Property<int?>("ListedPriceVnd")
+                        .HasColumnType("integer")
+                        .HasColumnName("listed_price_vnd");
+
                     b.Property<string>("LocationDetail")
                         .HasMaxLength(500)
                         .HasColumnType("character varying(500)")
                         .HasColumnName("location_detail");
+
+                    b.Property<int>("NextEventSequence")
+                        .HasColumnType("integer")
+                        .HasColumnName("next_event_sequence");
 
                     b.Property<string>("Note")
                         .HasMaxLength(2000)
@@ -406,6 +473,11 @@ namespace TutorMatching.Infrastructure.Persistence.Migrations
                         .HasColumnName("updated_at")
                         .HasDefaultValueSql("CURRENT_TIMESTAMP");
 
+                    b.Property<Guid>("Version")
+                        .IsConcurrencyToken()
+                        .HasColumnType("uuid")
+                        .HasColumnName("version");
+
                     b.HasKey("Id")
                         .HasName("pk_hire_requests");
 
@@ -418,16 +490,25 @@ namespace TutorMatching.Infrastructure.Persistence.Migrations
                     b.HasIndex("ProvinceCode")
                         .HasDatabaseName("ix_hire_requests_province_code");
 
-                    b.HasIndex("RequesterUserId")
-                        .HasDatabaseName("ix_hire_requests_requester_user_id");
-
                     b.HasIndex("SubjectId")
                         .HasDatabaseName("ix_hire_requests_subject_id");
 
-                    b.HasIndex("TutorProfileId")
-                        .HasDatabaseName("ix_hire_requests_tutor_profile_id");
+                    b.HasIndex("RequesterUserId", "StatusCode", "CreatedAt", "Id")
+                        .HasDatabaseName("ix_hire_requests_requester_user_id_status_code_created_at_id");
 
-                    b.ToTable("hire_requests", (string)null);
+                    b.HasIndex("TutorProfileId", "StatusCode", "CreatedAt", "Id")
+                        .HasDatabaseName("ix_hire_requests_tutor_profile_id_status_code_created_at_id");
+
+                    b.ToTable("hire_requests", null, t =>
+                        {
+                            t.HasCheckConstraint("ck_hire_request_mode", "teaching_mode_code IN ('ONLINE','OFFLINE','HYBRID')");
+
+                            t.HasCheckConstraint("ck_hire_request_snapshot", "initial_terms IS NOT NULL AND (is_legacy OR listed_price_vnd IS NOT NULL) AND (status_code NOT IN ('ACCEPTED','COMPLETED') OR final_agreement IS NOT NULL)");
+
+                            t.HasCheckConstraint("ck_hire_request_status", "status_code IN ('PENDING','NEGOTIATING','ACCEPTED','REJECTED','CANCELLED','COMPLETED')");
+
+                            t.HasCheckConstraint("ck_hire_request_values", "sessions_per_week BETWEEN 1 AND 21 AND duration_minutes BETWEEN 30 AND 240 AND proposed_price_vnd > 0 AND (listed_price_vnd IS NULL OR listed_price_vnd > 0) AND latest_proposal_sequence >= 0 AND next_event_sequence > 0");
+                        });
                 });
 
             modelBuilder.Entity("TutorMatching.Domain.Hiring.Negotiation", b =>
@@ -446,6 +527,10 @@ namespace TutorMatching.Infrastructure.Persistence.Migrations
                     b.Property<Guid>("HireRequestId")
                         .HasColumnType("uuid")
                         .HasColumnName("hire_request_id");
+
+                    b.Property<bool>("IsLegacy")
+                        .HasColumnType("boolean")
+                        .HasColumnName("is_legacy");
 
                     b.Property<string>("Note")
                         .HasMaxLength(2000)
@@ -470,16 +555,29 @@ namespace TutorMatching.Infrastructure.Persistence.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("sender_user_id");
 
+                    b.Property<int>("Sequence")
+                        .HasColumnType("integer")
+                        .HasColumnName("sequence");
+
+                    b.Property<string>("Terms")
+                        .IsRequired()
+                        .HasColumnType("jsonb")
+                        .HasColumnName("terms");
+
                     b.HasKey("Id")
                         .HasName("pk_negotiations");
-
-                    b.HasIndex("HireRequestId")
-                        .HasDatabaseName("ix_negotiations_hire_request_id");
 
                     b.HasIndex("SenderUserId")
                         .HasDatabaseName("ix_negotiations_sender_user_id");
 
-                    b.ToTable("negotiations", (string)null);
+                    b.HasIndex("HireRequestId", "Sequence")
+                        .IsUnique()
+                        .HasDatabaseName("ix_negotiations_hire_request_id_sequence");
+
+                    b.ToTable("negotiations", null, t =>
+                        {
+                            t.HasCheckConstraint("ck_negotiation_sequence", "sequence > 0 AND (proposed_price_vnd IS NULL OR proposed_price_vnd > 0)");
+                        });
                 });
 
             modelBuilder.Entity("TutorMatching.Domain.Hiring.NegotiationSchedule", b =>
@@ -511,7 +609,10 @@ namespace TutorMatching.Infrastructure.Persistence.Migrations
                     b.HasIndex("NegotiationId")
                         .HasDatabaseName("ix_negotiation_schedules_negotiation_id");
 
-                    b.ToTable("negotiation_schedules", (string)null);
+                    b.ToTable("negotiation_schedules", null, t =>
+                        {
+                            t.HasCheckConstraint("ck_negotiationschedule_window", "day_of_week BETWEEN 1 AND 7 AND start_time < end_time");
+                        });
                 });
 
             modelBuilder.Entity("TutorMatching.Domain.Hiring.RequestSchedule", b =>
@@ -549,7 +650,10 @@ namespace TutorMatching.Infrastructure.Persistence.Migrations
                     b.HasIndex("HireRequestId")
                         .HasDatabaseName("ix_request_schedules_hire_request_id");
 
-                    b.ToTable("request_schedules", (string)null);
+                    b.ToTable("request_schedules", null, t =>
+                        {
+                            t.HasCheckConstraint("ck_requestschedule_window", "day_of_week BETWEEN 1 AND 7 AND start_time < end_time");
+                        });
                 });
 
             modelBuilder.Entity("TutorMatching.Domain.Hiring.RequestStatusHistory", b =>
@@ -578,10 +682,18 @@ namespace TutorMatching.Infrastructure.Persistence.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("hire_request_id");
 
+                    b.Property<bool>("IsLegacy")
+                        .HasColumnType("boolean")
+                        .HasColumnName("is_legacy");
+
                     b.Property<string>("Reason")
                         .HasMaxLength(1000)
                         .HasColumnType("character varying(1000)")
                         .HasColumnName("reason");
+
+                    b.Property<int>("Sequence")
+                        .HasColumnType("integer")
+                        .HasColumnName("sequence");
 
                     b.Property<string>("ToStatusCode")
                         .IsRequired()
@@ -595,10 +707,14 @@ namespace TutorMatching.Infrastructure.Persistence.Migrations
                     b.HasIndex("ActorUserId")
                         .HasDatabaseName("ix_request_status_history_actor_user_id");
 
-                    b.HasIndex("HireRequestId")
-                        .HasDatabaseName("ix_request_status_history_hire_request_id");
+                    b.HasIndex("HireRequestId", "Sequence")
+                        .IsUnique()
+                        .HasDatabaseName("ix_request_status_history_hire_request_id_sequence");
 
-                    b.ToTable("request_status_history", (string)null);
+                    b.ToTable("request_status_history", null, t =>
+                        {
+                            t.HasCheckConstraint("ck_hire_event_sequence_actor", "sequence > 0 AND (is_legacy OR actor_user_id IS NOT NULL)");
+                        });
                 });
 
             modelBuilder.Entity("TutorMatching.Domain.Locations.District", b =>
@@ -1539,6 +1655,23 @@ namespace TutorMatching.Infrastructure.Persistence.Migrations
                     b.Navigation("TutorProfile");
                 });
 
+            modelBuilder.Entity("TutorMatching.Domain.Hiring.HireCreateOperation", b =>
+                {
+                    b.HasOne("TutorMatching.Infrastructure.Persistence.ApplicationUser", null)
+                        .WithMany()
+                        .HasForeignKey("LearnerId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_hire_create_operations_user_accounts_learner_id");
+
+                    b.HasOne("TutorMatching.Domain.Hiring.HireRequest", null)
+                        .WithOne()
+                        .HasForeignKey("TutorMatching.Domain.Hiring.HireCreateOperation", "RequestId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_hire_create_operations_hire_requests_request_id");
+                });
+
             modelBuilder.Entity("TutorMatching.Domain.Hiring.HireRequest", b =>
                 {
                     b.HasOne("TutorMatching.Domain.Courses.Course", "Course")
@@ -1639,7 +1772,7 @@ namespace TutorMatching.Infrastructure.Persistence.Migrations
                     b.HasOne("TutorMatching.Infrastructure.Persistence.ApplicationUser", null)
                         .WithMany()
                         .HasForeignKey("ActorUserId")
-                        .OnDelete(DeleteBehavior.SetNull)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .HasConstraintName("fk_request_status_history_user_accounts_actor_user_id");
 
                     b.HasOne("TutorMatching.Domain.Hiring.HireRequest", "HireRequest")

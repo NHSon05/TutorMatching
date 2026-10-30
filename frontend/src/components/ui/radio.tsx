@@ -215,7 +215,7 @@ export const Radio = React.forwardRef<HTMLInputElement, RadioProps>(
             {...props}
           />
           <div
-            className={`rounded-full flex items-center justify-center shrink-0 border transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 ${
+            className={`rounded-full flex items-center justify-center shrink-0 border transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 pointer-events-none ${
               currentSize.outer
             } ${
               error

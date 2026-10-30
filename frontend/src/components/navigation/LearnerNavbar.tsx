@@ -9,6 +9,7 @@ import { useAuthenticatedAccount } from "@/hooks/use-authenticated-account";
 
 const NAV_ITEMS = [
   { label: "Tổng quan", href: "/" },
+  { label: "Yêu cầu thuê", href: "/learner/requests" },
   { label: "Gia sư của tôi", href: "/learner/my-tutors" },
   { label: "Lịch học", href: "/learner/schedule" },
   { label: "Tin nhắn", href: "/messages" },

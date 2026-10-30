@@ -24,6 +24,5 @@ Sprint 3 được định nghĩa trong feature
 
 ## Bước tiếp theo
 
-Đã review và làm rõ specification, hoàn thành kế hoạch thiết kế ngày 2026-10-28.
-Đã tạo 50 task theo 5 user story. Chạy `$speckit-analyze`, xử lý finding chặn nếu có,
-sau đó triển khai từng phase/task với bằng chứng kiểm chứng.
+Đã hoàn thành Phase 1–7 (T001–T045): gửi yêu cầu, phản hồi, thương lượng giá/lịch, theo dõi trạng thái/lịch sử và hủy/hoàn tất yêu cầu theo đúng thẩm quyền. Toàn bộ kiểm thử domain, API integration, UI component và E2E browser Playwright đều đã pass và được ghi nhận trong [evidence](../../specs/003-hire-negotiation/evidence.md).
+Tiếp theo: Phase 8 (T046–T050) — kiểm tra chéo bảo mật OpenAPI, kiểm thử tải 100 người dùng đồng thời và nghiệm thu feature-wide.

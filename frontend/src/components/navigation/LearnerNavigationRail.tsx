@@ -6,153 +6,10 @@ import { usePathname } from "next/navigation";
 import {
   NavigationRail,
   NavItem,
-  type NavigationRailMode,
 } from "@/components/ui/navigation-rail";
 import Logo from "@assets/logo/Logo";
-
-// ============================================================================
-// ICONS
-// ============================================================================
-
-function DashboardIcon({ className = "w-5 h-5" }: { className?: string }) {
-  return (
-    <svg
-      className={className}
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden="true"
-    >
-      <rect width="7" height="9" x="3" y="3" rx="1" />
-      <rect width="7" height="5" x="14" y="3" rx="1" />
-      <rect width="7" height="9" x="14" y="12" rx="1" />
-      <rect width="7" height="5" x="3" y="16" rx="1" />
-    </svg>
-  );
-}
-
-function TutorsIcon({ className = "w-5 h-5" }: { className?: string }) {
-  return (
-    <svg
-      className={className}
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden="true"
-    >
-      <path d="M22 10v6M2 10l10-5 10 5-10 5z" />
-      <path d="M6 12v5c3 3 9 3 12 0v-5" />
-    </svg>
-  );
-}
-
-function CalendarIcon({ className = "w-5 h-5" }: { className?: string }) {
-  return (
-    <svg
-      className={className}
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden="true"
-    >
-      <rect width="18" height="18" x="3" y="4" rx="2" />
-      <line x1="16" x2="16" y1="2" y2="6" />
-      <line x1="8" x2="8" y1="2" y2="6" />
-      <line x1="3" x2="21" y1="10" y2="10" />
-    </svg>
-  );
-}
-
-function MessagesIcon({ className = "w-5 h-5" }: { className?: string }) {
-  return (
-    <svg
-      className={className}
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden="true"
-    >
-      <path d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z" />
-    </svg>
-  );
-}
-
-function SearchIcon({ className = "w-5 h-5" }: { className?: string }) {
-  return (
-    <svg
-      className={className}
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden="true"
-    >
-      <circle cx="11" cy="11" r="8" />
-      <path d="m21 21-4.3-4.3" />
-    </svg>
-  );
-}
-
-function SettingsIcon({ className = "w-5 h-5" }: { className?: string }) {
-  return (
-    <svg
-      className={className}
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden="true"
-    >
-      <path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z" />
-      <circle cx="12" cy="12" r="3" />
-    </svg>
-  );
-}
-
-function SidebarToggleIcon({
-  collapsed,
-  className = "w-5 h-5",
-}: {
-  collapsed: boolean;
-  className?: string;
-}) {
-  return (
-    <svg
-      className={className}
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden="true"
-    >
-      <rect width="18" height="18" x="3" y="3" rx="2" />
-      <path d="M9 3v18" />
-      {collapsed ? (
-        <path d="m14 9 3 3-3 3" />
-      ) : (
-        <path d="m17 9-3 3 3 3" />
-      )}
-    </svg>
-  );
-}
+import { CalendarIcon, DashboardIcon, MessagesIcon, SearchIcon, SettingsIcon, TutorsIcon } from "../icons";
+import { useUIStore } from "@/stores/use-ui-store";
 
 // ============================================================================
 // COMPONENT
@@ -160,14 +17,10 @@ function SidebarToggleIcon({
 
 export function LearnerNavigationRail() {
   const pathname = usePathname();
-  const [mode, setMode] = React.useState<NavigationRailMode>("expanded");
+  const mode = useUIStore((state) => state.mode);
 
   const isCollapsed = mode === "collapsed";
-
-  const toggleMode = () => {
-    setMode((prev) => (prev === "expanded" ? "collapsed" : "expanded"));
-  };
-
+  
   return (
     <aside
       aria-label="Learner Side Navigation"
@@ -180,7 +33,7 @@ export function LearnerNavigationRail() {
         className="h-full dark:border-gray-800 bg-white dark:bg-gray-900 shadow-2xs"
         header={
           <div className="w-full flex flex-col">
-            <div className="w-full flex items-center justify-between py-1 px-2 gap-2">
+            <div className="w-full flex items-center justify-between pt-4 px-2">
               <Link href="/" className="flex items-center gap-2">
                 <Logo size={32} />
                 {!isCollapsed && (
@@ -191,17 +44,6 @@ export function LearnerNavigationRail() {
                   </div>
                 )}
               </Link>
-              <button
-                type="button"
-                onClick={toggleMode}
-                aria-label={isCollapsed ? "Mở rộng thanh điều hướng" : "Thu gọn thanh điều hướng"}
-                title={isCollapsed ? "Mở rộng thanh điều hướng" : "Thu gọn thanh điều hướng"}
-                className={`p-1.5 rounded-lg text-gray-500 hover:text-gray-900 hover:bg-gray-100 dark:text-gray-400 dark:hover:text-white dark:hover:bg-gray-800 transition-colors ${
-                  isCollapsed ? "mx-auto" : ""
-                }`}
-              >
-                <SidebarToggleIcon collapsed={isCollapsed} className="w-4 h-4" />
-              </button>
             </div>
           </div>
         }
@@ -246,6 +88,7 @@ export function LearnerNavigationRail() {
           </div>
         }
       >
+          <NavItem id="hire-requests" label="Yêu cầu thuê" href="/learner/requests" icon={<TutorsIcon />} selected={pathname.startsWith("/learner/requests")} />
           <NavItem
             id="dashboard"
             label="Trang chủ"

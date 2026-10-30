@@ -1,4 +1,6 @@
 using System.Net;
+using System.Net.Http.Json;
+using System.Text.Json.Nodes;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Http;
@@ -168,5 +170,34 @@ public sealed class ApiSecurityTests
         }
         using var rejected = await host.SendAsync(HttpMethod.Get, "/api/test/private");
         Assert.Equal(HttpStatusCode.TooManyRequests, rejected.StatusCode);
+    }
+}
+
+[Collection("PostgreSQL API")]
+public sealed class HiringApiSecurityTests(TutorMatching.Api.IntegrationTests.Fixtures.PostgreSqlFixture postgres)
+{
+    [Fact]
+    public async Task HiringRequiresSessionLearnerCsrfAndValidIdentityAndPermitsConfiguredPreflight()
+    {
+        await using var f = await TutorMatching.Api.IntegrationTests.Hiring.HiringFixture.CreateAsync(postgres);
+        using var anonymous = f.Factory.CreateApiClient();
+        using var learner = await f.CreateClientAsync(f.Learner);
+        using var admin = await f.CreateClientAsync(f.Admin);
+        var body = TutorMatching.Api.IntegrationTests.Hiring.CreateHireRequestTests.Payload(f);
+        Assert.Equal(HttpStatusCode.Unauthorized, (await TutorMatching.Api.IntegrationTests.Hiring.CreateHireRequestTests.Send(anonymous, body, Guid.NewGuid())).StatusCode);
+        Assert.Equal(HttpStatusCode.Forbidden, (await TutorMatching.Api.IntegrationTests.Hiring.CreateHireRequestTests.Send(admin, body, Guid.NewGuid())).StatusCode);
+        Assert.Equal(HttpStatusCode.BadRequest, (await TutorMatching.Api.IntegrationTests.Hiring.CreateHireRequestTests.Send(learner, body, Guid.Empty)).StatusCode);
+        Assert.Equal(HttpStatusCode.BadRequest, (await TutorMatching.Api.IntegrationTests.Hiring.CreateHireRequestTests.Send(learner, body, Guid.NewGuid(), false)).StatusCode);
+        using var denied = await TutorMatching.Api.IntegrationTests.Hiring.CreateHireRequestTests.Send(anonymous, body, Guid.NewGuid());
+        Assert.Equal("unauthorized", (await denied.Content.ReadFromJsonAsync<JsonObject>())!["code"]!.GetValue<string>());
+        foreach (var origin in new[] { "https://frontend.example", "https://untrusted.example" })
+        {
+            using var request = new HttpRequestMessage(HttpMethod.Options, "/api/v1/hire-requests");
+            request.Headers.Add("Origin", origin);
+            request.Headers.Add("Access-Control-Request-Method", "POST");
+            request.Headers.Add("Access-Control-Request-Headers", "content-type,x-csrf-token,idempotency-key");
+            using var response = await anonymous.SendAsync(request);
+            Assert.Equal(origin == "https://frontend.example", response.Headers.Contains("Access-Control-Allow-Origin"));
+        }
     }
 }

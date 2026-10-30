@@ -46,11 +46,44 @@ public sealed class OpenApiContractTests(PostgreSqlFixture fixture)
             expected["paths"]![path.Key[expectedPrefix.Length..]] = path.Value!.DeepClone();
         foreach (var schema in discovery["components"]!["schemas"]!.AsObject())
             expected["components"]!["schemas"]![schema.Key] = schema.Value!.DeepClone();
+        var hiring = JsonNode.Parse(await File.ReadAllTextAsync(Path.Combine(AppContext.BaseDirectory, "Contracts", "hiring.json")))!;
         var actualOps = Operations(actual);
         var expectedOps = Operations(expected);
         Assert.NotEmpty(actualOps);
         foreach (var (key, operation) in actualOps)
         {
+            if (key == "POST /api/v1/hire-requests")
+            {
+                var planned = hiring["paths"]!["/api/v1/hire-requests"]!["post"]!;
+                Assert.Equal(planned["operationId"]!.GetValue<string>(), operation["operationId"]!.GetValue<string>());
+                Assert.Equal(planned["responses"]!.AsObject().Select(x => x.Key).Order(), operation["responses"]!.AsObject().Select(x => x.Key).Order());
+                CompareContent(hiring, planned["requestBody"]!, actual, operation["requestBody"]!);
+                CompareContent(hiring, planned["responses"]!["201"]!, actual, operation["responses"]!["201"]!);
+                Assert.Contains("cookieAuth", operation["security"]!.ToJsonString());
+                Assert.Contains("csrfHeader", operation["security"]!.ToJsonString());
+                var identity = operation["parameters"]!.AsArray().Single(p => p!["name"]!.GetValue<string>() == "Idempotency-Key")!;
+                Assert.True(identity["required"]!.GetValue<bool>());
+                Assert.Equal("uuid", identity["schema"]!["format"]!.GetValue<string>());
+                foreach (var code in new[] { "400", "401", "403", "404", "409", "500" })
+                    Assert.NotNull(operation["responses"]![code]!["content"]!["application/problem+json"]);
+                continue;
+            }
+            if (key is "GET /api/v1/hire-requests" or "GET /api/v1/hire-requests/{id}" or "POST /api/v1/hire-requests/{id}/accept" or "POST /api/v1/hire-requests/{id}/reject" or "POST /api/v1/hire-requests/{id}/proposals" or "POST /api/v1/hire-requests/{id}/cancel" or "POST /api/v1/hire-requests/{id}/complete")
+            {
+                var (method, path) = key.Split(' ') switch { var parts => (parts[0].ToLowerInvariant(), parts[1]) };
+                var planned = hiring["paths"]![path]![method]!;
+                Assert.Equal(planned["operationId"]!.GetValue<string>(), operation["operationId"]!.GetValue<string>());
+                Assert.Equal(planned["responses"]!.AsObject().Select(x => x.Key).Order(), operation["responses"]!.AsObject().Select(x => x.Key).Order());
+                if (path.EndsWith("/proposals") || path.EndsWith("/cancel") || path.EndsWith("/complete"))
+                    CompareContent(hiring, planned["requestBody"]!, actual, operation["requestBody"]!);
+                var security = (operation["security"] ?? actual["security"])!.ToJsonString();
+                Assert.Contains("cookieAuth", security);
+                if (method == "post")
+                    Assert.Contains("csrfHeader", security);
+                foreach (var code in new[] { "400", "401", "403", "404", "409", "500" })
+                    Assert.NotNull(operation["responses"]![code]!["content"]!["application/problem+json"]);
+                continue;
+            }
             if ((key.Contains("/api/v1/tutor") && key is not ("GET /api/v1/tutor/reviews" or "GET /api/v1/tutors" or "GET /api/v1/tutors/{id}")) || PendingOperations.Any(p => key.Contains(p))) continue;
             Assert.True(expectedOps.TryGetValue(key, out var contract), $"Undocumented operation: {key}");
             Assert.True(contract!["operationId"] is JsonValue, $"Missing contract operationId: {key}");
@@ -142,13 +175,14 @@ public sealed class OpenApiContractTests(PostgreSqlFixture fixture)
                 .SequenceEqual(actualArray.Select(item => item!.ToJsonString()).Order());
         }
 
-        if (expected is JsonValue expectedValue &&
-            expectedValue.TryGetValue<string>(out var text) &&
-            bool.TryParse(text, out var expectedBoolean) &&
-            actual is JsonValue actualValue &&
-            actualValue.TryGetValue<bool>(out var actualBoolean))
+        if ((expected is JsonValue expectedValue && expectedValue.TryGetValue<bool>(out var expBool) &&
+             actual is JsonValue actualValue && (actualValue.TryGetValue<bool>(out var actBool) && expBool == actBool ||
+                                                 actualValue.TryGetValue<string>(out var actStr) && bool.TryParse(actStr, out var parsedActBool) && expBool == parsedActBool)) ||
+            (expected is JsonValue expValStr && expValStr.TryGetValue<string>(out var text) && bool.TryParse(text, out var expectedBoolean) &&
+             actual is JsonValue actVal && (actVal.TryGetValue<bool>(out var actualBoolean) && expectedBoolean == actualBoolean ||
+                                           actVal.TryGetValue<string>(out var actString) && bool.TryParse(actString, out var actParsed) && expectedBoolean == actParsed)))
         {
-            return expectedBoolean == actualBoolean;
+            return true;
         }
 
         if (expected is JsonValue numericExpected &&

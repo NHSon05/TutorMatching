@@ -31,7 +31,8 @@ legacy; migrate known facts explicitly and do not expose them as a competing sou
 
 Existing actor, from/to states, reason and CreatedAt; add unique per-request Sequence. Creation has
 null previous state. Each mutation appends an event; NEGOTIATING to NEGOTIATING is a valid event for
-a new proposal. Order by Sequence, never timestamp alone. Failed/replayed operations add no event.
+a new proposal. Order by Sequence, never timestamp alone. Failed/replayed operations add no event. Legacy events may retain a null actor when the original
+record omitted it; all new events must record the authenticated actor, and reads must not invent one.
 
 ## HireCreateOperation (new)
 
@@ -77,3 +78,14 @@ Add participant/status/CreatedAt/Id indexes and unique proposal/event sequences.
 tokens and deterministic legacy sequence before constraints. Preflight unrecoverable legacy agreement
 snapshots; do not fabricate history or drop data. Verify upgrades from existing fixtures and rollback
 behavior before applying to a user database. Additions to schema proposal follow reviewed migration.
+
+## Implemented foundation notes (2026-10-28)
+
+- Original, effective proposal and final agreement snapshots are mapped to JSONB using immutable
+  domain values; schedule rows remain relational. The API keeps the documented Terms shape.
+- Requests, proposals and status events have internal IsLegacy provenance. Imported requests retain
+  null ListedPriceVnd when the original value is unknown; new requests require a positive listed price.
+- Old rows that show acceptance but lack verifiable snapshot facts stop migration for reconciliation;
+  the migration does not synthesize an agreement from current profile/course/location data.
+- Actor FK uses Restrict to preserve new event attribution; existing null legacy actors remain null.
+- Downgrade rejects new records/agreements that the earlier schema cannot represent.

@@ -3,6 +3,8 @@ namespace TutorMatching.Domain.Hiring;
 public sealed class RequestStatusHistory
 {
     public Guid Id { get; set; }
+    public int Sequence { get; set; }
+    public bool IsLegacy { get; set; }
     public Guid HireRequestId { get; set; }
     public Guid? ActorUserId { get; set; }
     public string? FromStatusCode { get; set; }

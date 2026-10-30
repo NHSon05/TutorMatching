@@ -26,7 +26,12 @@ internal static class Runner
     private static readonly Guid MathId = Guid.Parse("02000000-0000-0000-0000-000000000001");
     public static async Task<int> Main(string[] args)
     {
-        var browser = args.Contains("--browser");
+        var hireCreation = args.Contains("--hire-browser");
+        var hireResponse = args.Contains("--hire-response-browser");
+        var hireNegotiation = args.Contains("--hire-negotiation-browser");
+        var hireTracking = args.Contains("--hire-tracking-browser");
+        var hireClose = args.Contains("--hire-close-browser");
+        var browser = args.Contains("--browser") || hireCreation || hireResponse || hireNegotiation || hireTracking || hireClose;
         var output = Path.GetFullPath(args.FirstOrDefault(a => !a.StartsWith("--")) ?? Path.Combine(Path.GetTempPath(), "tutor-discovery-" + Guid.NewGuid().ToString("N")));
         Directory.CreateDirectory(output);
         using var deadline = new CancellationTokenSource(TimeSpan.FromMinutes(10));
@@ -35,7 +40,11 @@ internal static class Runner
             .WithDatabase("discovery_performance").WithUsername("benchmark")
             .WithPassword(Guid.NewGuid().ToString("N")).Build();
         await database.StartAsync(token);
-        if (browser) return await BrowserFixture.Run(database.GetConnectionString(), output, token);
+        if (browser)
+        {
+            var scenario = hireClose ? "hire-close" : hireTracking ? "hire-tracking" : hireNegotiation ? "hire-negotiation" : hireResponse ? "hire-response" : (hireCreation ? "hire-creation" : "discovery");
+            return await BrowserFixture.Run(database.GetConnectionString(), output, token, scenario);
+        }
         var capture = new QueryCapture();
         await using var factory = new PerformanceFactory(database.GetConnectionString(), capture);
         using var client = factory.CreateClient(new WebApplicationFactoryClientOptions { AllowAutoRedirect = false });

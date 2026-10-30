@@ -19,6 +19,10 @@ builder.Services.AddControllers(options =>
 });
 builder.Services.AddApiErrors();
 builder.Services.AddScoped<RegisterAccountHandler>();
+builder.Services.AddScoped<TutorMatching.Application.Hiring.CreateHireRequest>();
+builder.Services.AddScoped<TutorMatching.Application.Hiring.RespondToHireRequest>();
+builder.Services.AddScoped<TutorMatching.Application.Hiring.NegotiateHireRequest>();
+builder.Services.AddScoped<TutorMatching.Application.Hiring.CloseHireRequest>();
 builder.Services.AddScoped<TutorMatching.Application.Users.Profile.CurrentProfileHandler>();
 builder.Services.AddScoped<TutorMatching.Application.Authentication.Sessions.SessionHandler>();
 builder.Services.AddInfrastructure(builder.Configuration);
