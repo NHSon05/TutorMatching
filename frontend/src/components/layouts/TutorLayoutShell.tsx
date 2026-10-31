@@ -3,61 +3,7 @@
 import * as React from "react";
 import Link from "next/link";
 import TutorSidebar from "@/components/navigation/TutorSidebar";
-
-function MenuIcon({ className = "w-6 h-6" }: { className?: string }) {
-  return (
-    <svg
-      className={className}
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden="true"
-    >
-      <line x1="4" x2="20" y1="12" y2="12" />
-      <line x1="4" x2="20" y1="6" y2="6" />
-      <line x1="4" x2="20" y1="18" y2="18" />
-    </svg>
-  );
-}
-
-function CloseIcon({ className = "w-6 h-6" }: { className?: string }) {
-  return (
-    <svg
-      className={className}
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden="true"
-    >
-      <line x1="18" x2="6" y1="6" y2="18" />
-      <line x1="6" x2="18" y1="6" y2="18" />
-    </svg>
-  );
-}
-
-function GraduationCapIcon({ className = "w-6 h-6" }: { className?: string }) {
-  return (
-    <svg
-      className={className}
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden="true"
-    >
-      <path d="M22 10v6M2 10l10-5 10 5-10 5z" />
-      <path d="M6 12v5c3 3 9 3 12 0v-5" />
-    </svg>
-  );
-}
+import { CloseIcon, GraduationCapIcon, MenuIcon } from "../icons";
 
 export function TutorLayoutShell({ children }: { children: React.ReactNode }) {
   const [mobileOpen, setMobileOpen] = React.useState(false);
@@ -99,7 +45,9 @@ export function TutorLayoutShell({ children }: { children: React.ReactNode }) {
         <header className="md:hidden h-16 border-b border-border-default px-4 flex items-center justify-between bg-surface-base sticky top-0 z-30">
           <Link href="/tutor/dashboard" className="flex items-center gap-2">
             <GraduationCapIcon className="w-6 h-6 text-content-primary" />
-            <span className="font-bold text-lg text-content-primary">TutorMatching</span>
+            <span className="font-bold text-lg text-content-primary">
+              TutorMatching
+            </span>
           </Link>
           <button
             type="button"
@@ -112,9 +60,7 @@ export function TutorLayoutShell({ children }: { children: React.ReactNode }) {
         </header>
 
         {/* Content Body */}
-        <main className="flex-1 p-4 sm:p-6 lg:p-8 overflow-y-auto">
-          {children}
-        </main>
+        <main className="flex-1 p-6 overflow-y-auto">{children}</main>
       </div>
     </div>
   );

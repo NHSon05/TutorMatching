@@ -134,7 +134,7 @@ function HireRequestPageContent({
 
   if (isLoading) {
     return (
-      <div className="max-w-4xl mx-auto space-y-4">
+      <div className="space-y-4">
         <Skeleton className="h-40 rounded-2xl" />
         <Skeleton className="h-64 rounded-2xl" />
       </div>
@@ -143,7 +143,7 @@ function HireRequestPageContent({
 
   if (!detail) {
     return (
-      <div className="max-w-4xl mx-auto py-12">
+      <div className=" py-12">
         <Card className="p-8 text-center border-rose-200 bg-rose-50/50">
           <p className="text-sm text-rose-800 font-semibold mb-3">
             {error instanceof Error
@@ -167,12 +167,12 @@ function HireRequestPageContent({
 
   return (
     <div className="space-y-4">
-      <div className="max-w-4xl mx-auto">
+      <div>
         <Link
           href={backHref}
-          className="inline-flex items-center text-xs font-semibold text-content-secondary hover:text-content-primary transition-colors"
+          className="inline-flex items-center text-base text-content-secondary hover:text-content-primary transition-colors"
         >
-          ← Quay lại danh sách yêu cầu
+          ← Quay lại
         </Link>
       </div>
 

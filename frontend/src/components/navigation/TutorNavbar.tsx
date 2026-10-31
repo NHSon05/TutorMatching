@@ -16,18 +16,29 @@ export default function TutorNavbar() {
     { label: "Tin nhắn", href: "/messages" },
   ];
 
-  const visibleItems = isOnboarding ? navItems.filter(item => item.href === "/tutor/offers" || item.href === "/tutor/profile-edit") : navItems;
+  const visibleItems = isOnboarding
+    ? navItems.filter(
+        (item) =>
+          item.href === "/tutor/offers" || item.href === "/tutor/profile-edit"
+      )
+    : navItems;
 
   return (
     <header className="bg-white border-b border-gray-200 sticky top-0 z-40">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
         <div className="flex items-center gap-8">
-          <Link href={isOnboarding ? "/tutor/onboarding" : "/tutor/dashboard"} className="flex items-center gap-2">
+          <Link
+            href={isOnboarding ? "/tutor/onboarding" : "/tutor/dashboard"}
+            className="flex items-center gap-2"
+          >
             <span className="w-8 h-8 bg-amber-600 rounded-lg flex items-center justify-center text-white font-bold text-lg">
               T
             </span>
             <span className="font-bold text-gray-900 tracking-tight">
-              TutorMatch <span className="text-xs font-semibold px-2 py-0.5 bg-amber-50 text-amber-700 rounded-full ml-1">{isOnboarding ? "Hoàn thiện hồ sơ" : "Gia sư"}</span>
+              TutorMatch{" "}
+              <span className="text-xs font-semibold px-2 py-0.5 bg-amber-50 text-amber-700 rounded-full ml-1">
+                {isOnboarding ? "Hoàn thiện hồ sơ" : "Gia sư"}
+              </span>
             </span>
           </Link>
 

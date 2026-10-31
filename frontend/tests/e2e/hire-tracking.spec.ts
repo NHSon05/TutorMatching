@@ -55,8 +55,8 @@ test("both participants track six states, pagination and history; outsiders see 
     for (const label of labels) {
       await page.getByText(label, { exact: true }).first().click();
       await expect(
-        page.getByRole("radio", { name: label, exact: true })
-      ).toBeChecked();
+        page.getByRole("tab", { name: label, exact: true })
+      ).toHaveAttribute("aria-selected", "true");
       await expect(page.getByText("Trang 1", { exact: true })).toBeVisible();
       await expect(list.getByRole("link")).toHaveCount(4);
       await expect(list.getByText(label, { exact: true })).toHaveCount(4);

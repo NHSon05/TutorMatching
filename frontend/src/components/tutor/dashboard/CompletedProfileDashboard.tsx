@@ -9,7 +9,11 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { IconButton } from "@/components/ui/icon-button";
 import type { AccountResponse } from "@/lib/api/auth";
 
-function BellIcon({ className = "w-5 h-5 text-content-primary" }: { className?: string }) {
+function BellIcon({
+  className = "w-5 h-5 text-content-primary",
+}: {
+  className?: string;
+}) {
   return (
     <svg
       className={className}
@@ -27,7 +31,11 @@ function BellIcon({ className = "w-5 h-5 text-content-primary" }: { className?: 
   );
 }
 
-function MoreHorizontalIcon({ className = "w-5 h-5 text-content-secondary" }: { className?: string }) {
+function MoreHorizontalIcon({
+  className = "w-5 h-5 text-content-secondary",
+}: {
+  className?: string;
+}) {
   return (
     <svg
       className={className}
@@ -46,7 +54,11 @@ function MoreHorizontalIcon({ className = "w-5 h-5 text-content-secondary" }: { 
   );
 }
 
-function ChevronDownIcon({ className = "w-4 h-4 text-content-secondary ml-1.5" }: { className?: string }) {
+function ChevronDownIcon({
+  className = "w-4 h-4 text-content-secondary ml-1.5",
+}: {
+  className?: string;
+}) {
   return (
     <svg
       className={className}
@@ -67,7 +79,9 @@ export interface CompletedProfileDashboardProps {
   account?: AccountResponse | null;
 }
 
-export function CompletedProfileDashboard({ account }: CompletedProfileDashboardProps) {
+export function CompletedProfileDashboard({
+  account,
+}: CompletedProfileDashboardProps) {
   const tutorDisplayName = account?.fullName
     ? account.fullName.split(" ").slice(-1)[0]
     : "Minh";
@@ -77,14 +91,16 @@ export function CompletedProfileDashboard({ account }: CompletedProfileDashboard
     task2: false,
   });
 
-  const [savedOpportunities, setSavedOpportunities] = React.useState<Record<string, boolean>>({
+  const [savedOpportunities, setSavedOpportunities] = React.useState<
+    Record<string, boolean>
+  >({
     opp1: false,
     opp2: true, // Wireframe 2: Bài Vật lý 10 là "Đã lưu"
     opp3: false,
   });
 
   return (
-    <div className="space-y-6 pb-12">
+    <div className="space-y-6">
       {/* ----------------------------------------------------------------------
           HEADER KHU VỰC TỔNG QUAN (WIREFRAME 2)
       ---------------------------------------------------------------------- */}
@@ -240,7 +256,8 @@ export function CompletedProfileDashboard({ account }: CompletedProfileDashboard
             </div>
 
             <p className="text-base text-content-primary leading-relaxed">
-              Nội dung đã học: Ôn chuyển động thẳng biến đổi đều; chữa 5 bài tập về gia tốc.
+              Nội dung đã học: Ôn chuyển động thẳng biến đổi đều; chữa 5 bài tập
+              về gia tốc.
             </p>
 
             <div className="flex flex-wrap items-center gap-2 pt-1">
@@ -254,7 +271,10 @@ export function CompletedProfileDashboard({ account }: CompletedProfileDashboard
           </Card>
 
           {/* Card Buổi 2: Sắp diễn ra */}
-          <Card padding="medium" className="space-y-3 border-tutor-200 shadow-2xs">
+          <Card
+            padding="medium"
+            className="space-y-3 border-tutor-200 shadow-2xs"
+          >
             <div className="flex items-center justify-between">
               <span className="font-bold text-base text-content-primary">
                 19:00–20:30
@@ -268,13 +288,12 @@ export function CompletedProfileDashboard({ account }: CompletedProfileDashboard
               <h3 className="font-bold text-base text-content-primary">
                 Minh Anh
               </h3>
-              <p className="text-sm text-content-secondary">
-                Toán 9 · Online
-              </p>
+              <p className="text-sm text-content-secondary">Toán 9 · Online</p>
             </div>
 
             <p className="text-base text-content-primary leading-relaxed">
-              Nội dung dự kiến: Rút gọn căn thức bậc hai; luyện 6 bài vận dụng và kiểm tra bài về nhà.
+              Nội dung dự kiến: Rút gọn căn thức bậc hai; luyện 6 bài vận dụng
+              và kiểm tra bài về nhà.
             </p>
 
             <div className="pt-1">
@@ -381,7 +400,8 @@ export function CompletedProfileDashboard({ account }: CompletedProfileDashboard
               </Link>
             </div>
             <p className="text-sm text-content-muted mt-1 leading-relaxed">
-              Bài đăng tiềm năng từ Facebook, không phải học sinh đã nhận. Phù hợp với Toán, Vật lý - khu vực Cầu Giấy.
+              Bài đăng tiềm năng từ Facebook, không phải học sinh đã nhận. Phù
+              hợp với Toán, Vật lý - khu vực Cầu Giấy.
             </p>
           </div>
 
@@ -428,7 +448,8 @@ export function CompletedProfileDashboard({ account }: CompletedProfileDashboard
               </div>
 
               <p className="text-base text-content-primary italic leading-relaxed">
-                &ldquo;Cần gia sư củng cố đại số, ôn thi vào lớp 10. Ưu tiên dạy buổi tối trong tuần.&rdquo;
+                &ldquo;Cần gia sư củng cố đại số, ôn thi vào lớp 10. Ưu tiên dạy
+                buổi tối trong tuần.&rdquo;
               </p>
 
               <p className="text-xs text-content-muted">
@@ -444,7 +465,10 @@ export function CompletedProfileDashboard({ account }: CompletedProfileDashboard
                     variant="secondary"
                     size="small"
                     onClick={() =>
-                      setSavedOpportunities((prev) => ({ ...prev, opp1: !prev.opp1 }))
+                      setSavedOpportunities((prev) => ({
+                        ...prev,
+                        opp1: !prev.opp1,
+                      }))
                     }
                   >
                     {savedOpportunities.opp1 ? "Đã lưu" : "Lưu"}
@@ -484,7 +508,8 @@ export function CompletedProfileDashboard({ account }: CompletedProfileDashboard
               </div>
 
               <p className="text-base text-content-primary italic leading-relaxed">
-                &ldquo;Cần hỗ trợ phần động học và luyện bài tập cơ bản. Có thể học trực tuyến buổi tối.&rdquo;
+                &ldquo;Cần hỗ trợ phần động học và luyện bài tập cơ bản. Có thể
+                học trực tuyến buổi tối.&rdquo;
               </p>
 
               <p className="text-xs text-content-muted">
@@ -500,7 +525,10 @@ export function CompletedProfileDashboard({ account }: CompletedProfileDashboard
                     variant="secondary"
                     size="small"
                     onClick={() =>
-                      setSavedOpportunities((prev) => ({ ...prev, opp2: !prev.opp2 }))
+                      setSavedOpportunities((prev) => ({
+                        ...prev,
+                        opp2: !prev.opp2,
+                      }))
                     }
                   >
                     {savedOpportunities.opp2 ? "Đã lưu" : "Lưu"}
@@ -543,7 +571,8 @@ export function CompletedProfileDashboard({ account }: CompletedProfileDashboard
               </div>
 
               <p className="text-base text-content-primary italic leading-relaxed">
-                &ldquo;Tìm người kèm Toán căn bản, kiên nhẫn, có kế hoạch theo tuần. Lịch học sẽ trao đổi thêm.&rdquo;
+                &ldquo;Tìm người kèm Toán căn bản, kiên nhẫn, có kế hoạch theo
+                tuần. Lịch học sẽ trao đổi thêm.&rdquo;
               </p>
 
               <p className="text-xs text-content-muted">
@@ -559,7 +588,10 @@ export function CompletedProfileDashboard({ account }: CompletedProfileDashboard
                     variant="secondary"
                     size="small"
                     onClick={() =>
-                      setSavedOpportunities((prev) => ({ ...prev, opp3: !prev.opp3 }))
+                      setSavedOpportunities((prev) => ({
+                        ...prev,
+                        opp3: !prev.opp3,
+                      }))
                     }
                   >
                     {savedOpportunities.opp3 ? "Đã lưu" : "Lưu"}
@@ -706,7 +738,9 @@ export function CompletedProfileDashboard({ account }: CompletedProfileDashboard
             </div>
 
             <div className="px-5 py-3.5 bg-surface-subtle text-sm text-content-muted leading-relaxed">
-              Chỉ chuyển thành học sinh khi đã xác nhận nhận học. Cả 3 liên hệ chưa đủ điều kiện; đã hẹn học thử không đồng nghĩa với đã nhận học.
+              Chỉ chuyển thành học sinh khi đã xác nhận nhận học. Cả 3 liên hệ
+              chưa đủ điều kiện; đã hẹn học thử không đồng nghĩa với đã nhận
+              học.
             </div>
           </div>
         </div>

@@ -1,8 +1,16 @@
+export * from "./BookOpenIcon";
 export * from "./CalendarIcon";
+export * from "./CloseIcon";
 export * from "./DashboardIcon";
+export * from "./GraduationCapIcon";
+export * from "./LogOutIcon";
+export * from "./MenuIcon";
 export * from "./MessagesIcon";
+export * from "./RequestIcon";
 export * from "./SearchIcon";
 export * from "./SettingIcon";
 export { SettingsIcon as SettingIcon } from "./SettingIcon";
 export * from "./SidebarToggleIcon";
 export * from "./TutorsIcon";
+export * from "./UserProfileIcon";
+export * from "./UsersIcon";

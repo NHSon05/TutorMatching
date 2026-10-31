@@ -6,8 +6,16 @@ import { formatVietnamDateTime } from "@/lib/date-time";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Radio, RadioGroup } from "@/components/ui/radio";
+import { Tabs, type TabOption } from "@/components/ui/tabs";
 import { hireStatuses } from "./hire-status";
+
+const statusTabs: TabOption[] = [
+  { id: "", label: "Tất cả trạng thái" },
+  ...Object.entries(hireStatuses).map(([value, info]) => ({
+    id: value,
+    label: info.label,
+  })),
+];
 
 export function HireRequestList({
   audience,
@@ -29,30 +37,18 @@ export function HireRequestList({
 function RequestListContent({ audience }: { audience: "learner" | "tutor" }) {
   const list = useHireRequestList();
   return (
-    <section className="space-y-5 max-w-5xl mx-auto">
-      <div className="flex flex-wrap justify-between gap-3">
-        <h1 className="text-2xl font-bold text-content-primary">
-          Yêu cầu thuê gia sư
-        </h1>
-        <Button
-          variant="secondary"
-          onClick={list.refresh}
-          disabled={list.isFetching}
-        >
-          Tải lại
-        </Button>
-      </div>
-      <RadioGroup
-        label="Lọc trạng thái"
-        value={list.status}
+    <section className="space-y-4">
+      <h1 className="text-2xl font-bold text-neutral-900">
+        Yêu cầu thuê gia sư
+      </h1>
+      <Tabs
+        tabs={statusTabs}
+        activeTab={list.status}
         onChange={list.changeStatus}
-        orientation="horizontal"
-      >
-        <Radio value="" label="Tất cả trạng thái" />
-        {Object.entries(hireStatuses).map(([value, info]) => (
-          <Radio key={value} value={value} label={info.label} />
-        ))}
-      </RadioGroup>
+        roleVariant={audience === "tutor" ? "tutor" : "brand"}
+        variant="line"
+        className="mb-4"
+      />
       {list.isPending && <p role="status">Đang tải danh sách yêu cầu…</p>}
       {list.isError && (
         <Card className="p-5 space-y-3">

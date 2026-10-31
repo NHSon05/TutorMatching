@@ -30,16 +30,16 @@
      2. ROLE: TUTOR PALETTE (Amber / Warm Gold)
      Used for Tutor workspace, badges, and verification status
      ========================================================================= */
-  --color-tutor-50: #fffbeb;
-  --color-tutor-100: #fef3c7;
-  --color-tutor-200: #fde68a;
-  --color-tutor-300: #fcd34d;
-  --color-tutor-400: #fbbf24;
-  --color-tutor-500: #f59e0b;
-  --color-tutor-600: #d97706;
-  --color-tutor-700: #b45309;
-  --color-tutor-800: #92400e;
-  --color-tutor-900: #78350f;
+  --color-tutor-50: #fff3e0;
+  --color-tutor-100: #ffe0b2;
+  --color-tutor-200: #ffcc80;
+  --color-tutor-300: #ffb74d;
+  --color-tutor-400: #ffa726;
+  --color-tutor-500: #ff9800;
+  --color-tutor-600: #fb8c00;
+  --color-tutor-700: #f57c00;
+  --color-tutor-800: #ef6c00;
+  --color-tutor-900: #e65100;
   --color-tutor-950: #451a03;
   --color-role-tutor: var(--color-tutor-600);
 

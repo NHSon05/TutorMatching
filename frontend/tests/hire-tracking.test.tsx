@@ -59,7 +59,7 @@ it("resets cursor on filter and account changes, supports keyboard filters and r
   fireEvent.click(screen.getByRole("button", { name: "Tải trang tiếp theo" }));
   await screen.findByText(/Mã: second/);
   expect(screen.getByText("Trang 2")).toBeInTheDocument();
-  const all = screen.getByRole("radio", { name: "Tất cả trạng thái" });
+  const all = screen.getByRole("tab", { name: "Tất cả trạng thái" });
   all.focus();
   await userEvent.keyboard("{ArrowRight}");
   await waitFor(() =>
@@ -79,8 +79,8 @@ it("resets cursor on filter and account changes, supports keyboard filters and r
   );
   await waitFor(() =>
     expect(
-      screen.getByRole("radio", { name: "Tất cả trạng thái" })
-    ).toBeChecked()
+      screen.getByRole("tab", { name: "Tất cả trạng thái" })
+    ).toHaveAttribute("aria-selected", "true")
   );
   expect(screen.getByText("Trang 1")).toBeInTheDocument();
   expect(state.list).toHaveBeenLastCalledWith(

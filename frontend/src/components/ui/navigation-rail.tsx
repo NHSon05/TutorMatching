@@ -361,7 +361,7 @@ export function NavItem({
         </span>
         {typeof badge === "number" && (
           <span
-            className={`px-2 py-0.5 rounded-full text-xs font-semibold shrink-0 transition-colors ${badgeClasses}`}
+            className={`px-2 py-0.5 rounded-full text-sm font-semibold shrink-0 transition-colors ${badgeClasses}`}
           >
             {badge}
           </span>

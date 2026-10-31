@@ -38,3 +38,4 @@ export * from "./event-calendar";
 export * from "./gantt-chart";
 export * from "./top-navigation";
 export * from "./navigation-rail";
+export * from "./tabs";

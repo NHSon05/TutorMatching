@@ -68,7 +68,9 @@ export function HireRequestDetail({
   const [internalReason, setInternalReason] = React.useState("");
   const [reasonError, setReasonError] = React.useState<string | null>(null);
   const [showRejectForm, setShowRejectForm] = React.useState(false);
-  const [closeDialogAction, setCloseDialogAction] = React.useState<"cancel" | "complete" | null>(null);
+  const [closeDialogAction, setCloseDialogAction] = React.useState<
+    "cancel" | "complete" | null
+  >(null);
 
   const reason = reasonDraft !== undefined ? reasonDraft : internalReason;
   const setReason = (val: string) => {
@@ -172,7 +174,7 @@ export function HireRequestDetail({
   );
 
   return (
-    <div className="space-y-6 max-w-4xl mx-auto">
+    <div className="space-y-6">
       {/* Top Header Card */}
       <Card>
         <div className="p-6">
@@ -201,7 +203,9 @@ export function HireRequestDetail({
                 variant="secondary"
                 size="small"
                 onClick={onRefresh}
-                disabled={isAccepting || isRejecting || isCancelling || isCompleending}
+                disabled={
+                  isAccepting || isRejecting || isCancelling || isCompleending
+                }
               >
                 Làm mới dữ liệu
               </Button>
@@ -217,7 +221,9 @@ export function HireRequestDetail({
                   size="small"
                   onClick={() => setCloseDialogAction("complete")}
                   isLoading={isCompleending}
-                  disabled={isAccepting || isRejecting || isCancelling || isCompleending}
+                  disabled={
+                    isAccepting || isRejecting || isCancelling || isCompleending
+                  }
                 >
                   Hoàn tất việc học...
                 </Button>
@@ -228,7 +234,9 @@ export function HireRequestDetail({
                   size="small"
                   onClick={() => setCloseDialogAction("cancel")}
                   isLoading={isCancelling}
-                  disabled={isAccepting || isRejecting || isCancelling || isCompleending}
+                  disabled={
+                    isAccepting || isRejecting || isCancelling || isCompleending
+                  }
                 >
                   Hủy yêu cầu...
                 </Button>
