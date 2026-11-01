@@ -36,7 +36,7 @@ graphify-out/
 **/test-results/
 **/playwright-report/
 **/blob-report/
-*.log
+*.log``
 
 # Per-machine agent settings and temporary worktrees.
 .claude/settings.local.json

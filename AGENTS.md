@@ -58,3 +58,9 @@ Keep this file as a small router. Load only the context required by the current 
 - Never store transcripts, chain-of-thought, raw tool output, verbose logs, secrets, tokens, credentials, or personal data in memory.
 - Prefer paths, test names, decisions, evidence, blockers, and the next executable step over narrative history.
 - For read-only questions or changes with no durable effect, do not touch memory.
+
+## Component Usage & Inspection Rules
+
+- When asked to use or replace a UI component, inspect ONLY that component's definition/types (e.g. components/ui/\*).
+- NEVER grep the codebase for usage examples or open unrelated files (like LoginCard or DashboardTopBar) just to see how props are passed unless explicitly asked.
+- Rely strictly on the component's TypeScript props/interface to construct JSX.
