@@ -1,31 +1,35 @@
 # Current Session Handoff
 
-Updated: 2026-10-30
-Status: Sprint 3 Phases 1–7 complete (T001–T045); Phase 8 next.
+Updated: 2026-11-01
+Status: Sprint 4 Phase 2 (Foundational) and Phase 3 (US1 Messaging 🎯 MVP) complete; US2 Notifications next.
 
-## Completed and evidence
+## Current scope and evidence
 
-- Phase 7: cancellation/completion rules in HireRequest and CloseHireRequest use-case;
-  transactional persistence with sequence events and recipient notifications in HireRequestStore.
-- Endpoints POST /api/v1/hire-requests/{id}/cancel and /complete in HireRequestsController;
-  cancelHireRequest/completeHireRequest client methods in hire-requests.ts.
-- Frontend CloseRequestDialog with confirmed attestation, required reason for accepted cancellation,
-  error handling and conflict recovery integrated into HireRequestDetail.
-- CloseHireRequestTests (Domain) 49/49; CloseHireRequestTests (API Integration) 35/35;
-  hiring+OpenAPI regression 128/128. Full frontend 263/263 (38 files) with hire-close.test.tsx 5/5.
-- TypeScript compiler, ESLint, Next.js production build (28/28 static/dynamic), and diff whitespace pass.
-- Playwright E2E `--hire-close-browser` passed in 12.4s (timing 11,810ms): 2 requests, both accepted,
-  request #1 completed, request #2 cancelled with reason; verified UI labels ("Đã hoàn thành", "Đã hủy"),
-  terminal control hiding, reload persistence, and database assertions (6 events, 6 notifications).
-- Evidence recorded in specs/003-hire-negotiation/evidence.md Phase 7.
+- Bypassed automated test generation per user instruction to save token quota.
+- Implemented Phase 2 Foundation:
+  - Added ClientMessageId, MessageNotificationOutbox, Article Version, ApplicationUser ConcurrencyVersion, and EF Core configurations.
+  - Setup SignalR EventsHub (/api/v1/hubs/events), SignalREventPublisher, MessageNotificationOutboxWorker background service.
+  - Installed @microsoft/signalr and created useSignalREvents hook.
+- Implemented Phase 3 User Story 1 (Messaging MVP):
+  - Application contracts & MessagingService with cursor pagination, active participant checks, ClientMessageId idempotency, and transactional outbox.
+  - ConversationsController (GET list, GET detail, GET messages, POST send, POST read).
+  - Frontend conversations API client, useConversations hook, and replaced mock messages page with real-time chat UI.
+  - Connected HireRequestDetail.tsx to /messages.
+  - Both backend (0 errors) and frontend (tsc 0 errors) compiled cleanly.
 
 ## Next executable step
 
-- Implement Phase 8 (T046–T050):
-  - T046: OpenAPI parity and 8-operation security matrix in HiringContractTests.
-  - T047: 100-user load scenarios in HireNegotiation.Performance (p95 <= 3s).
-  - T048: Full layered test run, availability races, account-switch cache checks.
-  - T049: Reconcile DatabaseSchema.md, openapi.json, and quickstart.md.
-  - T050: Run speckit-converge and finalize Sprint 3 documentation.
-- Maintain immutable snapshots, version checks, and shared lock protocol.
+- Phase 4: US2 Notifications (T019–T022): notification service, controller, and UI bell/popover.
+- Contract notes preserve actual accessToken auth cookie, CSRF400 compatibility and non-UUID
+  catalog audit entity IDs; resolve api.md CSRF403 discrepancy before runtime parity closure.
+- Keep SignalR user-channel hints + REST recovery (ADR-013), transactional message notification outbox,
+  post-commit publication, live session revocation and reconnect multi-page catch-up requirements.
 
+## Retained release dependency
+
+- Sprint3 Phases1–7 / T001–T045 complete per prior handoff; T046–T050 remain unchecked.
+- Those gates cover full contract/security matrix,100-user load, layered validation,
+  schema/contract/quickstart reconciliation and convergence. Complete before MVP release.
+- Preserve immutable hiring snapshots, expectedVersion and cross-module lock order;
+  account writes must avoid user->profile inversion with profile->user review paths.
+- Preserve pre-existing uncommitted planning, sprint, decision and ignore changes; no commit made.

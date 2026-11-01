@@ -122,3 +122,15 @@ Search by ADR ID, subsystem, or keyword. Add only durable decisions; keep each A
 - Normalize optional text and schedule ordering before hashing; persist result with all business rows.
 - UI freezes displayed offering during retry; explicit edits/offer refresh determine a new payload/key.
 - Evidence: `specs/003-hire-negotiation/evidence.md` (Phase 3).
+
+
+## ADR-013 - SignalR transport for Sprint4
+
+- Date: 2026-11-01; explicitly approved by user.
+- Server uses ASP.NET Core SignalR; frontend uses `@microsoft/signalr`, no Socket.IO.
+- Supersedes initial Sprint4 periodic polling design; REST retains writes/history/reconciliation.
+- Publish lightweight hints only after commit; no guaranteed delivery or database role for push.
+- Custom hooks own connection/handlers/cache; reconnect/focus reconciles missed data through REST.
+- Enforce live session revocation and recipient authorization; stop/clear on account switch.
+- Message notification outbox remains durable; push failure never rolls back stored business data.
+- Contract: `specs/004-messaging-admin-release/contracts/api.md` SignalR section.
