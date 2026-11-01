@@ -12,4 +12,5 @@ public sealed class Article
     public DateTimeOffset? PublishedAt { get; set; }
     public DateTimeOffset CreatedAt { get; set; }
     public DateTimeOffset UpdatedAt { get; set; }
+    public Guid Version { get; set; } = Guid.NewGuid();
 }

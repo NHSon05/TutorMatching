@@ -225,6 +225,10 @@ namespace TutorMatching.Infrastructure.Persistence.Migrations
                         .HasColumnName("updated_at")
                         .HasDefaultValueSql("CURRENT_TIMESTAMP");
 
+                    b.Property<Guid>("Version")
+                        .HasColumnType("uuid")
+                        .HasColumnName("version");
+
                     b.HasKey("Id")
                         .HasName("pk_articles");
 
@@ -814,6 +818,10 @@ namespace TutorMatching.Infrastructure.Persistence.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("id");
 
+                    b.Property<Guid?>("ClientMessageId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("client_message_id");
+
                     b.Property<string>("Content")
                         .IsRequired()
                         .HasMaxLength(4000)
@@ -845,13 +853,67 @@ namespace TutorMatching.Infrastructure.Persistence.Migrations
                     b.HasKey("Id")
                         .HasName("pk_messages");
 
-                    b.HasIndex("ConversationId")
-                        .HasDatabaseName("ix_messages_conversation_id");
-
                     b.HasIndex("SenderUserId")
                         .HasDatabaseName("ix_messages_sender_user_id");
 
+                    b.HasIndex("ConversationId", "SenderUserId", "ClientMessageId")
+                        .IsUnique()
+                        .HasDatabaseName("ix_messages_conversation_id_sender_user_id_client_message_id")
+                        .HasFilter("\"client_message_id\" IS NOT NULL");
+
+                    b.HasIndex("ConversationId", "SenderUserId", "ReadAt")
+                        .HasDatabaseName("ix_messages_conversation_id_sender_user_id_read_at");
+
+                    b.HasIndex("ConversationId", "SentAt", "Id")
+                        .HasDatabaseName("ix_messages_conversation_id_sent_at_id");
+
                     b.ToTable("messages", (string)null);
+                });
+
+            modelBuilder.Entity("TutorMatching.Domain.Messaging.MessageNotificationOutbox", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<int>("AttemptCount")
+                        .HasColumnType("integer")
+                        .HasColumnName("attempt_count");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at")
+                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
+
+                    b.Property<DateTimeOffset?>("DeliveredAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("delivered_at");
+
+                    b.Property<Guid>("MessageId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("message_id");
+
+                    b.Property<DateTimeOffset?>("NextAttemptAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("next_attempt_at");
+
+                    b.Property<Guid>("RecipientUserId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("recipient_user_id");
+
+                    b.HasKey("Id")
+                        .HasName("pk_message_notification_outboxes");
+
+                    b.HasIndex("RecipientUserId")
+                        .HasDatabaseName("ix_message_notification_outboxes_recipient_user_id");
+
+                    b.HasIndex("MessageId", "RecipientUserId")
+                        .IsUnique()
+                        .HasDatabaseName("ix_message_notification_outboxes_message_id_recipient_user_id");
+
+                    b.ToTable("message_notification_outboxes", (string)null);
                 });
 
             modelBuilder.Entity("TutorMatching.Domain.Notifications.Notification", b =>
@@ -920,8 +982,14 @@ namespace TutorMatching.Infrastructure.Persistence.Migrations
                     b.HasIndex("TutorProfileId")
                         .HasDatabaseName("ix_notifications_tutor_profile_id");
 
-                    b.HasIndex("UserId")
-                        .HasDatabaseName("ix_notifications_user_id");
+                    b.HasIndex("UserId", "MessageId")
+                        .IsUnique()
+                        .HasDatabaseName("ix_notifications_user_id_message_id")
+                        .HasFilter("\"message_id\" IS NOT NULL");
+
+                    b.HasIndex("UserId", "CreatedAt", "Id")
+                        .HasDatabaseName("ix_notifications_user_id_created_at_id")
+                        .HasFilter("\"is_read\" = false");
 
                     b.ToTable("notifications", (string)null);
                 });
@@ -1389,6 +1457,10 @@ namespace TutorMatching.Infrastructure.Persistence.Migrations
                         .HasColumnType("text")
                         .HasColumnName("concurrency_stamp");
 
+                    b.Property<Guid>("ConcurrencyVersion")
+                        .HasColumnType("uuid")
+                        .HasColumnName("concurrency_version");
+
                     b.Property<DateTimeOffset>("CreatedAt")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("timestamp with time zone")
@@ -1826,6 +1898,25 @@ namespace TutorMatching.Infrastructure.Persistence.Migrations
                         .HasConstraintName("fk_messages_user_accounts_sender_user_id");
 
                     b.Navigation("Conversation");
+                });
+
+            modelBuilder.Entity("TutorMatching.Domain.Messaging.MessageNotificationOutbox", b =>
+                {
+                    b.HasOne("TutorMatching.Domain.Messaging.Message", "Message")
+                        .WithMany()
+                        .HasForeignKey("MessageId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_message_notification_outboxes_messages_message_id");
+
+                    b.HasOne("TutorMatching.Infrastructure.Persistence.ApplicationUser", null)
+                        .WithMany()
+                        .HasForeignKey("RecipientUserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_message_notification_outboxes_user_accounts_recipient_user_id");
+
+                    b.Navigation("Message");
                 });
 
             modelBuilder.Entity("TutorMatching.Domain.Notifications.Notification", b =>

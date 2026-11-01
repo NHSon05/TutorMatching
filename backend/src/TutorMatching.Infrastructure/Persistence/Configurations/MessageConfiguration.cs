@@ -26,6 +26,16 @@ public sealed class MessageConfiguration : IEntityTypeConfiguration<Message>
         builder.Property(x => x.DeletedAt)
             .HasColumnType("timestamp with time zone");
 
+        builder.Property(x => x.ClientMessageId);
+
+        builder.HasIndex(x => new { x.ConversationId, x.SenderUserId, x.ClientMessageId })
+            .IsUnique()
+            .HasFilter("\"client_message_id\" IS NOT NULL");
+
+        builder.HasIndex(x => new { x.ConversationId, x.SentAt, x.Id });
+
+        builder.HasIndex(x => new { x.ConversationId, x.SenderUserId, x.ReadAt });
+
         builder.HasOne(x => x.Conversation)
             .WithMany(x => x.Messages)
             .HasForeignKey(x => x.ConversationId)

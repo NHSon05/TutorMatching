@@ -87,8 +87,19 @@ public static class ApiSecurityExtensions
                 OnMessageReceived = context =>
                 {
                     if (context.Request.Cookies.TryGetValue(JwtCookieTokens.AccessCookie, out var token) && !string.IsNullOrWhiteSpace(token))
+                    {
                         context.Token = token;
-                    else context.NoResult(); // Do not fall back to a client-supplied Authorization header.
+                    }
+                    else if (context.Request.Path.StartsWithSegments("/api/v1/hubs") &&
+                             context.Request.Query.TryGetValue("access_token", out var accessToken) &&
+                             !string.IsNullOrWhiteSpace(accessToken))
+                    {
+                        context.Token = accessToken;
+                    }
+                    else
+                    {
+                        context.NoResult(); // Do not fall back to a client-supplied Authorization header.
+                    }
                     return Task.CompletedTask;
                 },
                 OnTokenValidated = async context =>
@@ -146,7 +157,7 @@ public static class ApiSecurityExtensions
         services.AddCors(options => options.AddPolicy(FrontendCorsPolicy, policy => policy
             .WithOrigins(origins)
             .WithMethods("GET", "HEAD", "POST", "PUT", "PATCH", "DELETE", "OPTIONS")
-            .WithHeaders("Content-Type", CsrfHeader, "Authorization", "Accept", "Origin", "X-Requested-With", "Idempotency-Key")
+            .WithHeaders("Content-Type", CsrfHeader, "Authorization", "Accept", "Origin", "X-Requested-With", "Idempotency-Key", "X-SignalR-User-Agent")
             .AllowCredentials()));
 
         // Anti CSRF
@@ -196,7 +207,7 @@ public static class ApiSecurityExtensions
         // Covers JSON controllers and minimal API endpoints, including anonymous login/register.
         app.Use(async (context, next) =>
         {
-            if (context.Request.Path.StartsWithSegments("/api") && IsUnsafe(context.Request.Method))
+            if (context.Request.Path.StartsWithSegments("/api") && !context.Request.Path.StartsWithSegments("/api/v1/hubs") && IsUnsafe(context.Request.Method))
             {
                 try
                 {

@@ -73,6 +73,7 @@ public static class DependencyInjection
         services.AddScoped<Application.Hiring.IHireRequestStore, Hiring.HireRequestStore>();
         services.AddScoped<Application.Hiring.IHireRequestQueries, Hiring.HireRequestQueries>();
         services.AddScoped<Application.Administration.IAdminService, Administration.AdminService>();
+        services.AddScoped<Application.Messaging.IMessagingService, Messaging.MessagingService>();
 
         return services;
     }

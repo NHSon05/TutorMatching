@@ -45,6 +45,9 @@ public sealed class ArticleConfiguration : IEntityTypeConfiguration<Article>
             .HasDefaultValueSql("CURRENT_TIMESTAMP")
             .IsRequired();
 
+        builder.Property(x => x.Version)
+            .IsRequired();
+
         builder.HasOne<ApplicationUser>()
             .WithMany()
             .HasForeignKey(x => x.AuthorUserId)

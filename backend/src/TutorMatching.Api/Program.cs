@@ -28,6 +28,9 @@ builder.Services.AddScoped<TutorMatching.Application.Authentication.Sessions.Ses
 builder.Services.AddInfrastructure(builder.Configuration);
 builder.Services.AddApiSecurity(builder.Configuration, builder.Environment);
 builder.Services.AddVersionedOpenApi();
+builder.Services.AddSignalR();
+builder.Services.AddSingleton<TutorMatching.Application.Abstractions.IEventPublisher, TutorMatching.Infrastructure.Messaging.SignalREventPublisher<TutorMatching.Api.Hubs.EventsHub>>();
+builder.Services.AddHostedService<TutorMatching.Infrastructure.Messaging.MessageNotificationOutboxWorker>();
 
 var app = builder.Build();
 
@@ -59,6 +62,7 @@ app.UseApiSecurity();
 
 app.MapCsrfEndpoint();
 app.MapControllers();
+app.MapHub<TutorMatching.Api.Hubs.EventsHub>("/api/v1/hubs/events");
 
 app.Run();
 

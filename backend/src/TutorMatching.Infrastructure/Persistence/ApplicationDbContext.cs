@@ -38,6 +38,7 @@ public sealed class ApplicationDbContext(
     public DbSet<RequestStatusHistory> RequestStatusHistories => Set<RequestStatusHistory>();
     public DbSet<Conversation> Conversations => Set<Conversation>();
     public DbSet<Message> Messages => Set<Message>();
+    public DbSet<MessageNotificationOutbox> MessageNotificationOutboxes => Set<MessageNotificationOutbox>();
     public DbSet<Notification> Notifications => Set<Notification>();
     public DbSet<Article> Articles => Set<Article>();
     public DbSet<PasswordResetToken> PasswordResetTokens => Set<PasswordResetToken>();
@@ -64,6 +65,7 @@ public sealed class ApplicationDbContext(
         builder.ApplyConfiguration(new RequestStatusHistoryConfiguration());
         builder.ApplyConfiguration(new ConversationConfiguration());
         builder.ApplyConfiguration(new MessageConfiguration());
+        builder.ApplyConfiguration(new MessageNotificationOutboxConfiguration());
         builder.ApplyConfiguration(new NotificationConfiguration());
         builder.ApplyConfiguration(new ArticleConfiguration());
         builder.ApplyConfiguration(new PasswordResetTokenConfiguration());

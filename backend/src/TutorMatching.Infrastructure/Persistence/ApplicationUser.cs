@@ -22,4 +22,6 @@ public sealed class ApplicationUser : IdentityUser<Guid>
     public DateTimeOffset UpdatedAt { get; set; }
 
     public DateTimeOffset? DeletedAt { get; set; }
+
+    public Guid ConcurrencyVersion { get; set; } = Guid.NewGuid();
 }

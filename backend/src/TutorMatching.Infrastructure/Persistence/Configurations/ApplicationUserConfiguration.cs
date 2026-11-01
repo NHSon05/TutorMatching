@@ -79,5 +79,8 @@ public sealed class ApplicationUserConfiguration : IEntityTypeConfiguration<Appl
 
         builder.Property(user => user.DeletedAt)
             .HasColumnType("timestamp with time zone");
+
+        builder.Property(user => user.ConcurrencyVersion)
+            .IsRequired();
     }
 }

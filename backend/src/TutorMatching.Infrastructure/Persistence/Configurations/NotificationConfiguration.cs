@@ -33,6 +33,15 @@ public sealed class NotificationConfiguration : IEntityTypeConfiguration<Notific
             .HasDefaultValueSql("CURRENT_TIMESTAMP")
             .IsRequired();
 
+        builder.HasIndex(x => new { x.UserId, x.CreatedAt, x.Id });
+
+        builder.HasIndex(x => new { x.UserId, x.CreatedAt, x.Id })
+            .HasFilter("\"is_read\" = false");
+
+        builder.HasIndex(x => new { x.UserId, x.MessageId })
+            .IsUnique()
+            .HasFilter("\"message_id\" IS NOT NULL");
+
         builder.HasOne<ApplicationUser>()
             .WithMany()
             .HasForeignKey(x => x.UserId)
