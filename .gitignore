@@ -23,3 +23,21 @@
 Library/
 scratch/
 **/.nuget/
+
+# Graphify indexes, caches, and visualizations are rebuilt locally.
+graphify-out/
+
+# Runtime user uploads (not source assets).
+/backend/src/TutorMatching.Api/wwwroot/uploads/
+
+# Generated test results and local logs.
+**/TestResults/
+**/coverage/
+**/test-results/
+**/playwright-report/
+**/blob-report/
+*.log
+
+# Per-machine agent settings and temporary worktrees.
+.claude/settings.local.json
+.claude/worktrees/
