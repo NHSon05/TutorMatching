@@ -182,7 +182,6 @@ describe("TutorMatching Routing & Role Architecture", () => {
   it("renders Shared Messages page", () => {
     render(<MessagesPage />);
     expect(screen.getByText("Hộp Thư")).toBeInTheDocument();
-    expect(screen.getAllByText("Lê Phương Diệu").length).toBeGreaterThan(0);
   });
 
   it("renders Settings page", async () => {

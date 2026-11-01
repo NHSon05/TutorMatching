@@ -12,8 +12,7 @@ export type ButtonVariant =
 export type ButtonSize = "small" | "medium" | "large";
 export type ButtonShape = "rounded" | "pill";
 
-export interface ButtonProps
-  extends React.ButtonHTMLAttributes<HTMLButtonElement> {
+export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   /**
    * Visual variant of the button:
    * - primary: Dark solid background (main action)
@@ -97,12 +96,9 @@ const variantStyles: Record<ButtonVariant, string> = {
 };
 
 const badgeStylesByVariant: Record<ButtonVariant, string> = {
-  primary:
-    "bg-white/20 text-white dark:bg-gray-900/20 dark:text-gray-900",
-  secondary:
-    "bg-gray-900 text-white dark:bg-gray-100 dark:text-gray-900",
-  tertiary:
-    "bg-gray-200 text-gray-900 dark:bg-gray-800 dark:text-gray-100",
+  primary: "bg-white/20 text-white dark:bg-gray-900/20 dark:text-gray-900",
+  secondary: "bg-gray-900 text-white dark:bg-gray-100 dark:text-gray-900",
+  tertiary: "bg-gray-200 text-gray-900 dark:bg-gray-800 dark:text-gray-100",
   brand: "bg-white/25 text-white",
   tutor: "bg-white/25 text-white",
   danger: "bg-white/25 text-white",
@@ -175,9 +171,7 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
       currentSize.button,
       shapeStyles[shape] || shapeStyles.rounded,
       isFullWidth ? "w-full" : "w-auto",
-      disabled
-        ? "opacity-50 cursor-not-allowed active:scale-100"
-        : "",
+      disabled ? "opacity-50 cursor-not-allowed active:scale-100" : "",
       isLoading
         ? "cursor-wait opacity-80 pointer-events-none active:scale-100"
         : "",

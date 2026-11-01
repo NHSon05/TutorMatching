@@ -32,3 +32,14 @@ export function formatVietnamDateTime(isoDate: string): string {
     minute: "2-digit",
   }).format(date);
 }
+
+export function formatRelativeTime(isoDate: string): string {
+  const date = new Date(isoDate);
+  if (Number.isNaN(date.getTime())) return isoDate;
+  const now = new Date();
+  const diffSec = Math.floor((now.getTime() - date.getTime()) / 1000);
+  if (diffSec < 60) return "Vừa xong";
+  if (diffSec < 3600) return `${Math.floor(diffSec / 60)} phút trước`;
+  if (diffSec < 86400) return `${Math.floor(diffSec / 3600)} giờ trước`;
+  return formatVietnamDateTime(isoDate);
+}

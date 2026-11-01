@@ -10,6 +10,7 @@ import {
   GraduationCapIcon,
   LogOutIcon,
   MessagesIcon,
+  RequestIcon,
   SearchIcon,
   UserProfileIcon,
   UsersIcon,
@@ -44,8 +45,14 @@ export function TutorSidebar({ onCloseMobile }: TutorSidebarProps) {
     {
       label: "Yêu cầu thuê",
       href: "/tutor/requests",
-      icon: MessagesIcon,
+      icon: RequestIcon,
       isActive: pathname.startsWith("/tutor/requests"),
+    },
+    {
+      label: "Tin nhắn",
+      href: "/tutor/messages",
+      icon: MessagesIcon,
+      isActive: pathname.startsWith("/tutor/messages"),
     },
     {
       label: "Học sinh",

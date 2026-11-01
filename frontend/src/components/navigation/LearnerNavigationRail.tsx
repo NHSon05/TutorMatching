@@ -53,13 +53,13 @@ export function LearnerNavigationRail() {
             {!isCollapsed && (
               <div className="p-4 rounded-2xl bg-[#f0edff] dark:bg-indigo-950/40 text-center space-y-2.5 border border-indigo-100/80 dark:border-indigo-900/40">
                 <p className="text-sm text-gray-700 dark:text-gray-300 font-medium leading-relaxed">
-                  Upgrade to Pro for more facilities
+                  Nâng cấp lên pro để sử dụng nhiều tính năng
                 </p>
                 <button
                   type="button"
                   className="w-full py-2 px-4 rounded-xl bg-linear-to-r from-brand to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-bold text-sm shadow-md transition-all flex items-center justify-center gap-1.5 cursor-pointer"
                 >
-                  <span>Upgrade</span>
+                  <span>Nâng cấp</span>
                 </button>
               </div>
             )}

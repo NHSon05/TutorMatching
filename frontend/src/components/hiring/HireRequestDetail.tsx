@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import Link from "next/link";
 import { HireRequestTimeline } from "./HireRequestTimeline";
 import { hireStatuses as statusConfig } from "./hire-status";
 import { NegotiationPanel } from "./NegotiationPanel";
@@ -210,6 +211,12 @@ export function HireRequestDetail({
                 Làm mới dữ liệu
               </Button>
             )}
+            <Link
+              href="/messages"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg bg-blue-50 text-blue-700 hover:bg-blue-100 border border-blue-200 transition-colors"
+            >
+              💬 Nhắn tin trao đổi
+            </Link>
           </div>
 
           {/* Action buttons (cancel/complete) when permitted */}

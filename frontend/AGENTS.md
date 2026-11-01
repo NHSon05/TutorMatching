@@ -21,3 +21,9 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
   - Surface & Text: `bg-surface-base`, `bg-surface-card`, `text-content-primary`, `text-content-secondary`, `border-border-default`
   - Grayscale: `gray-50` to `gray-950`
 - **Component Primitives:** Use reusable primitives from `src/components/` (e.g. Button, IconButton, Checkbox, Radio, Switch, Slider, TextField, TextArea, SearchField, PromptField, SegmentedControl, Star, Dropdown, SelectCheck, DatePicker, DateRangePicker, FileUpload, Attachment, Spinner, Skeleton, Badge, Toast, Dialog, Sheet, Avatar, Image, Card, Accordion, ChipBar, WelcomeBanner, FAB, Timeline, Calendar, EventCalendar, GanttChart). Do not invent ad-hoc markup.
+
+## Component Usage & Inspection Rules
+
+- When asked to use or replace a UI component, inspect ONLY that component's definition/types (e.g. components/ui/*).
+- NEVER grep the codebase for usage examples or open unrelated files (like LoginCard or DashboardTopBar) just to see how props are passed unless explicitly asked.
+- Rely strictly on the component's TypeScript props/interface to construct JSX.

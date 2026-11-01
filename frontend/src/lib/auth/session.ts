@@ -62,6 +62,10 @@ export async function getSession(signal?: AbortSignal): Promise<AccountResponse 
       syncRoleCookie(null);
       return null;
     }
+    if (error instanceof ApiError && error.status === 429) {
+      const cached = useAuthStore.getState().user;
+      if (cached) return cached;
+    }
     throw error;
   }
 }
