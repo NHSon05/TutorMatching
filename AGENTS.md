@@ -4,11 +4,21 @@ Keep this file as a small router. Load only the context required by the current 
 
 ## Explore efficiently
 
-- Start with `rg --files` and targeted `rg` queries; open only likely sources of truth.
+- For new features and cross-file investigations, use the Graphify workflow below first. For localized changes, start with `rg --files` and targeted `rg` queries; open only likely sources of truth.
 - Exclude generated or bulky paths unless the task targets them: `bin/`, `obj/`, `.next/`, `node_modules/`, coverage, build output, and lockfiles.
 - Do not read the full SRS, schema, or repository map for a small localized change.
 - Reuse facts already established in the current turn; do not reopen unchanged files without a reason.
 - Keep command output narrow with path filters, line ranges, and result limits.
+
+## Use Graphify for feature discovery
+
+- Run commands from the repository root; use the shared `graphify-out/graph.json` for frontend and backend.
+- Before exploring source for a new feature, run `graphify query "<relevant existing symbol or feature keywords>" --budget 1000`. Translate the request into code identifiers where possible; new functionality may not exist in the graph yet.
+- If ambiguous, retry with `--seed <node-id>` or `path::symbol`. Limit initial discovery to two queries; if results are missing, irrelevant, or truncated, use targeted `rg` and source reads instead of repeatedly broadening the graph search.
+- Read only relevant source ranges and relevant sections of the project map/specs. Never load the whole graph JSON, HTML, or report into context by default. Reuse query results during the same task.
+- Treat the graph as navigation, not proof: verify behavior and frontend/API relationships against current source and contracts. A missing edge does not prove there is no dependency.
+- If the graph is absent and Graphify is available, build it with `graphify extract . --code-only`. If source changes make it stale, run `graphify update .` once before relying on it; refresh once after completing code changes, not after every edit or prompt.
+- If Graphify is unavailable or fails, continue with targeted searches and briefly report the limitation. Keep the existing Spec Kit workflow and verification checkpoints.
 
 ## Load project memory progressively
 
@@ -17,6 +27,7 @@ Keep this file as a small router. Load only the context required by the current 
 - `docs/agent-memory/DECISIONS.md` contains durable decisions. Search by ADR ID, subsystem, or keyword; do not read the whole file unless auditing architecture.
 - `docs/Final_SRS_TutorMatch_PBL3.pdf` is the product requirements source. Inspect only relevant pages/sections.
 - `docs/DatabaseSchema.md` is the current data-model proposal. Use it for persistence or schema work.
+- `PROJECT-MAP.md` (symlink to `docs/PROJECT-MAP.md`) is the complete architecture, directory, API, and component map. Always consult it when starting, specifying, or planning a new feature.
 - Under `frontend/`, also follow the generated `frontend/AGENTS.md` and consult only the relevant local Next.js documentation.
 - For frontend UI work, follow the design system in `frontend/docs/design-system/` and reusable primitives in `frontend/src/components/`.
 

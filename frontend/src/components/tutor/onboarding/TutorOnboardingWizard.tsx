@@ -1,6 +1,8 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
+import { useRouter } from "next/navigation";
+import { useSession } from "@/hooks/use-session";
 import { TutorReviewHistory } from "@/components/profile/TutorReviewHistory";
 import { TutorDiscoveryFields } from "@/components/profile/TutorDiscoveryFields";
 import type { TutorDiscoveryData } from "@/lib/api/tutor-onboarding";
@@ -23,19 +25,32 @@ import { Step5Description } from "./Step5Description";
 import { Step6Pricing } from "./Step6Pricing";
 
 export function TutorOnboardingWizard() {
-  const ownerId = useAuthStore(state => state.user?.id);
+  const router = useRouter();
+  const { data: account, isLoading: isSessionLoading } = useSession();
+  const ownerId = useAuthStore((state) => state.user?.id);
   const [profileStatus, setProfileStatus] = useState("DRAFT");
   const version = useRef<string | undefined>(undefined);
-  const [discovery,setDiscovery]=useState<TutorDiscoveryData>({subjects:[],teachingModes:[]});
-  const [formState, setFormState] = useState<OnboardingFormState>(INITIAL_FORM_STATE);
+  const [discovery, setDiscovery] = useState<TutorDiscoveryData>({
+    subjects: [],
+    teachingModes: [],
+  });
+  const [formState, setFormState] =
+    useState<OnboardingFormState>(INITIAL_FORM_STATE);
   const [currentStep, setCurrentStep] = useState<number>(1);
-  const [isAvatarUploading,setIsAvatarUploading]=useState(false);
+  const [isAvatarUploading, setIsAvatarUploading] = useState(false);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [isSavingDraft, setIsSavingDraft] = useState<boolean>(false);
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [saveMessage, setSaveMessage] = useState<string | null>(null);
   const [isSubmittedSuccess, setIsSubmittedSuccess] = useState<boolean>(false);
+
+  // Khi gia sư đã ở trạng thái APPROVED thì chuyển về dashboard, không hiển thị trang onboarding
+  useEffect(() => {
+    if (!isSessionLoading && account?.tutorProfileStatus === "APPROVED") {
+      router.replace("/tutor/dashboard");
+    }
+  }, [account, isSessionLoading, router]);
 
   // 1. Tải dữ liệu hồ sơ Onboarding hiện tại
   useEffect(() => {
@@ -44,12 +59,18 @@ export function TutorOnboardingWizard() {
       try {
         const res = await getTutorOnboarding();
         if (!isMounted) return;
-        version.current=res.version;
+        version.current = res.version;
         setProfileStatus(res.status);
-        setDiscovery(res.discovery??{subjects:[],teachingModes:[]});
+        setDiscovery(res.discovery ?? { subjects: [], teachingModes: [] });
 
-        // Nếu hồ sơ đã nộp và đang chờ duyệt hoặc đã duyệt
-        if (res.status === "PENDING_REVIEW" || res.status === "APPROVED") {
+        // Nếu hồ sơ đã được duyệt thì điều hướng ngay về dashboard
+        if (res.status === "APPROVED") {
+          router.replace("/tutor/dashboard");
+          return;
+        }
+
+        // Nếu hồ sơ đã nộp và đang chờ duyệt
+        if (res.status === "PENDING_REVIEW") {
           setIsSubmittedSuccess(true);
         }
 
@@ -60,14 +81,18 @@ export function TutorOnboardingWizard() {
             dateOfBirth: res.about?.dateOfBirth || "",
             phoneNumber: res.about?.phoneNumber || "",
             subjects: res.about?.subjects || [],
-            languages: res.about?.languages?.length ? res.about.languages : ["Tiếng Việt"],
+            languages: res.about?.languages?.length
+              ? res.about.languages
+              : ["Tiếng Việt"],
             teachingLevels: res.about?.teachingLevels || [],
           },
           avatarUrl: res.avatarUrl || "",
           hasCertifications: res.hasCertifications || false,
           certifications: res.certifications || [],
           education: {
-            educationType: (res.education?.educationType as "GRADUATED" | "STUDYING" | "NO_DEGREE") || "STUDYING",
+            educationType:
+              (res.education?.educationType as
+                "GRADUATED" | "STUDYING" | "NO_DEGREE") || "STUDYING",
             schoolName: res.education?.schoolName || "",
             degree: res.education?.degree || "",
             specialization: res.education?.specialization || "",
@@ -77,7 +102,8 @@ export function TutorOnboardingWizard() {
             bio: res.description?.bio || "",
             experienceYears: res.description?.experienceYears ?? 1,
             teachingMethodology: res.description?.teachingMethodology || "",
-            achievementsAndResults: res.description?.achievementsAndResults || "",
+            achievementsAndResults:
+              res.description?.achievementsAndResults || "",
           },
           pricing: {
             hourlyRateVnd: res.pricing?.hourlyRateVnd ?? 150000,
@@ -98,7 +124,7 @@ export function TutorOnboardingWizard() {
     return () => {
       isMounted = false;
     };
-  }, []);
+  }, [router]);
 
   // Helper build draft request
   const buildDraftPayload = (step: number): SaveOnboardingDraftRequest => ({
@@ -111,7 +137,6 @@ export function TutorOnboardingWizard() {
       phoneNumber: formState.about.phoneNumber || undefined,
 
       languages: formState.about.languages,
-
     },
     avatarUrl: formState.avatarUrl || undefined,
     hasCertifications: formState.hasCertifications,
@@ -126,8 +151,10 @@ export function TutorOnboardingWizard() {
     description: {
       bio: formState.description.bio || undefined,
       experienceYears: formState.description.experienceYears,
-      teachingMethodology: formState.description.teachingMethodology || undefined,
-      achievementsAndResults: formState.description.achievementsAndResults || undefined,
+      teachingMethodology:
+        formState.description.teachingMethodology || undefined,
+      achievementsAndResults:
+        formState.description.achievementsAndResults || undefined,
     },
     pricing: {
       hourlyRateVnd: formState.pricing.hourlyRateVnd,
@@ -142,7 +169,10 @@ export function TutorOnboardingWizard() {
     const newErrors: Record<string, string> = {};
 
     if (step === 1) {
-      if (!formState.about.fullName.trim() || formState.about.fullName.trim().length < 2) {
+      if (
+        !formState.about.fullName.trim() ||
+        formState.about.fullName.trim().length < 2
+      ) {
         newErrors.fullName = "Vui lòng nhập họ và tên (tối thiểu 2 ký tự).";
       }
       if (!formState.about.dateOfBirth) {
@@ -151,13 +181,13 @@ export function TutorOnboardingWizard() {
       if (!formState.about.phoneNumber.trim()) {
         newErrors.phoneNumber = "Vui lòng nhập số điện thoại liên hệ.";
       }
-      if ((discovery.subjects?.length??0) === 0) {
+      if ((discovery.subjects?.length ?? 0) === 0) {
         newErrors.subjects = "Vui lòng chọn ít nhất 1 môn học nhận dạy.";
       }
       if (formState.about.languages.length === 0) {
         newErrors.languages = "Vui lòng chọn ít nhất 1 ngôn ngữ giảng dạy.";
       }
-      if (discovery.subjects?.some(s=>s.levelCodes.length===0)) {
+      if (discovery.subjects?.some((s) => s.levelCodes.length === 0)) {
         newErrors.teachingLevels = "Vui lòng chọn ít nhất 1 cấp học nhận dạy.";
       }
     } else if (step === 2) {
@@ -165,23 +195,41 @@ export function TutorOnboardingWizard() {
         newErrors.avatarUrl = "Vui lòng tải lên ảnh đại diện của bạn.";
       }
     } else if (step === 3) {
-      if (formState.hasCertifications && formState.certifications.length === 0) {
-        newErrors.certifications = "Vui lòng thêm thông tin chứng chỉ hoặc chọn 'Chưa có chứng chỉ'.";
+      if (
+        formState.hasCertifications &&
+        formState.certifications.length === 0
+      ) {
+        newErrors.certifications =
+          "Vui lòng thêm thông tin chứng chỉ hoặc chọn 'Chưa có chứng chỉ'.";
       }
     } else if (step === 4) {
-      if(!formState.education.degree.trim())newErrors.qualification="Vui lòng nhập trình độ chuyên môn.";
-      if (formState.education.educationType !== "NO_DEGREE" && !formState.education.schoolName.trim()) {
+      if (!formState.education.degree.trim())
+        newErrors.qualification = "Vui lòng nhập trình độ chuyên môn.";
+      if (
+        formState.education.educationType !== "NO_DEGREE" &&
+        !formState.education.schoolName.trim()
+      ) {
         newErrors.schoolName = "Vui lòng nhập tên trường đại học / cao đẳng.";
       }
     } else if (step === 5) {
-      if (!formState.description.bio.trim() || formState.description.bio.trim().length < 20) {
-        newErrors.bio = "Vui lòng nhập phần giới thiệu bản thân (tối thiểu 20 ký tự).";
+      if (
+        !formState.description.bio.trim() ||
+        formState.description.bio.trim().length < 20
+      ) {
+        newErrors.bio =
+          "Vui lòng nhập phần giới thiệu bản thân (tối thiểu 20 ký tự).";
       }
-      if (formState.description.experienceYears === undefined || formState.description.experienceYears < 0) {
-        newErrors.experienceYears = "Vui lòng nhập số năm kinh nghiệm hợp lệ (≥ 0).";
+      if (
+        formState.description.experienceYears === undefined ||
+        formState.description.experienceYears < 0
+      ) {
+        newErrors.experienceYears =
+          "Vui lòng nhập số năm kinh nghiệm hợp lệ (≥ 0).";
       }
     } else if (step === 6) {
-      const hasRate = Number.isInteger(formState.pricing.sessionRateVnd) && (formState.pricing.sessionRateVnd??0)>0;
+      const hasRate =
+        Number.isInteger(formState.pricing.sessionRateVnd) &&
+        (formState.pricing.sessionRateVnd ?? 0) > 0;
       if (!hasRate) {
         newErrors.pricing = "Vui lòng nhập giá theo buổi là số nguyên dương.";
       }
@@ -201,7 +249,14 @@ export function TutorOnboardingWizard() {
         }
       }
       setErrors((prev) => ({ ...prev, ...fieldErrors }));
-      if (fieldErrors.phoneNumber || fieldErrors.fullName || fieldErrors.dateOfBirth || fieldErrors.subjects || fieldErrors.teachingModes || fieldErrors.districtCode) {
+      if (
+        fieldErrors.phoneNumber ||
+        fieldErrors.fullName ||
+        fieldErrors.dateOfBirth ||
+        fieldErrors.subjects ||
+        fieldErrors.teachingModes ||
+        fieldErrors.districtCode
+      ) {
         setCurrentStep(1);
       }
     }
@@ -212,7 +267,10 @@ export function TutorOnboardingWizard() {
     setIsSavingDraft(true);
     setSaveMessage(null);
     try {
-      const saved=await saveTutorOnboardingDraft(buildDraftPayload(currentStep)); version.current=saved.version;
+      const saved = await saveTutorOnboardingDraft(
+        buildDraftPayload(currentStep)
+      );
+      version.current = saved.version;
       setSaveMessage("✓ Đã lưu nháp tiến độ thành công!");
       setTimeout(() => setSaveMessage(null), 3000);
     } catch (err) {
@@ -233,14 +291,19 @@ export function TutorOnboardingWizard() {
 
     // Tự động lưu nháp sang backend trước khi chuyển bước
     try {
-      const saved=await saveTutorOnboardingDraft(buildDraftPayload(currentStep + 1)); version.current=saved.version;
+      const saved = await saveTutorOnboardingDraft(
+        buildDraftPayload(currentStep + 1)
+      );
+      version.current = saved.version;
       const nextStep = currentStep + 1;
       setCurrentStep(nextStep);
       window.scrollTo({ top: 0, behavior: "smooth" });
     } catch (err) {
       handleBackendError(err);
       if (err instanceof ApiError && err.status === 409) {
-        alert("Số điện thoại bạn nhập đã được sử dụng bởi một tài khoản khác. Vui lòng kiểm tra lại.");
+        alert(
+          "Số điện thoại bạn nhập đã được sử dụng bởi một tài khoản khác. Vui lòng kiểm tra lại."
+        );
       }
     }
   };
@@ -266,7 +329,8 @@ export function TutorOnboardingWizard() {
     setIsSubmitting(true);
     try {
       // Lưu lại dữ liệu bước 6 trước
-      const saved=await saveTutorOnboardingDraft(buildDraftPayload(6)); version.current=saved.version;
+      const saved = await saveTutorOnboardingDraft(buildDraftPayload(6));
+      version.current = saved.version;
       // Nộp hồ sơ
       const res = await submitTutorOnboarding(version.current);
       setProfileStatus(res.status);
@@ -282,17 +346,29 @@ export function TutorOnboardingWizard() {
       }
     } catch (err) {
       handleBackendError(err);
-      alert("Nộp hồ sơ thất bại. Vui lòng kiểm tra lại các trường thông tin hoặc thử lại sau.");
+      alert(
+        "Nộp hồ sơ thất bại. Vui lòng kiểm tra lại các trường thông tin hoặc thử lại sau."
+      );
     } finally {
       setIsSubmitting(false);
     }
   };
 
+  // Đã được duyệt thì không hiển thị trang onboarding
+  if (
+    profileStatus === "APPROVED" ||
+    (!isSessionLoading && account?.tutorProfileStatus === "APPROVED")
+  ) {
+    return null;
+  }
+
   if (isLoading) {
     return (
       <div className="flex flex-col items-center justify-center min-h-96 py-12">
         <Spinner size="large" />
-        <span className="text-sm text-gray-500 mt-3 font-medium">Đang tải hồ sơ gia sư...</span>
+        <span className="text-sm text-gray-500 mt-3 font-medium">
+          Đang tải hồ sơ gia sư...
+        </span>
       </div>
     );
   }
@@ -305,17 +381,26 @@ export function TutorOnboardingWizard() {
           ⏳
         </div>
         <h1 className="text-2xl sm:text-3xl font-extrabold text-gray-900 mb-3 tracking-tight">
-          {profileStatus === "APPROVED" ? "Hồ sơ của bạn đã được duyệt" : "Hồ sơ của bạn đang chờ phê duyệt"}
+          Hồ sơ của bạn đang chờ phê duyệt
         </h1>
         <p className="text-gray-600 text-sm sm:text-base max-w-lg mx-auto mb-6 leading-relaxed">
           Bạn có thể xem kết quả và lý do trong lịch sử duyệt hồ sơ bên dưới.
         </p>
 
-        {ownerId && <div className="mb-5 text-left"><TutorReviewHistory accountId={ownerId} /></div>}
+        {ownerId && (
+          <div className="mb-5 text-left">
+            <TutorReviewHistory accountId={ownerId} />
+          </div>
+        )}
         <div className="p-4 bg-amber-50/70 rounded-xl border border-amber-200/80 text-left text-xs text-amber-900 mb-8 space-y-1.5">
           <p className="font-semibold">💡 Trong thời gian chờ duyệt:</p>
-          <p>• Bạn có thể xem lại thông tin. Hồ sơ chờ duyệt chưa thể chỉnh sửa.</p>
-          <p>• Khi được phê duyệt, bạn sẽ nhận được thông báo và hồ sơ sẽ được hiển thị công khai tới hàng ngàn học viên.</p>
+          <p>
+            • Bạn có thể xem lại thông tin. Hồ sơ chờ duyệt chưa thể chỉnh sửa.
+          </p>
+          <p>
+            • Khi được phê duyệt, bạn sẽ nhận được thông báo và hồ sơ sẽ được
+            hiển thị công khai tới hàng ngàn học viên.
+          </p>
         </div>
 
         <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
@@ -349,7 +434,8 @@ export function TutorOnboardingWizard() {
               Hoàn thiện hồ sơ Gia sư
             </h1>
             <p className="text-xs text-gray-500 mt-1">
-              Bước {currentStep}/6: {STEPS[currentStep - 1].title} — {STEPS[currentStep - 1].description}
+              Bước {currentStep}/6: {STEPS[currentStep - 1].title} —{" "}
+              {STEPS[currentStep - 1].description}
             </p>
           </div>
 
@@ -392,8 +478,8 @@ export function TutorOnboardingWizard() {
                     isPassed
                       ? "bg-amber-600"
                       : isCurrent
-                      ? "bg-amber-500 ring-2 ring-amber-300 ring-offset-1"
-                      : "bg-gray-200"
+                        ? "bg-amber-500 ring-2 ring-amber-300 ring-offset-1"
+                        : "bg-gray-200"
                   }`}
                 />
                 <span
@@ -401,8 +487,8 @@ export function TutorOnboardingWizard() {
                     isCurrent
                       ? "text-amber-700"
                       : isPassed
-                      ? "text-gray-900"
-                      : "text-gray-400"
+                        ? "text-gray-900"
+                        : "text-gray-400"
                   }`}
                 >
                   {s.id}. {s.shortTitle}
@@ -419,15 +505,20 @@ export function TutorOnboardingWizard() {
       <div className="bg-white rounded-3xl border border-gray-200 p-6 sm:p-8 shadow-sm">
         {currentStep === 1 && (
           <>
-          <TutorDiscoveryFields value={discovery} onChange={setDiscovery}/>
-          {Object.values(errors).length>0&&<p role="alert">{Object.values(errors).join(" ")}</p>}
-          <Step1About
-            data={formState.about}
-            onChange={(updated) =>
-              setFormState((prev) => ({ ...prev, about: { ...prev.about, ...updated } }))
-            }
-            errors={errors}
-          />
+            <TutorDiscoveryFields value={discovery} onChange={setDiscovery} />
+            {Object.values(errors).length > 0 && (
+              <p role="alert">{Object.values(errors).join(" ")}</p>
+            )}
+            <Step1About
+              data={formState.about}
+              onChange={(updated) =>
+                setFormState((prev) => ({
+                  ...prev,
+                  about: { ...prev.about, ...updated },
+                }))
+              }
+              errors={errors}
+            />
           </>
         )}
 
@@ -435,7 +526,11 @@ export function TutorOnboardingWizard() {
           <Step2Photo
             avatarUrl={formState.avatarUrl}
             onUploadingChange={setIsAvatarUploading}
-            onUploaded={async(url) => { const latest=await getTutorOnboarding();version.current=latest.version;setFormState((prev) => ({ ...prev, avatarUrl: url })); }}
+            onUploaded={async (url) => {
+              const latest = await getTutorOnboarding();
+              version.current = latest.version;
+              setFormState((prev) => ({ ...prev, avatarUrl: url }));
+            }}
             error={errors.avatarUrl}
           />
         )}
@@ -458,7 +553,10 @@ export function TutorOnboardingWizard() {
           <Step4Education
             data={formState.education}
             onChange={(updated) =>
-              setFormState((prev) => ({ ...prev, education: { ...prev.education, ...updated } }))
+              setFormState((prev) => ({
+                ...prev,
+                education: { ...prev.education, ...updated },
+              }))
             }
             errors={errors}
           />
@@ -481,7 +579,10 @@ export function TutorOnboardingWizard() {
           <Step6Pricing
             data={formState.pricing}
             onChange={(updated) =>
-              setFormState((prev) => ({ ...prev, pricing: { ...prev.pricing, ...updated } }))
+              setFormState((prev) => ({
+                ...prev,
+                pricing: { ...prev.pricing, ...updated },
+              }))
             }
             errors={errors}
             fullState={formState}
@@ -496,7 +597,12 @@ export function TutorOnboardingWizard() {
             type="button"
             variant="secondary"
             size="medium"
-            disabled={currentStep === 1 || isSubmitting || isSavingDraft || isAvatarUploading}
+            disabled={
+              currentStep === 1 ||
+              isSubmitting ||
+              isSavingDraft ||
+              isAvatarUploading
+            }
             onClick={handleBack}
           >
             ← Quay lại
@@ -522,7 +628,9 @@ export function TutorOnboardingWizard() {
                 onClick={handleSubmit}
                 className="font-bold shadow-md"
               >
-                {isSubmitting ? "Đang gửi hồ sơ..." : "✓ Hoàn tất & Nộp hồ sơ xét duyệt"}
+                {isSubmitting
+                  ? "Đang gửi hồ sơ..."
+                  : "✓ Hoàn tất & Nộp hồ sơ xét duyệt"}
               </Button>
             )}
           </div>

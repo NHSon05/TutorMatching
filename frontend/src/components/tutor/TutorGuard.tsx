@@ -24,11 +24,22 @@ export function TutorGuard({ children }: { children: ReactNode }) {
     if (isLoading || error || !account) return;
     if (account.role !== "TUTOR") return;
 
-    // Profile, offers and dashboard are available before approval; teaching routes remain gated.
+    // 1. Gia sư đã ở trạng thái APPROVED thì không hiển thị trang onboarding nữa -> chuyển về dashboard
+    if (isApproved && pathname === "/tutor/onboarding") {
+      router.replace("/tutor/dashboard");
+      return;
+    }
+
+    // 2. Profile, offers and dashboard are available before approval; teaching routes remain gated.
     if (!isApproved && !isAllowedBeforeApproval) {
       router.replace("/tutor/onboarding");
     }
-  }, [account, error, isApproved, isLoading, isAllowedBeforeApproval, router]);
+  }, [account, error, isApproved, isLoading, isAllowedBeforeApproval, pathname, router]);
+
+  // Nếu gia sư đã duyệt và đang ở /tutor/onboarding, chặn render để tránh chớp UI
+  if (!isLoading && account?.role === "TUTOR" && isApproved && pathname === "/tutor/onboarding") {
+    return null;
+  }
 
   // Nếu là gia sư chưa được phê duyệt và đang ở route gated, chặn render để tránh chớp UI
   if (!isLoading && account?.role === "TUTOR" && !isApproved && !isAllowedBeforeApproval) {

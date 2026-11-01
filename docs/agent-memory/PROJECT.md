@@ -85,6 +85,7 @@ Stable, compact facts for agents. Search by heading or keyword and read only the
 ## Agent-memory protocol
 
 - Root `AGENTS.md` is the always-loaded router.
+- Feature discovery uses the shared Graphify graph: up to two initial queries with `--budget 1000`, then focused source/spec reads; see root `AGENTS.md` for refresh and fallback rules.
 - `SESSION.md` holds only unfinished-work handoff and is replaced, not accumulated.
 - `DECISIONS.md` holds short durable ADRs and is searched selectively.
 - Update this file only when stable project facts change; transient progress belongs in `SESSION.md`.
