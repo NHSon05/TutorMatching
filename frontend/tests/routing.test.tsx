@@ -1,4 +1,4 @@
-import { screen, waitFor } from "@testing-library/react";
+import { screen, waitFor, within } from "@testing-library/react";
 import { render } from "./query-wrapper";
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import HomePage from "../src/app/(public)/page";
@@ -213,11 +213,12 @@ describe("TutorMatching Routing & Role Architecture", () => {
     );
 
     expect(screen.getByText("TutorMatch")).toBeInTheDocument();
-    expect(screen.getByText("Trang chủ")).toBeInTheDocument();
+    const navigation = within(screen.getByRole("navigation", { name: "Navigation Rail" }));
+    expect(navigation.getByRole("link", { name: "Trang chủ" })).toHaveAttribute("href", "/");
     expect(screen.getByText("Gia sư của tôi")).toBeInTheDocument();
     expect(screen.getByText("Lịch học")).toBeInTheDocument();
     expect(screen.getByText("Tin nhắn")).toBeInTheDocument();
-    expect(screen.getByText("Tìm gia sư")).toBeInTheDocument();
+    expect(navigation.getByRole("link", { name: "Yêu cầu thuê" })).toHaveAttribute("href", "/learner/requests");
     expect(screen.getByRole("button", { name: "Đăng xuất" })).toBeInTheDocument();
     expect(screen.getByText("Nguyễn Hồng Sơn")).toBeInTheDocument();
     expect(screen.getByText("Thành viên")).toBeInTheDocument();
