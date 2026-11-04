@@ -28,11 +28,11 @@ export function HomeClientView({
     }
   }, [isLoading, role, router]);
 
-  // 2. TUTOR với trạng thái chưa duyệt -> điều hướng sang /tutor/onboarding
+  // 2. TUTOR với trạng thái chưa duyệt -> điều hướng sang /onboarding
   useEffect(() => {
     if (!isLoading && role === "TUTOR") {
       if (tutorStatus !== "APPROVED") {
-        router.replace("/tutor/onboarding");
+        router.replace("/onboarding");
       }
     }
   }, [isLoading, role, tutorStatus, router]);

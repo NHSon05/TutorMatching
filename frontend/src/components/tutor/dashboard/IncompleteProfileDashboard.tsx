@@ -8,30 +8,15 @@ import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
 import { IconButton } from "@/components/ui/icon-button";
 import type { AccountResponse } from "@/lib/api/auth";
-
-function BellIcon({ className = "w-5 h-5 text-content-primary" }: { className?: string }) {
-  return (
-    <svg
-      className={className}
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden="true"
-    >
-      <path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9" />
-      <path d="M10.3 21a1.94 1.94 0 0 0 3.4 0" />
-    </svg>
-  );
-}
+import { BellIcon } from "@/components/icons";
 
 export interface IncompleteProfileDashboardProps {
   account?: AccountResponse | null;
 }
 
-export function IncompleteProfileDashboard({ account }: IncompleteProfileDashboardProps) {
+export function IncompleteProfileDashboard({
+  account,
+}: IncompleteProfileDashboardProps) {
   const tutorDisplayName = account?.fullName
     ? account.fullName.split(" ").slice(-1)[0]
     : "Minh";
@@ -62,9 +47,7 @@ export function IncompleteProfileDashboard({ account }: IncompleteProfileDashboa
             <p className="text-base font-semibold text-content-primary">
               27/10/2026
             </p>
-            <p className="text-sm font-medium text-content-secondary">
-              Thứ Ba
-            </p>
+            <p className="text-sm font-medium text-content-secondary">Thứ Ba</p>
           </div>
 
           <IconButton
@@ -99,7 +82,7 @@ export function IncompleteProfileDashboard({ account }: IncompleteProfileDashboa
             </p>
           </div>
           <Link
-            href="/tutor/teaching-classes"
+            href="/teaching-classes"
             className="text-sm font-medium text-brand hover:text-brand-hover underline mt-4 inline-block transition-colors"
           >
             Xem chi tiết
@@ -114,14 +97,17 @@ export function IncompleteProfileDashboard({ account }: IncompleteProfileDashboa
             </p>
           </div>
           <Link
-            href="/tutor/offers"
+            href="/offers"
             className="text-sm font-medium text-brand hover:text-brand-hover underline mt-4 inline-block transition-colors"
           >
             Xem chi tiết
           </Link>
         </Card>
 
-        <Card padding="medium" className="flex flex-col justify-between border-tutor-200/80 bg-tutor-50/20">
+        <Card
+          padding="medium"
+          className="flex flex-col justify-between border-tutor-200/80 bg-tutor-50/20"
+        >
           <div>
             <p className="text-3xl font-bold text-role-tutor">—</p>
             <p className="text-base text-content-secondary mt-2">
@@ -129,7 +115,7 @@ export function IncompleteProfileDashboard({ account }: IncompleteProfileDashboa
             </p>
           </div>
           <Link
-            href="/tutor/onboarding"
+            href="/onboarding"
             className="text-sm font-semibold text-role-tutor hover:text-tutor-700 underline mt-4 inline-block transition-colors"
           >
             Hoàn thiện hồ sơ
@@ -166,7 +152,7 @@ export function IncompleteProfileDashboard({ account }: IncompleteProfileDashboa
                 Lịch dạy hôm nay
               </h2>
               <Link
-                href="/tutor/offers"
+                href="/offers"
                 className="text-sm font-medium text-brand hover:text-brand-hover underline transition-colors"
               >
                 Xem lịch
@@ -183,7 +169,8 @@ export function IncompleteProfileDashboard({ account }: IncompleteProfileDashboa
               Chưa có lịch dạy
             </h3>
             <p className="text-base text-content-secondary mt-1 leading-relaxed">
-              Sau khi thêm học sinh, bạn có thể tạo buổi học và quản lý lịch dạy tại đây.
+              Sau khi thêm học sinh, bạn có thể tạo buổi học và quản lý lịch dạy
+              tại đây.
             </p>
           </Card>
 
@@ -193,10 +180,11 @@ export function IncompleteProfileDashboard({ account }: IncompleteProfileDashboa
               Chưa có học sinh
             </h3>
             <p className="text-base text-content-secondary mt-1 mb-4 leading-relaxed">
-              Thêm học sinh bạn đã xác nhận nhận dạy để quản lý lịch học, nội dung và tiến độ.
+              Thêm học sinh bạn đã xác nhận nhận dạy để quản lý lịch học, nội
+              dung và tiến độ.
             </p>
             <Button asChild variant="tutor" size="medium">
-              <Link href="/tutor/teaching-classes">Thêm học sinh</Link>
+              <Link href="/teaching-classes">Thêm học sinh</Link>
             </Button>
           </Card>
 
@@ -206,7 +194,8 @@ export function IncompleteProfileDashboard({ account }: IncompleteProfileDashboa
               Việc cần làm
             </h3>
             <p className="text-base text-content-secondary leading-relaxed">
-              Chưa có việc theo dõi buổi học hoặc liên hệ. Hoàn thiện hồ sơ để bắt đầu tìm cơ hội phù hợp.
+              Chưa có việc theo dõi buổi học hoặc liên hệ. Hoàn thiện hồ sơ để
+              bắt đầu tìm cơ hội phù hợp.
             </p>
           </Card>
         </div>
@@ -218,11 +207,15 @@ export function IncompleteProfileDashboard({ account }: IncompleteProfileDashboa
               Cơ hội phù hợp với bạn
             </h2>
             <p className="text-sm text-content-muted mt-1 leading-relaxed">
-              Đề xuất sẽ xuất hiện sau khi bạn hoàn thiện hồ sơ. Chưa có cơ hội được đề xuất cho tài khoản này.
+              Đề xuất sẽ xuất hiện sau khi bạn hoàn thiện hồ sơ. Chưa có cơ hội
+              được đề xuất cho tài khoản này.
             </p>
           </div>
 
-          <Card padding="large" className="space-y-5 border-tutor-200 shadow-2xs">
+          <Card
+            padding="large"
+            className="space-y-5 border-tutor-200 shadow-2xs"
+          >
             <div className="flex items-start justify-between gap-3">
               <div>
                 <div className="flex items-center gap-2 mb-1.5">
@@ -234,7 +227,8 @@ export function IncompleteProfileDashboard({ account }: IncompleteProfileDashboa
                   Hoàn thiện hồ sơ để nhận cơ hội phù hợp
                 </h3>
                 <p className="text-base text-content-secondary mt-1.5 leading-relaxed">
-                  Bổ sung 3 thông tin dưới đây để TutorMatching hiểu nhu cầu giảng dạy của bạn.
+                  Bổ sung 3 thông tin dưới đây để TutorMatching hiểu nhu cầu
+                  giảng dạy của bạn.
                 </p>
               </div>
             </div>
@@ -313,13 +307,14 @@ export function IncompleteProfileDashboard({ account }: IncompleteProfileDashboa
 
             <div className="border-t border-border-default pt-4">
               <Button asChild variant="tutor" size="medium">
-                <Link href="/tutor/onboarding">Hoàn thiện hồ sơ</Link>
+                <Link href="/onboarding">Hoàn thiện hồ sơ</Link>
               </Button>
             </div>
           </Card>
 
           <p className="text-sm text-content-muted leading-relaxed">
-            Cơ hội là bài đăng tiềm năng từ Facebook, không phải học sinh đã nhận.
+            Cơ hội là bài đăng tiềm năng từ Facebook, không phải học sinh đã
+            nhận.
           </p>
         </div>
       </div>
@@ -346,7 +341,8 @@ export function IncompleteProfileDashboard({ account }: IncompleteProfileDashboa
               Chưa có liên hệ nào
             </h3>
             <p className="text-base text-content-secondary leading-relaxed">
-              Khi bạn đánh dấu &ldquo;Đã liên hệ&rdquo; ở một cơ hội, liên hệ sẽ xuất hiện tại đây để theo dõi. Hiện chưa có lịch sử liên hệ.
+              Khi bạn đánh dấu &ldquo;Đã liên hệ&rdquo; ở một cơ hội, liên hệ sẽ
+              xuất hiện tại đây để theo dõi. Hiện chưa có lịch sử liên hệ.
             </p>
           </div>
         </div>

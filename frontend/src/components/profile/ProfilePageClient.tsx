@@ -63,7 +63,7 @@ export function ProfilePageClient() {
             <h2 className="mb-2 text-base font-semibold">Bạn kiểm soát thông tin của mình</h2>
             <p className="text-sm leading-5 text-content-secondary">Email, số điện thoại và ngày sinh không hiển thị trên hồ sơ công khai. Chỉ bạn mới có thể cập nhật thông tin cá nhân tại đây.</p>
           </Card>
-          <Link href={tutor ? "/tutor/dashboard" : "/"} className={`inline-flex text-base font-semibold ${accent}`}>← Quay về tổng quan</Link>
+          <Link href="/" className={`inline-flex text-base font-semibold ${accent}`}>← Quay về tổng quan</Link>
         </aside>
 
         <div className="min-w-0 space-y-6">

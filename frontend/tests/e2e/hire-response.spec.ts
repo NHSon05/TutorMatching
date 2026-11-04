@@ -81,8 +81,8 @@ test("learner creates two requests, tutor reviews list, accepts first and reject
   await page.getByRole("button", { name: "Đăng nhập", exact: true }).click();
   await expect(page).not.toHaveURL(/\/login/);
 
-  // 6. Tutor navigates to /tutor/requests
-  await page.goto("/tutor/requests");
+  // 6. Tutor navigates to /request
+  await page.goto("/request");
   await expect(page.getByText("Yêu cầu thuê gia sư")).toBeVisible();
 
   // Both requests must be visible in the list

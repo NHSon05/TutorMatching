@@ -17,9 +17,9 @@ export function getHomeRouteForRole(
       tutorProfileStatus === "PENDING_REVIEW" ||
       tutorProfileStatus === "REJECTED"
     ) {
-      return "/tutor/onboarding";
+      return "/onboarding";
     }
-    return "/tutor/dashboard";
+    return "/";
   }
   return "/";
 }
@@ -34,7 +34,7 @@ export interface GuestGuardProps {
  * như /login, /register, /select-role.
  *
  * Nếu người dùng đã đăng nhập:
- * - Điều hướng tự động về trang tương ứng theo vai trò (ADMIN -> /admin/dashboard, TUTOR -> /tutor/onboarding hoặc /tutor/dashboard, LEARNER -> /).
+ * - Điều hướng tự động về trang tương ứng theo vai trò (ADMIN -> /admin/dashboard, TUTOR -> /onboarding hoặc /, LEARNER -> /).
  * - Không render nội dung form (tránh chớp UI form đăng nhập).
  */
 export function GuestGuard({ children, initialRole }: GuestGuardProps) {
@@ -43,7 +43,8 @@ export function GuestGuard({ children, initialRole }: GuestGuardProps) {
   const storeUser = useAuthStore((state) => state.user);
 
   const activeRole = sessionAccount?.role ?? storeUser?.role ?? initialRole;
-  const activeTutorStatus = sessionAccount?.tutorProfileStatus ?? storeUser?.tutorProfileStatus;
+  const activeTutorStatus =
+    sessionAccount?.tutorProfileStatus ?? storeUser?.tutorProfileStatus;
   const isAuthenticated = Boolean(sessionAccount || storeUser || initialRole);
 
   useEffect(() => {
@@ -51,7 +52,15 @@ export function GuestGuard({ children, initialRole }: GuestGuardProps) {
     if (isAuthenticated) {
       router.replace(getHomeRouteForRole(activeRole, activeTutorStatus));
     }
-  }, [activeRole, activeTutorStatus, isAuthenticated, isLoading, initialRole, router, storeUser]);
+  }, [
+    activeRole,
+    activeTutorStatus,
+    isAuthenticated,
+    isLoading,
+    initialRole,
+    router,
+    storeUser,
+  ]);
 
   // Khi đã xác thực, không hiển thị form khách
   if (isAuthenticated) {

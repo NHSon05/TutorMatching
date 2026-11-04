@@ -1,13 +1,14 @@
 "use client";
 
 import * as React from "react";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname } from "next/navigation";
 import { useSession } from "@/hooks/use-session";
+import { TutorLayoutShell } from "@/components/layouts/TutorLayoutShell";
+import { TutorGuard } from "@/components/tutor/TutorGuard";
 import { LearnerShell } from "@/components/layouts/LearnerShell";
 import PublicNavbar from "@/components/navigation/PublicNavbar";
 import PublicFooter from "@/components/navigation/PublicFooter";
 import SharedNavbar from "@/components/navigation/SharedNavbar";
-import TutorNavbar from "@/components/navigation/TutorNavbar";
 import { AuthGuard } from "@/components/AuthGuard";
 import { GuestGuard } from "@/components/GuestGuard";
 
@@ -23,8 +24,6 @@ export function SiteShell({
   const pathname = usePathname();
   const { data: account, isLoading } = useSession();
 
-  const router = useRouter();
-
   const isAuthRoute = AUTH_STANDALONE_ROUTES.some(
     (route) => pathname === route || pathname?.startsWith(`${route}/`)
   );
@@ -36,17 +35,11 @@ export function SiteShell({
     pathname?.startsWith("/settings/") ||
     pathname === "/profile";
 
-  // Chặn gia sư chưa được phê duyệt truy cập vào các route dùng chung đã xác thực
-  React.useEffect(() => {
-    if (
-      !isLoading &&
-      account?.role === "TUTOR" &&
-      account?.tutorProfileStatus !== "APPROVED" &&
-      isSharedRoute
-    ) {
-      router.replace("/tutor/onboarding");
-    }
-  }, [account, isLoading, isSharedRoute, router]);
+  const isTutorRoute =
+    pathname === "/" ||
+    pathname === "/profile" ||
+    pathname === "/messages" ||
+    pathname?.startsWith("/messages/");
 
   // 1. Auth routes (/login, /register, /select-role) render standalone without headers/footers
   // Chặn người dùng đã đăng nhập truy cập vào các trang này
@@ -76,18 +69,14 @@ export function SiteShell({
     return <LearnerShell account={shellAccount}>{children}</LearnerShell>;
   }
 
-  // 2.1 Authenticated & Approved TUTOR on "/" gets the Tutor layout (Dashboard trùng với landingpage khi authenticated)
-  const isApprovedTutor =
-    account?.role === "TUTOR" && account?.tutorProfileStatus === "APPROVED";
-
-  if (isApprovedTutor && pathname === "/") {
+  if (
+    (account?.role === "TUTOR" || (isLoading && initialRole === "TUTOR")) &&
+    isTutorRoute
+  ) {
     return (
-      <div className="min-h-screen flex flex-col bg-amber-50/20">
-        <TutorNavbar />
-        <main className="flex-1 max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-8">
-          {children}
-        </main>
-      </div>
+      <TutorGuard>
+        <TutorLayoutShell>{children}</TutorLayoutShell>
+      </TutorGuard>
     );
   }
 

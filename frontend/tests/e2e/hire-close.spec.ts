@@ -79,7 +79,7 @@ test("learner creates request, tutor accepts, learner completes; learner creates
   await page.getByRole("button", { name: "Đăng nhập", exact: true }).click();
   await expect(page).not.toHaveURL(/\/login/);
 
-  await page.goto("/tutor/requests");
+  await page.goto("/request");
   await expect(page.getByText("Yêu cầu thuê gia sư")).toBeVisible();
   const detailLinks = page.getByRole("link", { name: "Xem chi tiết →" });
   await expect(detailLinks).toHaveCount(2);
@@ -91,7 +91,7 @@ test("learner creates request, tutor accepts, learner completes; learner creates
   await expect(page.getByRole("status", { name: "Trạng thái yêu cầu" })).toHaveText("Đã chấp nhận");
 
   // Accept Request #2
-  await page.goto("/tutor/requests");
+  await page.goto("/request");
   await page.getByRole("link", { name: "Xem chi tiết →" }).nth(1).click();
   await expect(page).toHaveURL(/\/tutor\/requests\/[a-f0-9-]+/);
   await page.getByRole("button", { name: "Chấp nhận yêu cầu" }).click();

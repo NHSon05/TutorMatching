@@ -5,7 +5,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useSession } from "@/hooks/use-session";
 import { useAuthStore } from "@/stores/use-auth-store";
-import TutorSidebar from "@/components/navigation/TutorSidebar";
+import { TutorSidebar } from "@/components/navigation/TutorSidebar";
 import Logo from "@assets/logo/Logo";
 import { LogoutButton } from "@/components/LogoutButton";
 import { CloseIcon, MenuIcon } from "../icons";
@@ -19,7 +19,7 @@ export function TutorLayoutShell({ children }: { children: React.ReactNode }) {
   const tutorProfileStatus =
     account?.tutorProfileStatus ?? authUser?.tutorProfileStatus;
   const isApproved = tutorProfileStatus === "APPROVED";
-  const isOnboarding = pathname === "/tutor/onboarding";
+  const isOnboarding = pathname === "/onboarding";
   const showSidebar = isApproved && !isOnboarding;
 
   // Khi đang ở trạng thái DRAFT / PENDING đang đăng ký hoặc đang ở onboarding:
@@ -29,7 +29,7 @@ export function TutorLayoutShell({ children }: { children: React.ReactNode }) {
       <div className="min-h-screen flex flex-col bg-surface-base text-content-primary">
         <header className="h-16 border-b border-border-default px-4 sm:px-8 flex items-center justify-between bg-surface-base sticky top-0 z-30 shadow-2xs">
           <Link
-            href={isApproved ? "/tutor/dashboard" : "/tutor/onboarding"}
+            href={isApproved ? "/" : "/onboarding"}
             className="flex items-center gap-2.5 group"
           >
             <Logo size={32} />
@@ -95,7 +95,7 @@ export function TutorLayoutShell({ children }: { children: React.ReactNode }) {
       <div className="flex-1 flex flex-col min-w-0">
         {/* Mobile Top Header */}
         <header className="md:hidden h-16 border-b border-border-default px-4 flex items-center justify-between bg-surface-base sticky top-0 z-30">
-          <Link href="/tutor/dashboard" className="flex items-center gap-2">
+          <Link href="/" className="flex items-center gap-2">
             <Logo size={28} />
             <span className="font-bold text-lg text-content-primary">
               TutorMatching

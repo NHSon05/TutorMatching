@@ -1,11 +1,11 @@
 import { render,screen,waitFor } from "@testing-library/react";
 import { beforeEach,expect,it,vi } from "vitest";
 import { TutorGuard } from "@/components/tutor/TutorGuard";
-const state=vi.hoisted(()=>({path:"/tutor/offers",role:"TUTOR",replace:vi.fn()}));
+const state=vi.hoisted(()=>({path:"/offers",role:"TUTOR",replace:vi.fn()}));
 vi.mock("next/navigation",()=>({usePathname:()=>state.path,useRouter:()=>({replace:state.replace})}));
 vi.mock("@/hooks/use-session",()=>({useSession:()=>({data:{id:"owner",role:state.role,email:"owner@example.test",fullName:"Owner",status:"ACTIVE",tutorProfileStatus:"DRAFT"},isLoading:false,error:null})}));
-beforeEach(()=>{state.path="/tutor/offers";state.role="TUTOR";state.replace.mockReset();});
+beforeEach(()=>{state.path="/offers";state.role="TUTOR";state.replace.mockReset();});
 it("allows a draft tutor to manage offers",()=>{render(<TutorGuard><p>Offer editor</p></TutorGuard>);expect(screen.getByText("Offer editor")).toBeInTheDocument();expect(state.replace).not.toHaveBeenCalled();});
-it("keeps the approval gate on teaching classes",async()=>{state.path="/tutor/teaching-classes";render(<TutorGuard><p>Teaching classes</p></TutorGuard>);expect(screen.queryByText("Teaching classes")).not.toBeInTheDocument();await waitFor(()=>expect(state.replace).toHaveBeenCalledWith("/tutor/onboarding"));});
-it("allows a draft tutor to access dashboard to view onboarding reminders",()=>{state.path="/tutor/dashboard";render(<TutorGuard><p>Dashboard</p></TutorGuard>);expect(screen.getByText("Dashboard")).toBeInTheDocument();expect(state.replace).not.toHaveBeenCalled();});
+it("keeps the approval gate on teaching classes",async()=>{state.path="/teaching-classes";render(<TutorGuard><p>Teaching classes</p></TutorGuard>);expect(screen.queryByText("Teaching classes")).not.toBeInTheDocument();await waitFor(()=>expect(state.replace).toHaveBeenCalledWith("/onboarding"));});
+it("allows a draft tutor to access dashboard to view onboarding reminders",()=>{state.path="/";render(<TutorGuard><p>Dashboard</p></TutorGuard>);expect(screen.getByText("Dashboard")).toBeInTheDocument();expect(state.replace).not.toHaveBeenCalled();});
 it("still denies learner access to tutor management",async()=>{state.role="LEARNER";render(<TutorGuard><p>Offer editor</p></TutorGuard>);expect(screen.queryByText("Offer editor")).not.toBeInTheDocument();await waitFor(()=>expect(state.replace).toHaveBeenCalledWith("/forbidden"));});

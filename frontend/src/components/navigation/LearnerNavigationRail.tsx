@@ -10,7 +10,6 @@ import {
   DashboardIcon,
   MessagesIcon,
   RequestIcon,
-  SearchIcon,
   SettingsIcon,
   TutorsIcon,
 } from "../icons";
@@ -76,11 +75,8 @@ export function LearnerNavigationRail() {
                   HS
                 </div>
                 <div className="flex flex-col min-w-0 flex-1">
-                  <span className="text-sm font-semibold text-gray-900 dark:text-white truncate">
+                  <span className="text-base font-semibold text-neutral-900 dark:text-white truncate">
                     Nguyễn Hồng Sơn
-                  </span>
-                  <span className="text-xs text-gray-500 dark:text-gray-400 truncate">
-                    Học sinh THPT
                   </span>
                 </div>
               </div>

@@ -1,7 +1,7 @@
 import { TutorGuard } from "@/components/tutor/TutorGuard";
 import { TutorLayoutShell } from "@/components/layouts/TutorLayoutShell";
 
-export default function TutorLayout({
+export default function TutorRouteLayout({
   children,
 }: {
   children: React.ReactNode;
@@ -12,4 +12,3 @@ export default function TutorLayout({
     </TutorGuard>
   );
 }
-

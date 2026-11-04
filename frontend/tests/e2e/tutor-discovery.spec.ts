@@ -65,7 +65,7 @@ test("tutor submission, admin changes/reject/approve, public search/detail, lock
     expect((await saved.json()).status).toBe("DRAFT");
     await mutate(tutor.request, "/tutor/availability", { dayOfWeek: 1, startTime: "18:00", endTime: "20:00" });
     await mutate(tutor.request, "/tutor/courses", { subjectId: math, name: "Browser mathematics", content: "Synthetic lessons", sessionCount: 8, pricePerSessionVnd: 150000, status: "ACTIVE" });
-    await tutorPage.goto("/tutor/profile-edit");
+    await tutorPage.goto("/profile");
     await tutorPage.getByRole("button", { name: "Gửi duyệt hồ sơ" }).click();
     await expect(tutorPage.getByText("Đã gửi hồ sơ chờ duyệt.")).toBeVisible();
     expect((await (await publicContext.request.get(`${api}/tutors?name=Discovery%20Browser`)).json()).totalCount).toBe(0);
@@ -87,7 +87,7 @@ test("tutor submission, admin changes/reject/approve, public search/detail, lock
       if (reason) expect(history[0].note).toBe(reason);
       if (status !== "APPROVED") {
         expect((await (await publicContext.request.get(`${api}/tutors?name=Discovery%20Browser`)).json()).totalCount).toBe(0);
-        await tutorPage.goto("/tutor/profile-edit");
+        await tutorPage.goto("/profile");
         await tutorPage.getByRole("button", { name: "Gửi duyệt hồ sơ" }).click();
         await expect(tutorPage.getByText("Đã gửi hồ sơ chờ duyệt.")).toBeVisible();
       }

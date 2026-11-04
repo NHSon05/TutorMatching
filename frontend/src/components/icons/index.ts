@@ -14,3 +14,6 @@ export * from "./SidebarToggleIcon";
 export * from "./TutorsIcon";
 export * from "./UserProfileIcon";
 export * from "./UsersIcon";
+export * from "./BellIcon";
+export * from "./MoreHorizontalIcon";
+export * from "./ChevronDownIcon";

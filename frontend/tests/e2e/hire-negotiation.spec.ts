@@ -56,7 +56,7 @@ test("tutor and learner negotiate price and schedule; recipient accepts latest",
   await dialog.getByRole("button", { name: "Đóng", exact: true }).click();
 
   await login("tutor@example.test");
-  await page.goto(`/tutor/requests/${id}`);
+  await page.goto(`/request/${id}`);
   await page.getByLabel("Giá thương lượng (VND/buổi)").fill("175000");
   await page.getByLabel("Ghi chú đề xuất").fill("Mức giá đề xuất của gia sư");
   await page.getByRole("button", { name: "Gửi đề xuất", exact: true }).click();
@@ -88,7 +88,7 @@ test("tutor and learner negotiate price and schedule; recipient accepts latest",
   ).toHaveCount(0);
 
   await login("tutor@example.test");
-  await page.goto(`/tutor/requests/${id}`);
+  await page.goto(`/request/${id}`);
   await page
     .getByRole("button", { name: "Chấp nhận đề xuất mới nhất" })
     .click();

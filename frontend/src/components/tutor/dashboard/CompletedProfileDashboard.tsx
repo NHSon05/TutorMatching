@@ -8,72 +8,11 @@ import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
 import { IconButton } from "@/components/ui/icon-button";
 import type { AccountResponse } from "@/lib/api/auth";
-
-function BellIcon({
-  className = "w-5 h-5 text-content-primary",
-}: {
-  className?: string;
-}) {
-  return (
-    <svg
-      className={className}
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden="true"
-    >
-      <path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9" />
-      <path d="M10.3 21a1.94 1.94 0 0 0 3.4 0" />
-    </svg>
-  );
-}
-
-function MoreHorizontalIcon({
-  className = "w-5 h-5 text-content-secondary",
-}: {
-  className?: string;
-}) {
-  return (
-    <svg
-      className={className}
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden="true"
-    >
-      <circle cx="12" cy="12" r="1" />
-      <circle cx="19" cy="12" r="1" />
-      <circle cx="5" cy="12" r="1" />
-    </svg>
-  );
-}
-
-function ChevronDownIcon({
-  className = "w-4 h-4 text-content-secondary ml-1.5",
-}: {
-  className?: string;
-}) {
-  return (
-    <svg
-      className={className}
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden="true"
-    >
-      <path d="m6 9 6 6 6-6" />
-    </svg>
-  );
-}
+import {
+  BellIcon,
+  ChevronDownIcon,
+  MoreHorizontalIcon,
+} from "@/components/icons";
 
 export interface CompletedProfileDashboardProps {
   account?: AccountResponse | null;
@@ -155,7 +94,7 @@ export function CompletedProfileDashboard({
             </p>
           </div>
           <Link
-            href="/tutor/teaching-classes"
+            href="/teaching-classes"
             className="text-sm font-medium text-brand hover:text-brand-hover underline mt-4 inline-block transition-colors"
           >
             Xem chi tiết
@@ -170,7 +109,7 @@ export function CompletedProfileDashboard({
             </p>
           </div>
           <Link
-            href="/tutor/offers"
+            href="/offers"
             className="text-sm font-medium text-brand hover:text-brand-hover underline mt-4 inline-block transition-colors"
           >
             Xem chi tiết
@@ -224,7 +163,7 @@ export function CompletedProfileDashboard({
                 Lịch dạy hôm nay
               </h2>
               <Link
-                href="/tutor/offers"
+                href="/offers"
                 className="text-sm font-medium text-brand hover:text-brand-hover underline transition-colors"
               >
                 Xem lịch
@@ -336,7 +275,7 @@ export function CompletedProfileDashboard({
                     Sau buổi học lúc 19:00 hôm nay
                   </p>
                   <Link
-                    href="/tutor/teaching-classes"
+                    href="/teaching-classes"
                     className="text-sm font-medium text-brand hover:text-brand-hover underline mt-1 inline-block"
                   >
                     Cập nhật tiến độ

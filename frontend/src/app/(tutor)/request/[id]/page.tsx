@@ -7,5 +7,5 @@ export default function TutorRequestDetailPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = use(params);
-  return <HireRequestPage id={id} backHref="/tutor/requests" />;
+  return <HireRequestPage id={id} backHref="/request" />;
 }

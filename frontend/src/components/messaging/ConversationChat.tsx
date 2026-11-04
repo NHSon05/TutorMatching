@@ -56,7 +56,7 @@ export function ConversationChat({
         <Link
           href={
             isTutor
-              ? `/tutor/requests/${conversation.hireRequestId}`
+              ? `/request/${conversation.hireRequestId}`
               : `/learner/requests/${conversation.hireRequestId}`
           }
           className={`text-base hover:underline ${
@@ -90,7 +90,7 @@ export function ConversationChat({
                 }`}
               >
                 <div
-                  className={`max-w-md px-4 py-2.5 rounded-2xl text-base shadow-2xs break-words ${
+                  className={`max-w-md px-4 py-2.5 rounded-2xl text-base shadow-2xs wrap-break-word ${
                     isMine
                       ? isTutor
                         ? "bg-role-tutor text-white rounded-br-none"

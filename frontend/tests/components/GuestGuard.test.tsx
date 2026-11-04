@@ -61,7 +61,7 @@ describe("GuestGuard", () => {
     expect(screen.queryByText("Login Form Content")).not.toBeInTheDocument();
   });
 
-  it("blocks and redirects authenticated TUTOR to /tutor/dashboard", async () => {
+  it("blocks and redirects authenticated TUTOR to /", async () => {
     vi.mocked(getSession).mockResolvedValue({
       id: "tutor-1",
       email: "tutor@example.com",
@@ -79,11 +79,11 @@ describe("GuestGuard", () => {
       </QueryProvider>
     );
 
-    await waitFor(() => expect(replace).toHaveBeenCalledWith("/tutor/dashboard"));
+    await waitFor(() => expect(replace).toHaveBeenCalledWith("/"));
     expect(screen.queryByText("Login Form Content")).not.toBeInTheDocument();
   });
 
-  it("blocks and redirects unverified TUTOR to /tutor/onboarding", async () => {
+  it("blocks and redirects unverified TUTOR to /onboarding", async () => {
     vi.mocked(getSession).mockResolvedValue({
       id: "tutor-1",
       email: "tutor@example.com",
@@ -101,7 +101,7 @@ describe("GuestGuard", () => {
       </QueryProvider>
     );
 
-    await waitFor(() => expect(replace).toHaveBeenCalledWith("/tutor/onboarding"));
+    await waitFor(() => expect(replace).toHaveBeenCalledWith("/onboarding"));
     expect(screen.queryByText("Login Form Content")).not.toBeInTheDocument();
   });
 
@@ -159,7 +159,7 @@ describe("GuestGuard", () => {
       </QueryProvider>
     );
 
-    await waitFor(() => expect(replace).toHaveBeenCalledWith("/tutor/dashboard"));
+    await waitFor(() => expect(replace).toHaveBeenCalledWith("/"));
     expect(screen.queryByText("Login Form Content")).not.toBeInTheDocument();
   });
 });

@@ -1,9 +1,9 @@
 "use client";
 
-import * as React from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useLogout } from "@/hooks/use-auth";
+import { useSession } from "@/hooks/use-session";
 import {
   CalendarIcon,
   DashboardIcon,
@@ -22,6 +22,7 @@ export interface TutorSidebarProps {
 
 export function TutorSidebar({ onCloseMobile }: TutorSidebarProps) {
   const pathname = usePathname();
+  const { data: account } = useSession();
   const router = useRouter();
   const { mutateAsync: logout, isPending } = useLogout();
 
@@ -38,49 +39,50 @@ export function TutorSidebar({ onCloseMobile }: TutorSidebarProps) {
   const mainNavItems = [
     {
       label: "Tổng quan",
-      href: "/tutor/dashboard",
+      href: "/",
       icon: DashboardIcon,
-      isActive: pathname === "/tutor/dashboard" || pathname === "/tutor",
+      isActive: pathname === "/",
     },
     {
       label: "Yêu cầu thuê",
-      href: "/tutor/requests",
+      href: "/request",
       icon: RequestIcon,
-      isActive: pathname.startsWith("/tutor/requests"),
+      isActive: pathname === "/request" || pathname.startsWith("/request/"),
     },
-    {
-      label: "Tin nhắn",
-      href: "/tutor/messages",
-      icon: MessagesIcon,
-      isActive: pathname.startsWith("/tutor/messages"),
-    },
+    ...(account?.tutorProfileStatus === "APPROVED"
+      ? [{
+          label: "Tin nhắn",
+          href: "/messages",
+          icon: MessagesIcon,
+          isActive: pathname === "/messages" || pathname.startsWith("/messages/"),
+        }]
+      : []),
     {
       label: "Học sinh",
-      href: "/tutor/teaching-classes",
+      href: "/teaching-classes",
       icon: UsersIcon,
-      isActive: pathname === "/tutor/teaching-classes",
+      isActive: pathname === "/teaching-classes",
     },
     {
       label: "Lịch dạy",
-      href: "/tutor/offers",
+      href: "/offers",
       icon: CalendarIcon,
-      isActive: pathname === "/tutor/offers",
+      isActive: pathname === "/offers",
     },
     {
       label: "Tìm học sinh",
       href: "/students",
       icon: SearchIcon,
-      isActive: pathname === "/tutors",
+      isActive: pathname === "/students",
     },
   ];
 
   const bottomNavItems = [
     {
       label: "Hồ sơ",
-      href: "/tutor/profile-edit",
+      href: "/profile",
       icon: UserProfileIcon,
-      isActive:
-        pathname === "/tutor/profile-edit" || pathname === "/tutor/onboarding",
+      isActive: pathname === "/profile" || pathname === "/onboarding",
     },
   ];
 
@@ -92,7 +94,7 @@ export function TutorSidebar({ onCloseMobile }: TutorSidebarProps) {
       {/* Brand Header with Tutor & Brand Palettes */}
       <div className="h-18 px-6 flex items-center justify-between border-b border-border-subtle">
         <Link
-          href="/tutor/dashboard"
+          href="/"
           onClick={onCloseMobile}
           className="flex items-center gap-2.5 group"
         >
@@ -141,7 +143,7 @@ export function TutorSidebar({ onCloseMobile }: TutorSidebarProps) {
                 onClick={onCloseMobile}
                 className={`flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-base transition-all ${
                   item.isActive
-                    ? "bg-tutor-50 text-tutor-900 font-semibold   border-role-tutor shadow-2xs"
+                    ? "bg-tutor-50 text-tutor-900 font-semibold border-role-tutor shadow-2xs"
                     : "text-content-secondary hover:text-tutor-900 hover:bg-tutor-50/50"
                 }`}
               >
@@ -154,21 +156,20 @@ export function TutorSidebar({ onCloseMobile }: TutorSidebarProps) {
               </Link>
             );
           })}
-
-          {/* Logout Action */}
-          <button
-            type="button"
-            onClick={handleLogout}
-            disabled={isPending}
-            className="w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-base text-content-secondary hover:text-status-error hover:bg-red-50/40 transition-colors cursor-pointer text-left"
-          >
-            <LogOutIcon className="w-5 h-5 shrink-0 text-content-muted" />
-            <span>{isPending ? "Đang đăng xuất..." : "Đăng xuất"}</span>
-          </button>
         </div>
+      </div>
+
+      {/* Footer with logout action */}
+      <div className="p-4 border-t border-border-default">
+        <button
+          onClick={handleLogout}
+          disabled={isPending}
+          className="w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-content-secondary hover:text-status-error hover:bg-status-error/10 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          <LogOutIcon className="w-5 h-5 shrink-0" />
+          <span>{isPending ? "Đang đăng xuất..." : "Đăng xuất"}</span>
+        </button>
       </div>
     </aside>
   );
 }
-
-export default TutorSidebar;

@@ -7,7 +7,7 @@ import LoginPage from "../src/app/(public)/login/page";
 import RegisterPage from "../src/app/(public)/register/page";
 import SelectRolePage from "../src/app/(public)/select-role/page";
 import LegacyLearnerDashboardRedirect from "../src/app/(public)/learner/dashboard/page";
-import TutorDashboardPage from "../src/app/(tutor)/tutor/dashboard/page";
+import TutorDashboardPage from "@/components/tutor/dashboard/TutorDashboardClient";
 import AdminDashboardPage from "../src/app/(admin)/admin/dashboard/page";
 import MessagesPage from "../src/app/(public)/messages/page";
 import SettingsPage from "../src/app/(public)/settings/page";
@@ -96,7 +96,7 @@ describe("TutorMatching Routing & Role Architecture", () => {
     expect(screen.queryByRole("heading", { name: "Đăng Nhập" })).not.toBeInTheDocument();
   });
 
-  it("blocks authenticated tutor from /login and redirects to /tutor/dashboard", async () => {
+  it("blocks authenticated tutor from /login and redirects to /", async () => {
     vi.mocked(getSession).mockResolvedValue({
       id: "tutor-test",
       fullName: "Tutor",
@@ -107,11 +107,11 @@ describe("TutorMatching Routing & Role Architecture", () => {
     });
 
     render(<LoginPage />);
-    await waitFor(() => expect(router.replace).toHaveBeenCalledWith("/tutor/dashboard"));
+    await waitFor(() => expect(router.replace).toHaveBeenCalledWith("/"));
     expect(screen.queryByRole("heading", { name: "Đăng Nhập" })).not.toBeInTheDocument();
   });
 
-  it("blocks unverified tutor from /login and redirects to /tutor/onboarding", async () => {
+  it("blocks unverified tutor from /login and redirects to /onboarding", async () => {
     vi.mocked(getSession).mockResolvedValue({
       id: "tutor-test",
       fullName: "Tutor",
@@ -122,7 +122,7 @@ describe("TutorMatching Routing & Role Architecture", () => {
     });
 
     render(<LoginPage />);
-    await waitFor(() => expect(router.replace).toHaveBeenCalledWith("/tutor/onboarding"));
+    await waitFor(() => expect(router.replace).toHaveBeenCalledWith("/onboarding"));
     expect(screen.queryByRole("heading", { name: "Đăng Nhập" })).not.toBeInTheDocument();
   });
 

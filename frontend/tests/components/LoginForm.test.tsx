@@ -35,11 +35,11 @@ it("routes using the server role", async () => {
     tutorProfileStatus: "APPROVED",
   });
   submit();
-  await waitFor(() => expect(push).toHaveBeenCalledWith("/tutor/dashboard"));
+  await waitFor(() => expect(push).toHaveBeenCalledWith("/"));
   expect(document.cookie).not.toContain("demo_token");
 });
 
-it("routes unverified tutor to /tutor/onboarding upon login", async () => {
+it("routes unverified tutor to /onboarding upon login", async () => {
   vi.mocked(login).mockResolvedValue({
     id: "id",
     email: "learner@example.com",
@@ -49,7 +49,7 @@ it("routes unverified tutor to /tutor/onboarding upon login", async () => {
     tutorProfileStatus: "PENDING_REVIEW",
   });
   submit();
-  await waitFor(() => expect(push).toHaveBeenCalledWith("/tutor/onboarding"));
+  await waitFor(() => expect(push).toHaveBeenCalledWith("/onboarding"));
 });
 
 it("routes learner to / upon login", async () => {

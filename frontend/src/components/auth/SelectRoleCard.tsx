@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Card } from "@/components/ui/card";
@@ -31,7 +31,7 @@ export default function SelectRoleCard({ className = "", onRoleSelected }: Selec
     // Hiển thị thông báo và điều hướng theo vai trò
     setTimeout(() => {
       if (userRole === "TUTOR") {
-        router.push("/tutor/onboarding");
+        router.push("/onboarding");
       } else {
         router.push("/");
       }

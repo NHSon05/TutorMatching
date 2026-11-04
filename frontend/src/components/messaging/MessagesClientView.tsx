@@ -25,6 +25,7 @@ export function MessagesClientView({
   role = "learner",
 }: MessagesClientViewProps) {
   const { data: session } = useSession();
+  const activeRole = session?.role === "TUTOR" ? "tutor" : role;
   const searchParams = useSearchParams();
   const queryConversationId =
     initialConversationId ?? searchParams.get("conversationId") ?? undefined;
@@ -125,7 +126,7 @@ export function MessagesClientView({
         isConnected={isConnected}
         searchTerm={searchTerm}
         onSearchChange={setSearchTerm}
-        role={role}
+        role={activeRole}
       />
 
       {/* Cột phải: Khung chat và form nhập tin nhắn */}
@@ -135,7 +136,7 @@ export function MessagesClientView({
           messages={chronologicalMessages}
           currentUserId={session?.id}
           isLoading={loadingMessages}
-          role={role}
+          role={activeRole}
         />
 
         {selectedId && currentConv && (
@@ -144,7 +145,7 @@ export function MessagesClientView({
             isSending={sendMessageMutation.isPending}
             sendError={sendError}
             onSend={handleSend}
-            role={role}
+            role={activeRole}
           />
         )}
       </div>

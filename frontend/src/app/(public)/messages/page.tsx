@@ -18,7 +18,7 @@ export default function MessagesPage() {
         </div>
       }
     >
-      <MessagesClientView />
+      <MessagesClientView role="learner" />
     </Suspense>
   );
 }

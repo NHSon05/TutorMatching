@@ -3,23 +3,26 @@
 import Link from "next/link";
 import { LogoutButton } from "@/components/LogoutButton";
 import { usePathname } from "next/navigation";
+import { useSession } from "@/hooks/use-session";
 
 export default function TutorNavbar() {
   const pathname = usePathname();
-  const isOnboarding = pathname === "/tutor/onboarding";
+  const { data: account } = useSession();
+  const isTutor = account?.role === "TUTOR";
+  const isOnboarding = pathname === "/onboarding";
 
   const navItems = [
-    { label: "Tổng quan", href: "/tutor/dashboard" },
-    { label: "Lớp đang dạy", href: "/tutor/teaching-classes" },
-    { label: "Lịch rảnh & khóa học", href: "/tutor/offers" },
-    { label: "Hồ sơ gia sư", href: "/tutor/profile-edit" },
+    { label: "Tổng quan", href: "/" },
+    { label: "Yêu cầu thuê", href: "/request" },
+    { label: "Lớp đang dạy", href: "/teaching-classes" },
+    { label: "Lịch rảnh & khóa học", href: "/offers" },
+    { label: "Hồ sơ gia sư", href: "/profile" },
     { label: "Tin nhắn", href: "/messages" },
   ];
 
   const visibleItems = isOnboarding
     ? navItems.filter(
-        (item) =>
-          item.href === "/tutor/offers" || item.href === "/tutor/profile-edit"
+        (item) => item.href === "/offers" || item.href === "/profile"
       )
     : navItems;
 
@@ -28,7 +31,7 @@ export default function TutorNavbar() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
         <div className="flex items-center gap-8">
           <Link
-            href={isOnboarding ? "/tutor/onboarding" : "/tutor/dashboard"}
+            href={isOnboarding ? "/onboarding" : "/"}
             className="flex items-center gap-2"
           >
             <span className="w-8 h-8 bg-amber-600 rounded-lg flex items-center justify-center text-white font-bold text-lg">
@@ -45,10 +48,7 @@ export default function TutorNavbar() {
           {visibleItems.length > 0 && (
             <nav className="hidden md:flex items-center gap-6">
               {visibleItems.map((item) => {
-                const isActive =
-                  item.href === "/tutor/dashboard"
-                    ? pathname === "/tutor/dashboard" || pathname === "/"
-                    : pathname === item.href;
+                const isActive = pathname === item.href;
 
                 return (
                   <Link
@@ -69,7 +69,7 @@ export default function TutorNavbar() {
         </div>
 
         <div className="flex items-center gap-4">
-          {visibleItems.length > 0 && (
+          {visibleItems.length > 0 && isTutor && (
             <Link
               href="/profile"
               className="text-xs font-medium text-gray-600 hover:text-gray-900"

@@ -4,7 +4,7 @@ import { TutorGuard } from "@/components/tutor/TutorGuard";
 import { TutorLayoutShell } from "@/components/layouts/TutorLayoutShell";
 
 const mockState = vi.hoisted(() => ({
-  path: "/tutor/onboarding",
+  path: "/onboarding",
   role: "TUTOR" as "TUTOR" | "LEARNER" | "ADMIN",
   status: "DRAFT" as "DRAFT" | "PENDING_REVIEW" | "APPROVED" | "REJECTED",
   replace: vi.fn(),
@@ -43,7 +43,7 @@ vi.mock("@/hooks/use-auth", () => ({
 
 describe("Tutor Onboarding & Sidebar Visibility Guards", () => {
   beforeEach(() => {
-    mockState.path = "/tutor/onboarding";
+    mockState.path = "/onboarding";
     mockState.role = "TUTOR";
     mockState.status = "DRAFT";
     mockState.replace.mockReset();
@@ -51,9 +51,9 @@ describe("Tutor Onboarding & Sidebar Visibility Guards", () => {
   });
 
   describe("TutorGuard Onboarding Gate", () => {
-    it("redirects APPROVED tutors away from /tutor/onboarding to /tutor/dashboard", async () => {
+    it("redirects APPROVED tutors away from /tutor/onboarding to /", async () => {
       mockState.status = "APPROVED";
-      mockState.path = "/tutor/onboarding";
+      mockState.path = "/onboarding";
 
       render(
         <TutorGuard>
@@ -63,15 +63,15 @@ describe("Tutor Onboarding & Sidebar Visibility Guards", () => {
 
       // Children should not be displayed
       expect(screen.queryByText("Onboarding Content")).not.toBeInTheDocument();
-      // Should redirect immediately to /tutor/dashboard
+      // Should redirect immediately to /
       await waitFor(() => {
-        expect(mockState.replace).toHaveBeenCalledWith("/tutor/dashboard");
+        expect(mockState.replace).toHaveBeenCalledWith("/");
       });
     });
 
     it("allows DRAFT tutors to access /tutor/onboarding", () => {
       mockState.status = "DRAFT";
-      mockState.path = "/tutor/onboarding";
+      mockState.path = "/onboarding";
 
       render(
         <TutorGuard>
@@ -85,7 +85,7 @@ describe("Tutor Onboarding & Sidebar Visibility Guards", () => {
 
     it("allows PENDING_REVIEW tutors to access /tutor/onboarding to view review status", () => {
       mockState.status = "PENDING_REVIEW";
-      mockState.path = "/tutor/onboarding";
+      mockState.path = "/onboarding";
 
       render(
         <TutorGuard>
@@ -101,7 +101,7 @@ describe("Tutor Onboarding & Sidebar Visibility Guards", () => {
   describe("TutorLayoutShell Sidebar Visibility", () => {
     it("does NOT render TutorSidebar when tutor status is DRAFT", () => {
       mockState.status = "DRAFT";
-      mockState.path = "/tutor/onboarding";
+      mockState.path = "/onboarding";
 
       render(
         <TutorLayoutShell>
@@ -120,7 +120,7 @@ describe("Tutor Onboarding & Sidebar Visibility Guards", () => {
 
     it("does NOT render TutorSidebar when tutor status is PENDING_REVIEW", () => {
       mockState.status = "PENDING_REVIEW";
-      mockState.path = "/tutor/onboarding";
+      mockState.path = "/onboarding";
 
       render(
         <TutorLayoutShell>
@@ -134,9 +134,9 @@ describe("Tutor Onboarding & Sidebar Visibility Guards", () => {
       ).not.toBeInTheDocument();
     });
 
-    it("does NOT render TutorSidebar on /tutor/onboarding even if not DRAFT", () => {
+    it("does NOT render TutorSidebar on /onboarding even if not DRAFT", () => {
       mockState.status = "DRAFT";
-      mockState.path = "/tutor/onboarding";
+      mockState.path = "/onboarding";
 
       render(
         <TutorLayoutShell>
@@ -152,7 +152,7 @@ describe("Tutor Onboarding & Sidebar Visibility Guards", () => {
 
     it("renders TutorSidebar when tutor status is APPROVED on workspace pages", () => {
       mockState.status = "APPROVED";
-      mockState.path = "/tutor/dashboard";
+      mockState.path = "/";
 
       render(
         <TutorLayoutShell>

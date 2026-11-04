@@ -1,8 +1,8 @@
 import { Suspense } from "react";
 import { act, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import TutorRequestsPage from "@/app/(tutor)/tutor/requests/page";
-import TutorRequestDetailPage from "@/app/(tutor)/tutor/requests/[id]/page";
+import TutorRequestsPage from "@/app/(tutor)/request/page";
+import TutorRequestDetailPage from "@/app/(tutor)/request/[id]/page";
 import { ApiError } from "@/lib/api/http";
 
 const mocks = vi.hoisted(() => ({

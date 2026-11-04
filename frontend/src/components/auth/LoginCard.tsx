@@ -28,9 +28,9 @@ export default function LoginCard({ className = "", onSuccess }: LoginCardProps 
       router.push("/admin/dashboard");
     } else if (role === "TUTOR") {
       if (tutorProfileStatus !== "APPROVED") {
-        router.push("/tutor/onboarding");
+        router.push("/onboarding");
       } else {
-        router.push("/tutor/dashboard");
+        router.push("/");
       }
     } else {
       router.push("/");

@@ -48,7 +48,7 @@ export function TutorOnboardingWizard() {
   // Khi gia sư đã ở trạng thái APPROVED thì chuyển về dashboard, không hiển thị trang onboarding
   useEffect(() => {
     if (!isSessionLoading && account?.tutorProfileStatus === "APPROVED") {
-      router.replace("/tutor/dashboard");
+      router.replace("/");
     }
   }, [account, isSessionLoading, router]);
 
@@ -65,7 +65,7 @@ export function TutorOnboardingWizard() {
 
         // Nếu hồ sơ đã được duyệt thì điều hướng ngay về dashboard
         if (res.status === "APPROVED") {
-          router.replace("/tutor/dashboard");
+          router.replace("/");
           return;
         }
 
