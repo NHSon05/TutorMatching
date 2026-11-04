@@ -50,6 +50,7 @@ internal sealed class SecurityTestHost : IDisposable
                 services.AddRouting();
                 services.AddLogging();
                 services.AddInfrastructure(configuration);
+                services.AddSingleton<IEventPublisher, TestEventPublisher>();
                 services.AddSingleton<TimeProvider>(Clock);
                 services.AddScoped<IUserStore<ApplicationUser>>(_ => new TestUserStore(User));
                 services.AddSingleton<ITokenSessionService>(new TestTokenSessions(User, Clock));
@@ -159,6 +160,13 @@ internal sealed class SecurityTestHost : IDisposable
     }
 
     private sealed record CsrfPayload(string RequestToken, string HeaderName);
+}
+
+internal sealed class TestEventPublisher : IEventPublisher
+{
+    public Task PublishMessageCreatedAsync(Guid conversationId, Guid messageId, IEnumerable<Guid> recipientUserIds, CancellationToken cancellationToken = default) => Task.CompletedTask;
+    public Task PublishMessagesReadAsync(Guid conversationId, IEnumerable<Guid> participantUserIds, CancellationToken cancellationToken = default) => Task.CompletedTask;
+    public Task PublishNotificationsChangedAsync(Guid userId, CancellationToken cancellationToken = default) => Task.CompletedTask;
 }
 
 internal sealed class TestTokenSessions(ApplicationUser user, TimeProvider clock) : ITokenSessionService

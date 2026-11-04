@@ -16,7 +16,7 @@ public sealed class ConversationsController : ControllerBase
         _messagingService = messagingService;
     }
 
-    [HttpGet]
+    [HttpGet(Name = "GetConversations")]
     [ProducesResponseType(typeof(ConversationPageDto), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetConversations(
         [FromQuery] string? cursor = null,

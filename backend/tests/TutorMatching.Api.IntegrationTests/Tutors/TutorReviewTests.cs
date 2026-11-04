@@ -127,12 +127,16 @@ public sealed class TutorReviewTests(PostgreSqlFixture fixture)
     {
         await using var factory=await fixture.CreateFactoryAsync("20261021104138_TutorProfileTeachingModes");
         await using var scope=factory.Services.CreateAsyncScope(); var db=scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-        var manager=scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
-        var user=new ApplicationUser{Id=Guid.NewGuid(),UserName="review-migration@example.test",Email="review-migration@example.test",FullName="Legacy Review",Role=AccountRole.TUTOR,Status=AccountStatus.ACTIVE};
-        Assert.True((await manager.CreateAsync(user,"password")).Succeeded);
-        var profile=new TutorProfile{Id=Guid.NewGuid(),UserId=user.Id}; db.TutorProfiles.Add(profile); await db.SaveChangesAsync();
+        var userId = Guid.NewGuid();
+        await db.Database.ExecuteSqlInterpolatedAsync($"""
+            INSERT INTO user_accounts (id, full_name, status, role, email, normalized_email, user_name, normalized_user_name,
+                email_confirmed, phone_number_confirmed, two_factor_enabled, lockout_enabled, access_failed_count)
+            VALUES ({userId}, 'Legacy Review', 'ACTIVE', 'TUTOR', 'review-migration@example.test', 'REVIEW-MIGRATION@EXAMPLE.TEST',
+                'review-migration@example.test', 'REVIEW-MIGRATION@EXAMPLE.TEST', false, false, false, true, 0)
+            """);
+        var profile=new TutorProfile{Id=Guid.NewGuid(),UserId=userId}; db.TutorProfiles.Add(profile); await db.SaveChangesAsync();
         var rid=Guid.NewGuid(); var reason="Keep historical reason";
-        await db.Database.ExecuteSqlInterpolatedAsync($"INSERT INTO tutor_profile_reviews(id,tutor_profile_id,reviewer_user_id,from_status_code,to_status_code,note,reviewed_at) VALUES ({rid},{profile.Id},{user.Id},'PENDING_REVIEW','REJECTED',{reason},CURRENT_TIMESTAMP)");
+        await db.Database.ExecuteSqlInterpolatedAsync($"INSERT INTO tutor_profile_reviews(id,tutor_profile_id,reviewer_user_id,from_status_code,to_status_code,note,reviewed_at) VALUES ({rid},{profile.Id},{userId},'PENDING_REVIEW','REJECTED',{reason},CURRENT_TIMESTAMP)");
         await DatabaseMigrationRunner.MigrateAsync(db); db.ChangeTracker.Clear();
         var history=await db.TutorProfileReviews.SingleAsync(x=>x.Id==rid);
         Assert.Equal("REJECT",history.Action); Assert.Null(history.ReviewedVersion); Assert.Equal(reason,history.Note);

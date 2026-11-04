@@ -36,13 +36,17 @@ public sealed class DiscoveryMigrationTests(PostgreSqlFixture fixture)
         await using var factory = await fixture.CreateFactoryAsync("20261019090000_AddDatabaseSchemaEntities");
         await using var scope = factory.Services.CreateAsyncScope();
         var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-        var manager = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
         var ids = new List<Guid>();
         foreach (var mapped in new[] { true, false })
         {
             var id = Guid.NewGuid(); ids.Add(id);
             var email = id.ToString()+"@example.test";
-            Assert.True((await manager.CreateAsync(new ApplicationUser { Id=id, UserName=email,Email=email, FullName="Legacy Tutor",Role=AccountRole.TUTOR },"password")).Succeeded);
+            await db.Database.ExecuteSqlInterpolatedAsync($"""
+                INSERT INTO user_accounts (id, full_name, status, role, email, normalized_email, user_name, normalized_user_name,
+                    email_confirmed, phone_number_confirmed, two_factor_enabled, lockout_enabled, access_failed_count)
+                VALUES ({id}, 'Legacy Tutor', 'ACTIVE', 'TUTOR', {email}, {email.ToUpperInvariant()}, {email}, {email.ToUpperInvariant()},
+                    false, false, false, true, 0)
+                """);
             var pid=Guid.NewGuid();
             var subjects = mapped ? "[\"Toán học\"]" : "[\"Unknown legacy subject\"]";
             await db.Database.ExecuteSqlInterpolatedAsync($"INSERT INTO tutor_profiles(id,user_id,status,current_step,subjects,languages,teaching_levels,has_certifications,certifications,is_negotiable,session_rate_vnd,created_at,updated_at) VALUES ({pid},{id},'APPROVED',1,{subjects}::jsonb,'[]'::jsonb,'[\"THPT\"]'::jsonb,false,'[]'::jsonb,false,150000,CURRENT_TIMESTAMP,CURRENT_TIMESTAMP)");

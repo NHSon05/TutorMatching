@@ -36,8 +36,8 @@ public sealed class SnakeCaseSchemaTests(PostgreSqlFixture fixture)
         var constraintNames = await Strings(db, "SELECT conname FROM pg_constraint WHERE connamespace = current_schema()::regnamespace");
         foreach (var entity in db.GetService<IDesignTimeModel>().Model.GetEntityTypes())
         {
-            foreach (var key in entity.GetKeys()) Assert.Contains(key.GetName(), constraintNames);
-            foreach (var key in entity.GetForeignKeys()) Assert.Contains(key.GetConstraintName(), constraintNames);
+            foreach (var key in entity.GetKeys()) Assert.Contains(PostgreSqlIdentifier(key.GetName()!), constraintNames);
+            foreach (var key in entity.GetForeignKeys()) Assert.Contains(PostgreSqlIdentifier(key.GetConstraintName()!), constraintNames);
             foreach (var check in entity.GetCheckConstraints()) Assert.Contains(check.Name, constraintNames);
         }
 
@@ -133,6 +133,8 @@ public sealed class SnakeCaseSchemaTests(PostgreSqlFixture fixture)
         Assert.Contains("ef_migrations_history", names);
         Assert.Contains("migration_id", names);
     }
+
+    private static string PostgreSqlIdentifier(string name) => name.Length <= 63 ? name : name[..63];
 
     private static Task<string[]> ObjectIds(ApplicationDbContext db) => Strings(db, """
         SELECT 'object:' || c.oid::text FROM pg_class c JOIN pg_namespace n ON n.oid = c.relnamespace
