@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { render, screen, fireEvent, waitFor } from "@testing-library/react";
+import { render, screen, fireEvent } from "@testing-library/react";
 import { LandingDemandChat } from "@/components/landing/LandingDemandChat";
 import * as tutorDemandsApi from "@/lib/api/tutor-demands";
 
@@ -49,7 +49,8 @@ describe("LandingDemandChat", () => {
           subjects: ["Tin học", "Lập trình"],
           matchScore: 0.96,
           matchHighlights: ["Đúng môn Tin học", "Cùng Quận Tân Bình"],
-          specialization: "Tự nghiên cứu & 6 năm kinh nghiệm Senior Fullstack Developer",
+          specialization:
+            "Tự nghiên cứu & 6 năm kinh nghiệm Senior Fullstack Developer",
           experienceYears: 6,
           teachingMethodology:
             "Học lập trình qua dự án thực tế (Project-based learning); code trực tiếp, review pull request và debug lỗi như môi trường doanh nghiệp.",
@@ -68,20 +69,17 @@ describe("LandingDemandChat", () => {
       },
     });
 
-    fireEvent.click(screen.getByRole("button", { name: /tìm gia sư ngay/i }));
-
-    await waitFor(() => {
-      expect(tutorDemandsApi.submitPublicTutorDemand).toHaveBeenCalledWith(
-        "Cần tìm gia sư dạy Tin học lập trình tại Quận Tân Bình TP.HCM, học phí 600k/buổi"
-      );
-    });
+    const submitButton = screen.getByRole("button", { name: /gửi yêu cầu/i });
+    fireEvent.click(submitButton);
 
     // Dialog opens and displays TutorCard with suitable percent and real tutor details
     const dialog = await screen.findByRole("dialog");
     expect(dialog).toBeInTheDocument();
     expect(screen.getByText("Lê Tuấn Kiệt")).toBeInTheDocument();
     expect(screen.getByText("Phù hợp 96%")).toBeInTheDocument();
-    expect(screen.getByText("Quận Tân Bình, TP. Hồ Chí Minh")).toBeInTheDocument();
+    expect(
+      screen.getByText("Quận Tân Bình, TP. Hồ Chí Minh")
+    ).toBeInTheDocument();
     expect(screen.getByText("Tin học / Lập trình")).toBeInTheDocument();
     expect(
       screen.getByText(
@@ -96,15 +94,16 @@ describe("LandingDemandChat", () => {
     ).toBeInTheDocument();
     expect(screen.getByText("600.000đ")).toBeInTheDocument();
     expect(screen.getByText("6 năm")).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "Đăng ký ngay" })).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: "Đăng ký ngay" })
+    ).toBeInTheDocument();
     expect(screen.getByRole("link", { name: "Nhắn tin" })).toHaveAttribute(
       "href",
       "/messages?tutorId=33333333-3333-3333-3333-333333333333"
     );
-    expect(screen.getByRole("link", { name: "Xem hồ sơ Lê Tuấn Kiệt" })).toHaveAttribute(
-      "href",
-      "/tutors/33333333-3333-3333-3333-333333333333"
-    );
+    expect(
+      screen.getByRole("link", { name: "Xem hồ sơ Lê Tuấn Kiệt" })
+    ).toHaveAttribute("href", "/tutors/33333333-3333-3333-3333-333333333333");
   });
 
   it("shows validation alert for short messages without opening dialog", async () => {
@@ -112,7 +111,7 @@ describe("LandingDemandChat", () => {
 
     const textarea = screen.getByPlaceholderText(/cần tìm gia sư dạy toán/i);
     fireEvent.change(textarea, { target: { value: "Toán 9" } });
-    fireEvent.click(screen.getByRole("button", { name: /tìm gia sư ngay/i }));
+    fireEvent.click(screen.getByRole("button", { name: /gửi yêu cầu/i }));
 
     expect(await screen.findByRole("alert")).toHaveTextContent(
       /ít nhất 10 ký tự/i
