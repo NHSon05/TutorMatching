@@ -5,11 +5,7 @@ import { API_BASE_URL } from "@/lib/api/http";
 import type { MatchedPostNotificationItem } from "@/lib/api/tutor-demands";
 
 export type StreamConnectionStatus =
-  | "idle"
-  | "connecting"
-  | "connected"
-  | "reconnecting"
-  | "closed";
+  "idle" | "connecting" | "connected" | "reconnecting" | "closed";
 
 export interface UsePostMatchStreamOptions {
   enabled?: boolean;
@@ -26,9 +22,18 @@ export function usePostMatchStream(
   options: UsePostMatchStreamOptions = {}
 ): UsePostMatchStreamResult {
   const { enabled = true, maxItems = 50 } = options;
-  const [status, setStatus] = useState<StreamConnectionStatus>(
-    enabled ? "connecting" : "idle"
+  const isSupported =
+    typeof window !== "undefined" && typeof EventSource !== "undefined";
+
+  const [streamStatus, setStreamStatus] = useState<StreamConnectionStatus>(
+    enabled && isSupported ? "connecting" : "idle"
   );
+  const [prevEnabled, setPrevEnabled] = useState(enabled);
+  if (prevEnabled !== enabled) {
+    setPrevEnabled(enabled);
+    setStreamStatus(enabled && isSupported ? "connecting" : "idle");
+  }
+
   const [liveItems, setLiveItems] = useState<MatchedPostNotificationItem[]>([]);
   const [lastEventId, setLastEventId] = useState<string | null>(null);
 
@@ -38,7 +43,6 @@ export function usePostMatchStream(
 
   useEffect(() => {
     if (!enabled || typeof EventSource === "undefined") {
-      setStatus("idle");
       return;
     }
 
@@ -54,7 +58,7 @@ export function usePostMatchStream(
       es.onopen = () => {
         if (unmounted) return;
         retryCountRef.current = 0;
-        setStatus("connected");
+        setStreamStatus("connected");
       };
 
       es.addEventListener("post_matched", (event: MessageEvent) => {
@@ -80,7 +84,7 @@ export function usePostMatchStream(
       es.onerror = () => {
         if (unmounted) return;
         es.close();
-        setStatus("reconnecting");
+        setStreamStatus("reconnecting");
 
         const attempt = retryCountRef.current;
         retryCountRef.current = attempt + 1;
@@ -102,6 +106,9 @@ export function usePostMatchStream(
       sourceRef.current?.close();
     };
   }, [enabled, maxItems]);
+
+  const status: StreamConnectionStatus =
+    !enabled || !isSupported ? "idle" : streamStatus;
 
   return {
     status,
