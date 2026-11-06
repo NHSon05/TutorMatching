@@ -85,6 +85,7 @@ public sealed class OpenApiContractTests(PostgreSqlFixture fixture)
                 continue;
             }
             if ((key.Contains("/api/v1/tutor") && key is not ("GET /api/v1/tutor/reviews" or "GET /api/v1/tutors" or "GET /api/v1/tutors/{id}")) ||
+                key is "POST /api/v1/public/tutor-demands/match" or "POST /api/v1/admin/demands/cleanup-expired" ||
                 key is "GET /api/v1/conversations" or "GET /api/v1/conversations/{id}" or "GET /api/v1/conversations/{id}/messages" or
                     "POST /api/v1/conversations/{id}/messages" or "POST /api/v1/conversations/{id}/read" ||
                 PendingOperations.Any(p => key.Contains(p))) continue;

@@ -42,6 +42,11 @@ public sealed class ApplicationDbContext(
     public DbSet<Notification> Notifications => Set<Notification>();
     public DbSet<Article> Articles => Set<Article>();
     public DbSet<PasswordResetToken> PasswordResetTokens => Set<PasswordResetToken>();
+    public DbSet<DemandPost> DemandPosts => Set<DemandPost>();
+    public DbSet<ExtractedDemandDetail> ExtractedDemandDetails => Set<ExtractedDemandDetail>();
+    public DbSet<TutorMatchingProfile> TutorMatchingProfiles => Set<TutorMatchingProfile>();
+    public DbSet<PostMatchNotification> PostMatchNotifications => Set<PostMatchNotification>();
+    public DbSet<RetentionCleanupLog> RetentionCleanupLogs => Set<RetentionCleanupLog>();
 
     protected override void OnModelCreating(ModelBuilder builder)
     {
@@ -69,6 +74,11 @@ public sealed class ApplicationDbContext(
         builder.ApplyConfiguration(new NotificationConfiguration());
         builder.ApplyConfiguration(new ArticleConfiguration());
         builder.ApplyConfiguration(new PasswordResetTokenConfiguration());
+        builder.ApplyConfiguration(new DemandPostConfiguration());
+        builder.ApplyConfiguration(new ExtractedDemandDetailConfiguration());
+        builder.ApplyConfiguration(new TutorMatchingProfileConfiguration());
+        builder.ApplyConfiguration(new PostMatchNotificationConfiguration());
+        builder.ApplyConfiguration(new RetentionCleanupLogConfiguration());
         builder.Entity<TokenSession>(entity =>
         {
             entity.ToTable("TokenSessions");
