@@ -1,35 +1,26 @@
 # Current Session Handoff
 
-Updated: 2026-11-01
-Status: Sprint 4 Phase 2 (Foundational) and Phase 3 (US1 Messaging 🎯 MVP) complete; US2 Notifications next.
+Updated: 2026-11-06
+Status: Feature `006-crawler-post-matching` Phase 1 (`T001`–`T006`), Phase 2 (`T007`–`T018`), Phase 3 (`T019`–`T024`), Phase 4 (`T025`–`T033`), and Phase 5 (US3 Two-Way Matching & SSE Realtime Delivery, `T034`–`T046`) complete under TDD; Phase 6 (US4 30-Day Data Retention, `T047`–`T054`) next.
 
 ## Current scope and evidence
 
-- Bypassed automated test generation per user instruction to save token quota.
-- Implemented Phase 2 Foundation:
-  - Added ClientMessageId, MessageNotificationOutbox, Article Version, ApplicationUser ConcurrencyVersion, and EF Core configurations.
-  - Setup SignalR EventsHub (/api/v1/hubs/events), SignalREventPublisher, MessageNotificationOutboxWorker background service.
-  - Installed @microsoft/signalr and created useSignalREvents hook.
-- Implemented Phase 3 User Story 1 (Messaging MVP):
-  - Application contracts & MessagingService with cursor pagination, active participant checks, ClientMessageId idempotency, and transactional outbox.
-  - ConversationsController (GET list, GET detail, GET messages, POST send, POST read).
-  - Frontend conversations API client, useConversations hook, and replaced mock messages page with real-time chat UI.
-  - Connected HireRequestDetail.tsx to /messages.
-  - Both backend (0 errors) and frontend (tsc 0 errors) compiled cleanly.
+- Completed Phase 1 (`T001`–`T006`): Redis 7.2 Compose service, `StackExchange.Redis`, `Testcontainers.Redis`, `RedisTestFixture`, and `RedisHealthCheck` (`5/5` passed).
+- Completed Phase 2 (`T007`–`T018`): Domain entities (`DemandPost`, `ExtractedDemandDetail`, `TutorMatchingProfile`, `PostMatchNotification`, `RetentionCleanupLog`), EF Core configurations (`DemandMatchingEntitiesConfiguration`), and migration `AddDemandMatchingAndRetentionTables` (`25/25` unit tests + `10/10` migration/schema integration tests passed).
+- Completed Phase 3 (`T019`–`T024`): `ContentHashNormalizer`, `RedisDeduplicationService`, and `PublicDemandIngestionService` (`7/7` unit tests + `1/1` Redis/PostgreSQL integration test passed).
+- Completed Phase 4 (`T025`–`T033`): `RegexEntityExtractor`, `VietnamLandmarkGazetteer`, `AddressResolutionService`, and `HybridExtractionService` (`24/24` unit tests passed in `227 ms`).
+- Completed Phase 5 (`T034`–`T046` via TDD Red -> Green -> Refactor):
+  - Backend: `IMatchingEngine`, `ISseNotificationPublisher`, `MatchingEngine`, `SubmitPublicTutorDemandHandler`, `EfDemandMatchingStore`, `RedisSseNotificationPublisher`, `PublicTutorDemandsController` (`POST /api/v1/public/tutor-demands/match`), `TutorMatchedPostsSseController` (`GET /api/v1/tutors/me/matched-posts/stream`), and `TutorMatchingProfileController` (`GET & PUT /api/v1/tutors/me/matching-profile`, `GET /api/v1/tutors/me/matched-posts`).
+  - Frontend: `PublicSmartDemandSearch.tsx` integrated into `TutorsListClient.tsx`, `LandingDemandChat.tsx` integrated into `LandingView.tsx`, `usePostMatchStream.ts` SSE hook with exponential backoff, and `TutorLiveMatchedPostsFeed.tsx` embedded into `frontend/src/app/(tutor)/tutor/page.tsx`.
+  - Code Review P0/P1 hardening: fixed `onHireClick` prop in `PublicSmartDemandSearch.tsx`, subscribed `RedisSseNotificationPublisher.SubscribeAsync` to Redis Pub/Sub with replay-set trimming, validated extraction before registering deduplication keys in `SubmitPublicTutorDemandHandler`, added per-request catalog caching + concurrent SSE publishing + concurrency-safe `TutorMatchingProfile` upserts in `EfDemandMatchingStore`.
+  - Verification: `MatchingEngineTests` (`2/2` passed), `PublicTutorDemandMatchApiTests` + `TutorMatchedPostsSseTests` + `TutorMatchingProfileApiTests` (`4/4` passed), and Vitest suites `PublicSmartDemandSearch.test.tsx` + `LandingDemandChat.test.tsx` + `usePostMatchStream.test.ts` + `TutorLiveMatchedPostsFeed.test.tsx` + `TutorsListClient.test.tsx` (`9/9` passed).
 
 ## Next executable step
 
-- Phase 4: US2 Notifications (T019–T022): notification service, controller, and UI bell/popover.
-- Contract notes preserve actual accessToken auth cookie, CSRF400 compatibility and non-UUID
-  catalog audit entity IDs; resolve api.md CSRF403 discrepancy before runtime parity closure.
-- Keep SignalR user-channel hints + REST recovery (ADR-013), transactional message notification outbox,
-  post-commit publication, live session revocation and reconnect multi-page catch-up requirements.
+- Execute Phase 6 (`T047`–`T054`) in `specs/006-crawler-post-matching/tasks.md` using TDD:
+  - Write failing tests (`T047`–`T049`) for `PostgreSqlDataRetentionService`, `RetentionCleanupWorker`, and `POST /api/v1/admin/demands/cleanup-expired`.
+  - Implement `IDataRetentionService`, `PostgreSqlDataRetentionService` (batch size 1,000 + `retention_cleanup_logs`), `RetentionCleanupWorker`, and `AdminDemandsRetentionController` (`T050`–`T054`).
 
 ## Retained release dependency
 
-- Sprint3 Phases1–7 / T001–T045 complete per prior handoff; T046–T050 remain unchecked.
-- Those gates cover full contract/security matrix,100-user load, layered validation,
-  schema/contract/quickstart reconciliation and convergence. Complete before MVP release.
-- Preserve immutable hiring snapshots, expectedVersion and cross-module lock order;
-  account writes must avoid user->profile inversion with profile->user review paths.
-- Preserve pre-existing uncommitted planning, sprint, decision and ignore changes; no commit made.
+- Sprint 3 final gates (`T046`–`T050`) and Sprint 4 remaining phases remain tracked in their respective `specs/*/tasks.md`.

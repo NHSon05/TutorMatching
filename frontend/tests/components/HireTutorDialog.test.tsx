@@ -9,6 +9,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import TutorDetailClient from "@/components/tutors/TutorDetailClient";
 import { HireTutorDialog } from "@/components/tutors/HireTutorDialog";
 import { getTutorById, type PublicTutorDetail } from "@/lib/api/tutors";
+import { useAuthStore } from "@/stores/use-auth-store";
 
 vi.mock("next/navigation", () => ({
   useRouter: () => ({ push: vi.fn() }),
@@ -235,6 +236,15 @@ describe("hire form refresh and reducer transitions", () => {
   });
 
   it("keeps an open hire form mounted when the parent detail page refetch fails", async () => {
+    useAuthStore.getState().setAuth({
+      user: {
+        id: "learner-1",
+        email: "learner@example.test",
+        fullName: "Learner Test",
+        role: "LEARNER",
+        status: "ACTIVE",
+      },
+    });
     const queryClient = new QueryClient({
       defaultOptions: { queries: { retry: false } },
     });

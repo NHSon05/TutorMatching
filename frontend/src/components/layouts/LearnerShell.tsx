@@ -26,7 +26,7 @@ export function LearnerShell({
         <LearnerNavigationRail />
         {/* Vùng giao diện chính bên phải */}
         <div className="flex-1 min-w-0 flex flex-col w-full">
-          <main className="min-w-0 max-w-8xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-4">
+          <main className="min-w-0 max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-4">
             <DashboardTopBar user={user} />
             {children}
           </main>

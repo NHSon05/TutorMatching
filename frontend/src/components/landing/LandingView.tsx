@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useState } from "react";
 import { Image } from "@/components/ui/image";
+import { LandingDemandChat } from "./LandingDemandChat";
 
 export default function LandingView() {
   const [activeTab, setActiveTab] = useState<"todo" | "inprogress" | "completed" | "archive">("todo");
@@ -30,7 +31,10 @@ export default function LandingView() {
         </div>
       </div>
 
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 w-full flex-1 space-y-24 sm:space-y-32 py-6 sm:py-10">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full flex-1 space-y-24 sm:space-y-32 py-6 sm:py-10">
+
+        {/* KHUNG CHAT TÌM GIA SƯ NHANH THEO NHU CẦU */}
+        <LandingDemandChat />
 
         {/* =========================================================================
             PHẦN 1: QUY TRÌNH KẾT NỐI GIA SƯ & HỌC SINH (ĐƯỜNG CONG S-CURVE)

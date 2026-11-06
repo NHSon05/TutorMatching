@@ -9,6 +9,10 @@ import { Button } from "@/components/ui/button";
 import { IconButton } from "@/components/ui/icon-button";
 import { publicAvatarUrl } from "@/lib/api/tutors";
 import { HireTutorDialog } from "./HireTutorDialog";
+import {
+  LoginRequiredDialog,
+  useIsViewerAuthenticated,
+} from "./LoginRequiredDialog";
 import type { TutorCardProps } from "./TutorCard.types";
 
 export type { TutorCardProps } from "./TutorCard.types";
@@ -123,13 +127,23 @@ export function TutorCard({
   onBookTrial,
   onSendMessage,
   onToggleFavorite,
+  matchScore,
+  matchHighlights,
 }: TutorCardProps) {
   const [isFavorite, setIsFavorite] = useState(false);
   const [isHireOpen, setIsHireOpen] = useState(false);
+  const [isLoginAlertOpen, setIsLoginAlertOpen] = useState(false);
+  const isAuthenticated = useIsViewerAuthenticated();
 
   const id = tutor.id;
   const name = tutor.displayName;
   const avatarSrc = publicAvatarUrl(tutor.avatarUrl);
+  const suitablePercent =
+    matchScore != null
+      ? matchScore <= 1
+        ? Math.round(matchScore * 100)
+        : Math.round(matchScore)
+      : null;
 
   const qualificationText = [tutor.qualification, tutor.schoolName]
     .filter(Boolean)
@@ -148,6 +162,8 @@ export function TutorCard({
     e.preventDefault();
     if (onBookTrial) {
       onBookTrial(id);
+    } else if (!isAuthenticated) {
+      setIsLoginAlertOpen(true);
     } else {
       setIsHireOpen(true);
     }
@@ -188,13 +204,13 @@ export function TutorCard({
         />
 
         {/* Khối nội dung thông tin gia sư */}
-        <div className="flex-1 min-w-0 flex flex-col justify-between">
+        <div className="flex-1 min-w-0 flex flex-col justify-between text-left">
           <div>
-            {/* Tên gia sư + Huy hiệu xác thực + Khu vực */}
+            {/* Tên gia sư + Huy hiệu xác thực + Khu vực + Mức độ phù hợp */}
             <div className="flex items-center gap-2.5 flex-wrap">
               <Link
                 href={`/tutors/${id}`}
-                className="text-2xl font-bold text-content-primary hover:text-brand transition-colors tracking-tight"
+                className="text-2xl font-bold text-neutral-900 hover:text-brand transition-colors tracking-tight"
               >
                 {name}
               </Link>
@@ -212,28 +228,48 @@ export function TutorCard({
                   {locationText}
                 </span>
               )}
+              {suitablePercent != null && (
+                <Badge variant="success" size="medium">
+                  {`Phù hợp ${suitablePercent}%`}
+                </Badge>
+              )}
             </div>
+
+            {matchHighlights && matchHighlights.length > 0 && (
+              <div className="flex flex-wrap gap-1.5 mt-2">
+                {matchHighlights.map((highlight) => (
+                  <Badge
+                    key={highlight}
+                    variant="brand"
+                    size="small"
+                    appearance="subtitle"
+                  >
+                    {highlight}
+                  </Badge>
+                ))}
+              </div>
+            )}
 
             {/* Dòng 2: Trình độ chuyên môn & Trường học */}
             {qualificationText && (
-              <div className="flex items-center gap-2 text-base text-content-secondary font-medium mt-2">
-                <ClipboardCheckIcon className="w-4 h-4 text-content-secondary shrink-0" />
+              <div className="flex items-center gap-2 text-base text-neutral-900 font-medium mt-2">
+                <ClipboardCheckIcon className="w-4 h-4 text-neutral-900 shrink-0" />
                 <span>{qualificationText}</span>
               </div>
             )}
 
             {/* Dòng 3: Môn học giảng dạy thực tế */}
             {tutor.subjects && tutor.subjects.length > 0 && (
-              <div className="flex items-center gap-2 text-base text-content-secondary font-medium mt-1">
-                <GraduationCapIcon className="w-4 h-4 text-content-secondary shrink-0" />
-                <span>{tutor.subjects.map((s) => s.name).join(", ")}</span>
+              <div className="flex items-center gap-2 text-base text-neutral-900 font-medium mt-1">
+                <GraduationCapIcon className="w-4 h-4 text-neutral-900 shrink-0" />
+                <span>{tutor.subjects.map((s) => s.name).join(" / ")}</span>
               </div>
             )}
 
             {/* Dòng 4: Hình thức dạy & Chuyên ngành */}
             {(modesText || tutor.specialization) && (
-              <div className="flex items-center gap-2 text-base text-content-secondary font-medium mt-1">
-                <LanguagesIcon className="w-4 h-4 text-content-secondary shrink-0" />
+              <div className="flex items-center gap-2 text-base text-neutral-900 font-medium mt-1">
+                <LanguagesIcon className="w-4 h-4 text-neutral-900 shrink-0" />
                 <span>
                   {[modesText, tutor.specialization].filter(Boolean).join(" • ")}
                 </span>
@@ -248,7 +284,7 @@ export function TutorCard({
                   appearance="subtitle"
                   shape="rounded"
                   size="large"
-                  className="mt-2.5 font-medium"
+                  className="mt-2.5 font-medium whitespace-normal text-left"
                 >
                   {tutor.teachingMethodology}
                 </Badge>
@@ -257,7 +293,7 @@ export function TutorCard({
 
             {/* Dòng 6: Giới thiệu tóm tắt từ database */}
             {tutor.bio && (
-              <p className="mt-2 text-base text-content-secondary leading-relaxed line-clamp-2">
+              <p className="mt-2 text-base text-neutral-900 leading-relaxed line-clamp-2">
                 {tutor.bio}
               </p>
             )}
@@ -267,7 +303,7 @@ export function TutorCard({
           <Link
             href={`/tutors/${id}`}
             aria-label={`Xem hồ sơ ${name}`}
-            className="mt-2 inline-block text-base font-bold text-content-primary underline underline-offset-2 hover:text-brand"
+            className="mt-2 inline-block text-base font-bold text-neutral-900 underline underline-offset-2 hover:text-brand"
           >
             Xem chi tiết
           </Link>
@@ -275,7 +311,7 @@ export function TutorCard({
       </div>
 
       {/* Cột phải: Học phí + Nút yêu thích + Thống kê + Nút hành động */}
-      <div className="flex flex-col justify-between shrink-0 md:w-64 lg:w-72 pt-4 md:pt-0 border-t md:border-t-0 border-border-default">
+      <div className="flex flex-col justify-between shrink-0 md:w-64 lg:w-72 pt-4 md:pt-0 border-t md:border-t-0 border-border-default text-left">
         <div>
           {/* Hàng trên: Giá tiền bên trái, Trái tim yêu thích bên phải */}
           <div className="flex items-start justify-between">
@@ -283,7 +319,7 @@ export function TutorCard({
               className="flex flex-col"
               aria-label={`${tutor.sessionRateVnd.toLocaleString("vi-VN")} VNĐ/buổi`}
             >
-              <span className="text-3xl font-bold text-content-primary tracking-tight">
+              <span className="text-3xl font-bold text-neutral-900 tracking-tight">
                 {tutor.sessionRateVnd.toLocaleString("vi-VN")}đ
               </span>
               <span className="text-xs sm:text-sm text-content-secondary mt-0.5 font-medium">
@@ -303,7 +339,7 @@ export function TutorCard({
                   className={`w-6 h-6 transition-transform active:scale-90 ${
                     isFavorite
                       ? "fill-status-error text-status-error"
-                      : "fill-none stroke-current stroke-2 text-content-primary"
+                      : "fill-none stroke-current stroke-2 text-neutral-900"
                   }`}
                   viewBox="0 0 24 24"
                   aria-hidden="true"
@@ -321,7 +357,7 @@ export function TutorCard({
           {/* Hàng giữa: Khối thông số thực tế từ DB (Kinh nghiệm, Môn dạy, Hình thức) */}
           <div className="flex items-center gap-6 sm:gap-7 my-5">
             <div>
-              <div className="font-bold text-base text-content-primary">
+              <div className="font-bold text-base text-neutral-900">
                 {tutor.experienceYears != null ? `${tutor.experienceYears} năm` : "—"}
               </div>
               <div className="text-xs text-content-secondary">
@@ -329,7 +365,7 @@ export function TutorCard({
               </div>
             </div>
             <div>
-              <div className="font-bold text-base text-content-primary">
+              <div className="font-bold text-base text-neutral-900">
                 {tutor.subjects?.length ?? 0}
               </div>
               <div className="text-xs text-content-secondary">
@@ -337,7 +373,7 @@ export function TutorCard({
               </div>
             </div>
             <div>
-              <div className="font-bold text-base text-content-primary">
+              <div className="font-bold text-base text-neutral-900">
                 {tutor.teachingModes?.length ?? 0}
               </div>
               <div className="text-xs text-content-secondary">
@@ -378,12 +414,18 @@ export function TutorCard({
       </div>
 
       {!onBookTrial && (
-        <HireTutorDialog
-          isOpen={isHireOpen}
-          onClose={() => setIsHireOpen(false)}
-          tutorId={id}
-          tutor={tutor}
-        />
+        <>
+          <HireTutorDialog
+            isOpen={isHireOpen}
+            onClose={() => setIsHireOpen(false)}
+            tutorId={id}
+            tutor={tutor}
+          />
+          <LoginRequiredDialog
+            isOpen={isLoginAlertOpen}
+            onClose={() => setIsLoginAlertOpen(false)}
+          />
+        </>
       )}
     </Card>
   );

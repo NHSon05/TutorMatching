@@ -4,6 +4,7 @@ import { beforeEach, expect, it, vi } from "vitest";
 import TutorDetailClient from "@/components/tutors/TutorDetailClient";
 import { getTutorById, type PublicTutorDetail } from "@/lib/api/tutors";
 import { ApiError } from "@/lib/api/http";
+import { useAuthStore } from "@/stores/use-auth-store";
 vi.mock("@/lib/api/tutors", async (original) => ({
   ...(await original<typeof import("@/lib/api/tutors")>()),
   getTutorById: vi.fn(),
@@ -48,6 +49,7 @@ const profile = {
 } as PublicTutorDetail;
 beforeEach(() => {
   vi.resetAllMocks();
+  useAuthStore.getState().clearAuth();
   vi.mocked(getTutorById).mockResolvedValue(profile);
 });
 function view() {
@@ -121,4 +123,18 @@ it("shows offer empty states and never renders extra private payload fields", as
   expect(
     screen.queryByRole("link", { name: /chứng chỉ/i })
   ).not.toBeInTheDocument();
+});
+
+it("shows login required alert when clicking Thuê gia sư while unauthenticated", async () => {
+  view();
+  const hireBtn = await screen.findByRole("button", { name: "Thuê gia sư" });
+  fireEvent.click(hireBtn);
+  expect(screen.getByRole("dialog")).toBeInTheDocument();
+  expect(screen.getByRole("alert")).toHaveTextContent(
+    /Bạn cần đăng nhập để thực hiện thuê gia sư/i
+  );
+  expect(screen.getByRole("link", { name: "Đăng nhập ngay" })).toHaveAttribute(
+    "href",
+    "/login"
+  );
 });

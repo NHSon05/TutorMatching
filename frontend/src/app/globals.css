@@ -136,6 +136,7 @@
 }
 
 @theme inline {
+  --container-8xl: 88rem;
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --font-sans: var(--font-montserrat);

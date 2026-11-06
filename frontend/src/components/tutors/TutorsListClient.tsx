@@ -14,6 +14,11 @@ import { getPublicCatalog } from "@/lib/api/catalog";
 import { ApiError } from "@/lib/api/http";
 import { TutorCard } from "./TutorCard";
 import { HireTutorDialog } from "./HireTutorDialog";
+import {
+  LoginRequiredDialog,
+  useIsViewerAuthenticated,
+} from "./LoginRequiredDialog";
+import { PublicSmartDemandSearch } from "./PublicSmartDemandSearch";
 export type * from "./types";
 export default function TutorsListClient() {
   return (
@@ -45,6 +50,16 @@ export function TutorSearchView({ queryString }: { queryString: string }) {
   const params = new URLSearchParams(queryString);
   const [selectedHireTutorId, setSelectedHireTutorId] = useState<string | null>(null);
   const [isHireOpen, setIsHireOpen] = useState(false);
+  const [isLoginAlertOpen, setIsLoginAlertOpen] = useState(false);
+  const isAuthenticated = useIsViewerAuthenticated();
+  const handleHireTutorClick = (tutorId: string) => {
+    if (!isAuthenticated) {
+      setIsLoginAlertOpen(true);
+      return;
+    }
+    setSelectedHireTutorId(tutorId);
+    setIsHireOpen(true);
+  };
   const [name, setName] = useState(params.get("name") ?? "");
   const [qualification, setQualification] = useState(
     params.get("qualification") ?? ""
@@ -196,6 +211,7 @@ export function TutorSearchView({ queryString }: { queryString: string }) {
             Tìm kiếm và kết nối với gia sư phù hợp với nhu cầu học tập của bạn.
           </p>
         </header>
+        <PublicSmartDemandSearch onHireClick={handleHireTutorClick} />
         <Card
           padding="large"
           className="relative z-10 rounded-3xl border-border-default shadow-sm"
@@ -510,10 +526,7 @@ export function TutorSearchView({ queryString }: { queryString: string }) {
                   <TutorCard
                     key={t.id}
                     tutor={t}
-                    onBookTrial={(tutorId) => {
-                      setSelectedHireTutorId(tutorId);
-                      setIsHireOpen(true);
-                    }}
+                    onBookTrial={handleHireTutorClick}
                   />
                 ))}
               </div>
@@ -550,6 +563,10 @@ export function TutorSearchView({ queryString }: { queryString: string }) {
             setSelectedHireTutorId(null);
           }}
           tutorId={selectedHireTutorId}
+        />
+        <LoginRequiredDialog
+          isOpen={isLoginAlertOpen}
+          onClose={() => setIsLoginAlertOpen(false)}
         />
       </div>
     </div>

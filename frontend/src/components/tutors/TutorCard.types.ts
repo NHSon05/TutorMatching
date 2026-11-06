@@ -28,4 +28,14 @@ export interface TutorCardProps {
    * Callback khi người dùng toggle trạng thái yêu thích
    */
   onToggleFavorite?: (tutorId: string, isFavorite: boolean) => void;
+
+  /**
+   * Điểm số mức độ phù hợp (0..1 hoặc 0..100) khi hiển thị từ kết quả AI Matching
+   */
+  matchScore?: number;
+
+  /**
+   * Danh sách các tiêu chí khớp nổi bật từ AI Matching
+   */
+  matchHighlights?: string[];
 }

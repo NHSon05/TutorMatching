@@ -15,7 +15,10 @@ export interface PromptFieldProps {
   maxRows?: number;
 }
 
-export const PromptField = React.forwardRef<HTMLTextAreaElement, PromptFieldProps>(
+export const PromptField = React.forwardRef<
+  HTMLTextAreaElement,
+  PromptFieldProps
+>(
   (
     {
       value: controlledValue,
@@ -32,12 +35,16 @@ export const PromptField = React.forwardRef<HTMLTextAreaElement, PromptFieldProp
     },
     ref
   ) => {
-    const [uncontrolledValue, setUncontrolledValue] = React.useState(defaultValue);
+    const [uncontrolledValue, setUncontrolledValue] =
+      React.useState(defaultValue);
     const isControlled = controlledValue !== undefined;
     const resolvedValue = isControlled ? controlledValue : uncontrolledValue;
 
     const textareaRef = React.useRef<HTMLTextAreaElement>(null);
-    React.useImperativeHandle(ref, () => textareaRef.current as HTMLTextAreaElement);
+    React.useImperativeHandle(
+      ref,
+      () => textareaRef.current as HTMLTextAreaElement
+    );
 
     const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
       const nextVal = e.target.value;
@@ -68,7 +75,9 @@ export const PromptField = React.forwardRef<HTMLTextAreaElement, PromptFieldProp
     return (
       <div
         className={`relative flex flex-col w-full rounded-2xl bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-700 p-2.5 transition-all duration-150 focus-within:border-brand focus-within:ring-2 focus-within:ring-brand/15 shadow-sm ${
-          disabled ? "opacity-60 cursor-not-allowed bg-gray-50 dark:bg-gray-800/50" : ""
+          disabled
+            ? "opacity-60 cursor-not-allowed bg-gray-50 dark:bg-gray-800/50"
+            : ""
         } ${className}`}
       >
         <textarea
@@ -79,7 +88,7 @@ export const PromptField = React.forwardRef<HTMLTextAreaElement, PromptFieldProp
           placeholder={placeholder}
           onChange={handleChange}
           onKeyDown={handleKeyDown}
-          className="w-full resize-none bg-transparent px-2 pt-1 text-sm text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none"
+          className="w-full resize-none bg-transparent px-2 pt-1 text-base text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-neutral-700 focus:outline-none"
         />
 
         <div className="flex items-center justify-between pt-2 px-1">
@@ -92,7 +101,13 @@ export const PromptField = React.forwardRef<HTMLTextAreaElement, PromptFieldProp
                 onClick={onAttach}
                 className="p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors cursor-pointer disabled:cursor-not-allowed"
               >
-                <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <svg
+                  className="w-8 h-8"
+                  viewBox="0 0 48 48"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                >
                   <path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48" />
                 </svg>
               </button>
@@ -105,19 +120,40 @@ export const PromptField = React.forwardRef<HTMLTextAreaElement, PromptFieldProp
               aria-label="Gửi yêu cầu"
               disabled={!canSubmit}
               onClick={handleSend}
-              className={`flex items-center justify-center w-8 h-8 rounded-xl transition-all duration-150 ${
+              className={`flex items-center justify-center w-10 h-10 rounded-xl transition-all duration-150 ${
                 canSubmit
                   ? "bg-brand text-white hover:bg-brand-hover shadow-xs cursor-pointer active:scale-95"
                   : "bg-gray-100 dark:bg-gray-800 text-gray-400 dark:text-gray-600 cursor-not-allowed"
               }`}
             >
               {isLoading ? (
-                <svg className="w-4 h-4 animate-spin" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                  <circle cx="12" cy="12" r="10" stroke="currentColor" opacity="0.25" />
-                  <path d="M22 12C22 6.47715 17.5228 2 12 2" strokeLinecap="round" />
+                <svg
+                  className="w-4 h-4 animate-spin"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2.5"
+                >
+                  <circle
+                    cx="12"
+                    cy="12"
+                    r="10"
+                    stroke="currentColor"
+                    opacity="0.25"
+                  />
+                  <path
+                    d="M22 12C22 6.47715 17.5228 2 12 2"
+                    strokeLinecap="round"
+                  />
                 </svg>
               ) : (
-                <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                <svg
+                  className="w-4 h-4"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2.5"
+                >
                   <line x1="12" y1="19" x2="12" y2="5" />
                   <polyline points="5 12 12 5 19 12" />
                 </svg>

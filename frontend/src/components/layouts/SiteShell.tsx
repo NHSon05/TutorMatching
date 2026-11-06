@@ -99,10 +99,19 @@ export function SiteShell({
   }
 
   // 4. Default / Public routes (Landing, Tutors list when guest or not logged in as Learner)
+  const isLandingRoute = pathname === "/";
   return (
     <div className="min-h-screen flex flex-col bg-gray-50">
       <PublicNavbar />
-      <main className="flex-1">{children}</main>
+      <main
+        className={
+          isLandingRoute
+            ? "flex-1 w-full"
+            : "flex-1 max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-6 sm:py-8"
+        }
+      >
+        {children}
+      </main>
       <PublicFooter />
     </div>
   );
