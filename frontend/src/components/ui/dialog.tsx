@@ -8,7 +8,7 @@ export interface DialogProps {
   children?: React.ReactNode;
   footer?: React.ReactNode;
   closeOnBackdropClick?: boolean;
-  maxWidth?: "sm" | "md" | "lg" | "xl";
+  maxWidth?: "sm" | "md" | "lg" | "xl" | "big_size";
   className?: string;
 }
 
@@ -17,6 +17,7 @@ const maxWidthMap = {
   md: "max-w-md",
   lg: "max-w-lg",
   xl: "max-w-xl",
+  big_size: "max-w-8xl",
 };
 
 export function Dialog({
@@ -78,7 +79,13 @@ export function Dialog({
           aria-label="Đóng hộp thoại"
           className="absolute top-5 right-5 p-1.5 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-xl transition-colors cursor-pointer"
         >
-          <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+          <svg
+            className="w-4 h-4"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2.5"
+          >
             <line x1="18" y1="6" x2="6" y2="18" />
             <line x1="6" y1="6" x2="18" y2="18" />
           </svg>
@@ -88,12 +95,12 @@ export function Dialog({
         {(title || description) && (
           <div className="mb-4 pr-6">
             {title && (
-              <h3 className="text-lg font-bold text-gray-900 dark:text-gray-100">
+              <h3 className="text-2xl font-semibold text-neutral-900 dark:text-gray-100">
                 {title}
               </h3>
             )}
             {description && (
-              <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+              <p className="text-base text-neutral-900 dark:text-gray-400 mt-1">
                 {description}
               </p>
             )}
@@ -101,10 +108,18 @@ export function Dialog({
         )}
 
         {/* Content Body */}
-        {children && <div className="text-sm text-gray-700 dark:text-gray-300">{children}</div>}
+        {children && (
+          <div className="text-sm text-gray-700 dark:text-gray-300">
+            {children}
+          </div>
+        )}
 
         {/* Footer Actions */}
-        {footer && <div className="mt-6 flex items-center justify-end gap-2.5 pt-3 border-t border-gray-100 dark:border-gray-800">{footer}</div>}
+        {footer && (
+          <div className="mt-6 flex items-center justify-end gap-2.5 pt-3 border-t border-gray-100 dark:border-gray-800">
+            {footer}
+          </div>
+        )}
       </div>
     </div>
   );

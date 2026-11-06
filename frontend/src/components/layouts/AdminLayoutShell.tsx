@@ -94,7 +94,9 @@ export function AdminLayoutShell({ children }: { children: React.ReactNode }) {
         </header>
 
         {/* Content Body */}
-        <main className="flex-1 p-6 sm:p-8 overflow-y-auto">{children}</main>
+        <main className="flex-1 w-full max-w-7xl mx-auto p-6 sm:p-8 overflow-y-auto">
+          {children}
+        </main>
       </div>
     </div>
   );

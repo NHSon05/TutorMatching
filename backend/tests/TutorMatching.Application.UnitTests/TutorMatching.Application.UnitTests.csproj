@@ -17,6 +17,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\TutorMatching.Application\TutorMatching.Application.csproj" />
+    <ProjectReference Include="..\..\src\TutorMatching.Infrastructure\TutorMatching.Infrastructure.csproj" />
   </ItemGroup>
 
   <ItemGroup>

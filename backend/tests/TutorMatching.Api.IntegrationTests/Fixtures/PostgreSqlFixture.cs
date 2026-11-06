@@ -22,7 +22,9 @@ public sealed class PostgreSqlFixture : IAsyncLifetime
     public Task InitializeAsync() => container.StartAsync();
     public Task DisposeAsync() => container.DisposeAsync().AsTask();
 
-    public async Task<ApiWebApplicationFactory> CreateFactoryAsync(string? targetMigration = null)
+    public async Task<ApiWebApplicationFactory> CreateFactoryAsync(
+        string? targetMigration = null,
+        string? redisConnectionString = null)
     {
         // Generated names only; no user input or shared database is accepted.
         var name = $"test_{Guid.NewGuid():N}";
@@ -38,7 +40,7 @@ public sealed class PostgreSqlFixture : IAsyncLifetime
             Database = name,
             Pooling = false
         }.ConnectionString;
-        var factory = new ApiWebApplicationFactory(connectionString);
+        var factory = new ApiWebApplicationFactory(connectionString, redisConnectionString);
         try
         {
             await using var scope = factory.Services.CreateAsyncScope();

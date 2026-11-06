@@ -1,0 +1,405 @@
+openapi: 3.1.0
+info:
+  title: TutorMatching Public Natural-Language Demand Matching, Realtime SSE & Retention API
+  version: 1.0.0
+  description: |
+    Contracts for Sprint 6:
+    1. Public endpoint for users to submit natural-language tutoring demands, deduplicate via Redis, extract structured entities, receive top matched tutors immediately, and notify matched tutors.
+    2. Tutor endpoints to stream matched demands via Server-Sent Events (SSE) and configure matching profiles.
+    3. Admin endpoint to trigger 30-day data retention cleanup.
+paths:
+  /api/v1/public/tutor-demands/match:
+    post:
+      summary: Submit a natural-language tutoring request on the public page and get matched tutors
+      description: |
+        Deduplicates the request via Redis, extracts structured entities (subject, grade, tuition fee, province/district, teaching mode),
+        returns the top matching APPROVED tutors immediately, persists the demand for 30 days, and pushes SSE notifications to matched tutors.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SubmitTutorDemandRequest"
+      responses:
+        "200":
+          description: Extracted criteria and ranked list of matched tutors.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SubmitTutorDemandResponse"
+        "400":
+          description: Validation error or non-tutoring spam text (status REJECTED).
+        "429":
+          description: Rate limit exceeded for public demand matching.
+
+  /api/v1/tutors/me/matched-posts/stream:
+    get:
+      summary: Realtime SSE stream for newly matched learner demands
+      description: |
+        Opens an HTTP/1.1 or HTTP/2 persistent connection using Content-Type `text/event-stream`.
+        Pushes matched learner demands immediately when extracted and matched.
+      security:
+        - CookieAuth: []
+      parameters:
+        - in: header
+          name: Last-Event-ID
+          schema:
+            type: string
+          required: false
+          description: Last received event ID to replay missed notifications during network reconnections.
+      responses:
+        "200":
+          description: Event stream established.
+          content:
+            text/event-stream:
+              schema:
+                type: string
+                example: |
+                  event: post_matched
+                  id: 1730721600000
+                  data: {"notificationId":"3fa85f64-5717-4562-b3fc-2c963f66afa6","demandPostId":"d290f1ee-6c54-4b01-90e6-d701748f0851","subjectName":"Toán","gradeLevel":9,"tuitionFeeVnd":250000,"teachingMode":"OFFLINE","provinceCode":"HN","districtName":"Cầu Giấy","rawAddress":"Gần ngõ 165 Cầu Giấy","isLocationAmbiguous":false,"rawContent":"Cần tìm gia sư dạy Toán lớp 9 ôn thi vào 10 tại Quận Cầu Giấy, học phí 250k/buổi tuần 2 buổi","matchScore":0.95,"createdAt":"2026-11-06T10:00:00Z"}
+        "401":
+          description: Unauthorized - Valid tutor session cookie required.
+        "403":
+          description: Forbidden - User is not an APPROVED tutor.
+
+  /api/v1/tutors/me/matching-profile:
+    get:
+      summary: Get current tutor matching criteria
+      security:
+        - CookieAuth: []
+      responses:
+        "200":
+          description: Current matching profile
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TutorMatchingProfileDto"
+    put:
+      summary: Update tutor matching criteria
+      security:
+        - CookieAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateTutorMatchingProfileRequest"
+      responses:
+        "200":
+          description: Updated profile successfully.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TutorMatchingProfileDto"
+
+  /api/v1/tutors/me/matched-posts:
+    get:
+      summary: Query paginated history of matched learner demands
+      security:
+        - CookieAuth: []
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+        - name: pageSize
+          in: query
+          schema:
+            type: integer
+            default: 20
+        - name: unreadOnly
+          in: query
+          schema:
+            type: boolean
+            default: false
+      responses:
+        "200":
+          description: Paginated matched demands
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PaginatedMatchedPostsDto"
+
+  /api/v1/admin/demands/cleanup-expired:
+    post:
+      summary: Manually trigger 30-day expired demand posts & notifications cleanup
+      security:
+        - CookieAuth: []
+      responses:
+        "200":
+          description: Cleanup summary report
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RetentionCleanupResultDto"
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden - ADMIN role required
+
+components:
+  securitySchemes:
+    CookieAuth:
+      type: apiKey
+      in: cookie
+      name: accessToken
+  schemas:
+    SubmitTutorDemandRequest:
+      type: object
+      required:
+        - queryText
+      properties:
+        queryText:
+          type: string
+          minLength: 10
+          maxLength: 2000
+          example: "Cần tìm gia sư dạy Toán lớp 9 ôn thi vào 10 tại Quận Cầu Giấy, học phí 250k/buổi tuần 2 buổi"
+
+    SubmitTutorDemandResponse:
+      type: object
+      required:
+        - demandPostId
+        - isDeduplicatedHit
+        - extractedCriteria
+        - matchedTutors
+      properties:
+        demandPostId:
+          type: string
+          format: uuid
+        isDeduplicatedHit:
+          type: boolean
+        extractedCriteria:
+          $ref: "#/components/schemas/ExtractedDemandCriteriaDto"
+        matchedTutors:
+          type: array
+          items:
+            $ref: "#/components/schemas/MatchedTutorCardDto"
+
+    ExtractedDemandCriteriaDto:
+      type: object
+      properties:
+        subjectId:
+          type: string
+          format: uuid
+          nullable: true
+        subjectName:
+          type: string
+          nullable: true
+        gradeLevel:
+          type: integer
+          nullable: true
+        tuitionFeeVnd:
+          type: integer
+        feePeriod:
+          type: string
+        isFeeNegotiable:
+          type: boolean
+        sessionsPerWeek:
+          type: integer
+          nullable: true
+        teachingMode:
+          type: string
+        provinceCode:
+          type: string
+          nullable: true
+        provinceName:
+          type: string
+          nullable: true
+        districtCode:
+          type: string
+          nullable: true
+        districtName:
+          type: string
+          nullable: true
+        rawAddress:
+          type: string
+          nullable: true
+        isLocationAmbiguous:
+          type: boolean
+        confidenceScore:
+          type: number
+
+    MatchedTutorCardDto:
+      type: object
+      properties:
+        tutorProfileId:
+          type: string
+          format: uuid
+        displayName:
+          type: string
+        avatarUrl:
+          type: string
+          nullable: true
+        headline:
+          type: string
+          nullable: true
+        listedPriceVnd:
+          type: integer
+        isNegotiable:
+          type: boolean
+        teachingModeCode:
+          type: string
+        provinceName:
+          type: string
+          nullable: true
+        districtName:
+          type: string
+          nullable: true
+        subjects:
+          type: array
+          items:
+            type: string
+        matchScore:
+          type: number
+        matchHighlights:
+          type: array
+          items:
+            type: string
+
+    TutorMatchingProfileDto:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        preferredSubjects:
+          type: array
+          items:
+            type: string
+            format: uuid
+        preferredGrades:
+          type: array
+          items:
+            type: integer
+        minTuitionFeeVnd:
+          type: integer
+        maxTuitionFeeVnd:
+          type: integer
+          nullable: true
+        preferredProvinceCode:
+          type: string
+          nullable: true
+        preferredDistrictCodes:
+          type: array
+          items:
+            type: string
+        receiveAllDistricts:
+          type: boolean
+        teachingModes:
+          type: array
+          items:
+            type: string
+        isActive:
+          type: boolean
+
+    UpdateTutorMatchingProfileRequest:
+      type: object
+      required:
+        - preferredSubjects
+        - preferredGrades
+        - minTuitionFeeVnd
+        - receiveAllDistricts
+      properties:
+        preferredSubjects:
+          type: array
+          items:
+            type: string
+            format: uuid
+        preferredGrades:
+          type: array
+          items:
+            type: integer
+        minTuitionFeeVnd:
+          type: integer
+          minimum: 0
+        maxTuitionFeeVnd:
+          type: integer
+          nullable: true
+        preferredProvinceCode:
+          type: string
+          nullable: true
+        preferredDistrictCodes:
+          type: array
+          items:
+            type: string
+        receiveAllDistricts:
+          type: boolean
+        teachingModes:
+          type: array
+          items:
+            type: string
+        isActive:
+          type: boolean
+
+    PaginatedMatchedPostsDto:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/MatchedPostNotificationItemDto"
+        totalCount:
+          type: integer
+        page:
+          type: integer
+        pageSize:
+          type: integer
+
+    MatchedPostNotificationItemDto:
+      type: object
+      properties:
+        notificationId:
+          type: string
+          format: uuid
+        demandPostId:
+          type: string
+          format: uuid
+        subjectName:
+          type: string
+        gradeLevel:
+          type: integer
+        tuitionFeeVnd:
+          type: integer
+        feePeriod:
+          type: string
+        teachingMode:
+          type: string
+        provinceName:
+          type: string
+        districtName:
+          type: string
+          nullable: true
+        rawAddress:
+          type: string
+          nullable: true
+        rawContent:
+          type: string
+        isLocationAmbiguous:
+          type: boolean
+        matchScore:
+          type: number
+        createdAt:
+          type: string
+          format: date-time
+        isRead:
+          type: boolean
+
+    RetentionCleanupResultDto:
+      type: object
+      properties:
+        cleanupLogId:
+          type: string
+          format: uuid
+        cleanupDate:
+          type: string
+          format: date
+        postsDeletedCount:
+          type: integer
+        notificationsDeletedCount:
+          type: integer
+        durationMs:
+          type: integer
+        status:
+          type: string

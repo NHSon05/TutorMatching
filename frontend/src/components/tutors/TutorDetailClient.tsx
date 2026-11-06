@@ -2,6 +2,10 @@
 import Link from "next/link";
 import { useState } from "react";
 import { HireTutorDialog } from "./HireTutorDialog";
+import {
+  LoginRequiredDialog,
+  useIsViewerAuthenticated,
+} from "./LoginRequiredDialog";
 import { useQuery } from "@tanstack/react-query";
 import { getTutorById, publicAvatarUrl } from "@/lib/api/tutors";
 import { ApiError } from "@/lib/api/http";
@@ -20,6 +24,15 @@ export default function TutorDetailClient({
   profileId: string;
 }) {
   const [hireOpen, setHireOpen] = useState(false);
+  const [loginAlertOpen, setLoginAlertOpen] = useState(false);
+  const isAuthenticated = useIsViewerAuthenticated();
+  const handleHireClick = () => {
+    if (!isAuthenticated) {
+      setLoginAlertOpen(true);
+      return;
+    }
+    setHireOpen(true);
+  };
   const query = useQuery({
     queryKey: ["public-tutor-detail", profileId],
     queryFn: ({ signal }) => getTutorById(profileId, signal),
@@ -37,36 +50,38 @@ export default function TutorDetailClient({
   const renderContent = () => {
     if (query.isPending)
       return (
-        <div className="space-y-4">
+        <div className="mx-auto w-full max-w-7xl space-y-4">
           {back}
           <p role="status">Đang tải hồ sơ gia sư...</p>
         </div>
       );
     if (query.isError)
       return (
-        <Card className="space-y-4">
-          <h1 className="text-xl font-bold">
-            {query.error instanceof ApiError && query.error.status === 404
-              ? "Hồ sơ gia sư không còn khả dụng"
-              : "Không thể tải hồ sơ gia sư"}
-          </h1>
-          <p role="alert">
-            {query.error instanceof ApiError && query.error.status === 404
-              ? "Hồ sơ hiện không được công khai. Hãy tìm gia sư khác."
-              : "Vui lòng thử lại sau."}
-          </p>
-          <div className="flex flex-wrap gap-3">
-            {back}
-            <Button onClick={() => void query.refetch()}>Thử lại hồ sơ</Button>
-          </div>
-        </Card>
+        <div className="mx-auto w-full max-w-7xl">
+          <Card className="space-y-4">
+            <h1 className="text-xl font-bold">
+              {query.error instanceof ApiError && query.error.status === 404
+                ? "Hồ sơ gia sư không còn khả dụng"
+                : "Không thể tải hồ sơ gia sư"}
+            </h1>
+            <p role="alert">
+              {query.error instanceof ApiError && query.error.status === 404
+                ? "Hồ sơ hiện không được công khai. Hãy tìm gia sư khác."
+                : "Vui lòng thử lại sau."}
+            </p>
+            <div className="flex flex-wrap gap-3">
+              {back}
+              <Button onClick={() => void query.refetch()}>Thử lại hồ sơ</Button>
+            </div>
+          </Card>
+        </div>
       );
     const p = query.data;
     return (
-      <div className="space-y-6 text-content-primary">
+      <div className="mx-auto w-full max-w-7xl space-y-6 text-content-primary">
         <div className="flex flex-wrap gap-3">
           {back}
-          <Button variant="brand" onClick={() => setHireOpen(true)}>
+          <Button variant="brand" onClick={handleHireClick}>
             Thuê gia sư
           </Button>
           <Button variant="secondary" onClick={() => void query.refetch()}>
@@ -192,6 +207,10 @@ export default function TutorDetailClient({
         isOpen={hireOpen}
         onClose={() => setHireOpen(false)}
         tutorId={profileId}
+      />
+      <LoginRequiredDialog
+        isOpen={loginAlertOpen}
+        onClose={() => setLoginAlertOpen(false)}
       />
     </>
   );

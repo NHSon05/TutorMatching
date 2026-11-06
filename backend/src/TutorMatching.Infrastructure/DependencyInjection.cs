@@ -3,11 +3,15 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.Extensions.Diagnostics.HealthChecks;
+using StackExchange.Redis;
 using TutorMatching.Application.Abstractions;
 using TutorMatching.Infrastructure.Auditing;
 using TutorMatching.Infrastructure.Authentication;
 using TutorMatching.Infrastructure.Email;
+using TutorMatching.Infrastructure.Extraction;
 using TutorMatching.Infrastructure.Persistence;
+using TutorMatching.Infrastructure.Storage;
 using TutorMatching.Infrastructure.Time;
 
 namespace TutorMatching.Infrastructure;
@@ -37,6 +41,21 @@ public static class DependencyInjection
 
         services.AddDbContext<ApplicationDbContext>(options =>
             options.UseTutorMatchingDatabase(connectionString));
+
+        var redisConnectionString = configuration.GetConnectionString("Redis")
+            ?? configuration["REDIS_CONNECTION_STRING"]
+            ?? "localhost:6379";
+
+        services.TryAddSingleton<IConnectionMultiplexer>(_ =>
+        {
+            var redisOptions = ConfigurationOptions.Parse(redisConnectionString);
+            redisOptions.AbortOnConnectFail = false;
+            redisOptions.ConnectTimeout = 2000;
+            return ConnectionMultiplexer.Connect(redisOptions);
+        });
+
+        services.AddHealthChecks()
+            .AddCheck<RedisHealthCheck>("redis");
 
         services.AddDataProtection();
 
@@ -74,6 +93,17 @@ public static class DependencyInjection
         services.AddScoped<Application.Hiring.IHireRequestQueries, Hiring.HireRequestQueries>();
         services.AddScoped<Application.Administration.IAdminService, Administration.AdminService>();
         services.AddScoped<Application.Messaging.IMessagingService, Messaging.MessagingService>();
+        services.AddSingleton<IRedisDeduplicationService, RedisDeduplicationService>();
+        services.AddScoped<IPublicDemandIngestionService, PublicDemandIngestionService>();
+        services.AddSingleton<RegexEntityExtractor>();
+        services.AddSingleton<AddressResolutionService>();
+        services.TryAddSingleton<ILlmEntityExtractor, NoOpLlmEntityExtractor>();
+        services.AddScoped<IExtractionService, HybridExtractionService>();
+        services.AddSingleton<ITextEmbeddingService, DeterministicTextEmbeddingService>();
+        services.AddSingleton<IMatchingEngine, Application.Tutors.MatchingEngine>();
+        services.AddSingleton<ISseNotificationPublisher, RedisSseNotificationPublisher>();
+        services.AddScoped<IDemandMatchingStore, Tutors.EfDemandMatchingStore>();
+        services.AddScoped<Application.Tutors.SubmitPublicTutorDemandHandler>();
 
         return services;
     }

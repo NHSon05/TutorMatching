@@ -3,6 +3,7 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { TutorCard } from "@/components/tutors/TutorCard";
 import type { TutorListItemResponse } from "@/lib/api/tutors";
+import { useAuthStore } from "@/stores/use-auth-store";
 
 vi.mock("next/navigation", () => ({
   useRouter: () => ({ push: vi.fn() }),
@@ -48,6 +49,7 @@ describe("TutorCard Component", () => {
 
   beforeEach(() => {
     vi.resetAllMocks();
+    useAuthStore.getState().clearAuth();
   });
 
   it("renders pure real database fields from API /api/v1/tutors", () => {
@@ -133,7 +135,31 @@ describe("TutorCard Component", () => {
     expect(onSendMessage).toHaveBeenCalledWith("profile-100");
   });
 
-  it("opens HireTutorDialog when clicking Đăng ký ngay without onBookTrial callback", () => {
+  it("shows login required alert when clicking Đăng ký ngay while unauthenticated", () => {
+    renderWithQuery(<TutorCard tutor={realDbTutor} />);
+
+    const trialBtn = screen.getByRole("button", { name: "Đăng ký ngay" });
+    fireEvent.click(trialBtn);
+
+    expect(screen.getByRole("dialog")).toBeInTheDocument();
+    expect(screen.getByRole("alert")).toHaveTextContent(
+      /Bạn cần đăng nhập để thực hiện thuê gia sư/i
+    );
+    expect(
+      screen.getByRole("link", { name: "Đăng nhập ngay" })
+    ).toHaveAttribute("href", "/login");
+  });
+
+  it("opens HireTutorDialog when clicking Đăng ký ngay while authenticated", () => {
+    useAuthStore.getState().setAuth({
+      user: {
+        id: "learner-1",
+        email: "learner@example.test",
+        fullName: "Learner Test",
+        role: "LEARNER",
+        status: "ACTIVE",
+      },
+    });
     renderWithQuery(<TutorCard tutor={realDbTutor} />);
 
     const trialBtn = screen.getByRole("button", { name: "Đăng ký ngay" });

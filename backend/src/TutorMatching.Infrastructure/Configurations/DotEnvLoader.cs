@@ -40,6 +40,13 @@ public static class DotEnvLoader
 
             Environment.SetEnvironmentVariable(key, value);
         }
+
+        var redisConnectionString = Environment.GetEnvironmentVariable("REDIS_CONNECTION_STRING");
+        if (!string.IsNullOrWhiteSpace(redisConnectionString) &&
+            string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable("ConnectionStrings__Redis")))
+        {
+            Environment.SetEnvironmentVariable("ConnectionStrings__Redis", redisConnectionString);
+        }
     }
 
     private static string? FindDotEnvFile()
