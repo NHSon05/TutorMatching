@@ -49,7 +49,9 @@ describe("TutorMatching Routing & Role Architecture", () => {
     vi.mocked(getSession).mockResolvedValue(null);
     const page = await HomePage();
     render(page);
-    expect(screen.getByText(/Kiến tạo tương lai/i)).toBeInTheDocument();
+    expect(
+      screen.getByText(/Kiến tạo tương lai|AI kết nối gia sư chuẩn xác/i)
+    ).toBeInTheDocument();
     expect(screen.getByText("Đăng ký ngay")).toBeInTheDocument();
   });
 

@@ -17,7 +17,7 @@ const maxWidthMap = {
   md: "max-w-md",
   lg: "max-w-lg",
   xl: "max-w-xl",
-  big_size: "max-w-8xl",
+  big_size: "max-w-6xl",
 };
 
 export function Dialog({
@@ -60,7 +60,7 @@ export function Dialog({
     <div
       role="dialog"
       aria-modal="true"
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6"
+      className="fixed inset-0 z-40 flex items-center justify-center p-4 sm:p-6"
     >
       {/* Backdrop */}
       <div

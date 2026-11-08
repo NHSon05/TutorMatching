@@ -25,6 +25,12 @@
   --color-brand-950: #172554;
   --color-brand: var(--color-brand-600);
   --color-brand-hover: var(--color-brand-700);
+  --gradient-linear: linear-gradient(
+    to bottom right in oklab,
+    var(--color-brand-200) 0%,
+    var(--color-brand-500) 50%,
+    var(--color-brand-900) 100%
+  );
 
   /* =========================================================================
      2. ROLE: TUTOR PALETTE (Amber / Warm Gold)
@@ -247,4 +253,22 @@ textarea {
 body {
   background: var(--background);
   color: var(--foreground);
+}
+
+@utility bg-linear {
+  background-image: var(--gradient-linear);
+  border-width: 1px;
+  border-style: solid;
+  border-color: color-mix(in oklab, #ffffff 15%, transparent);
+}
+
+@utility text-linear {
+  background-image: var(--gradient-linear);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+@utility linear {
+  background-image: var(--gradient-linear);
 }

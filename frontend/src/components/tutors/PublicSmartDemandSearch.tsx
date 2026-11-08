@@ -66,7 +66,7 @@ export function PublicSmartDemandSearch({
             rows={3}
             value={queryText}
             onChange={(e) => setQueryText(e.target.value)}
-            placeholder="Ví dụ: Cần tìm gia sư dạy Toán lớp 9 ôn thi vào 10 gần ĐH Bách Khoa, học phí 250k/buổi tuần 2 buổi..."
+            placeholder="Ví dụ: Cần tìm gia sư dạy Toán lớp 9 ôn thi vào 10 gần ĐH Bách Khoa, học phí 400k/buổi tuần 2 buổi..."
             className="w-full rounded-xl border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 px-4 py-4 text-base text-neutral-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-brand"
           />
         </div>

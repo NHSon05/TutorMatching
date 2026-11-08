@@ -41,6 +41,8 @@ Màu sắc trong TutorMatching được xây dựng dựa trên 3 trụ cột c�
 | `brand-800`              | `#1E40AF`     | `30, 64, 175`   | Trạng thái active/press của nút bấm                |
 | `brand-900`              | `#1E3A8A`     | `30, 58, 138`   | Tiêu đề tương phản cao, badge nền tối              |
 | `brand-950`              | `#172554`     | `23, 37, 84`    | Màu nền header cao cấp                             |
+| `bg-linear`              | Gradient      | `brand-200 -> 500 -> 900` | Nền gradient thương hiệu (`bg-linear-to-br from-brand-200 via-brand-500 to-brand-900 border border-white/15`) |
+| `text-linear` / `linear` | Gradient      | `brand-200 -> 500 -> 900` | Chữ/màu gradient thương hiệu (`bg-linear-to-br from-brand-200 via-brand-500 to-brand-900`) |
 
 ---
 

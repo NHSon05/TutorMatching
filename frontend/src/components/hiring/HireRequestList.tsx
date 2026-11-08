@@ -89,9 +89,7 @@ function RequestListContent({ audience }: { audience: "learner" | "tutor" }) {
                     asChild
                     variant={audience === "tutor" ? "tutor" : "brand"}
                   >
-                    <Link href={`/${audience}/requests/${item.id}`}>
-                      Xem chi tiết →
-                    </Link>
+                    <Link href={`/request/${item.id}`}>Xem chi tiết →</Link>
                   </Button>
                 </Card>
               </li>
