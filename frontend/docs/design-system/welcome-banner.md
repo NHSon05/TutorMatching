@@ -15,7 +15,7 @@ Component `WelcomeBanner` là khối banner lớn đặt đầu Dashboard để 
 | `description` | `React.ReactNode` | `-` | Nội dung mô tả chi tiết. |
 | `action` | `React.ReactNode` | `-` | Nút hành động CTA. |
 | `illustration` | `React.ReactNode` | `-` | Hình ảnh hoặc biểu tượng minh họa ở góc phải. |
-| `variant` | `"brand" \| "tutor" \| "gradient" \| "gray"` | `'brand'` | Biến thể màu nền (Xanh học viên, Vàng gia sư, Gradient tối, hoặc Xám thẻ). |
+| `variant` | `"brand" \| "gradient" \| "gray"` | `'brand'` | Biến thể màu nền (Xanh học viên, Vàng gia sư, Gradient tối, hoặc Xám thẻ). |
 | `onDismiss` | `() => void` | `-` | Callback khi người dùng ấn nút đóng banner. |
 
 ---

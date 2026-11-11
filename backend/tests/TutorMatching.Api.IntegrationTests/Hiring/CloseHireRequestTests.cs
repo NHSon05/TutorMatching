@@ -23,17 +23,18 @@ public sealed class CloseHireRequestTests(PostgreSqlFixture postgres)
         using var accepted = await Send(tutor, request, "accept", new() { ["proposalSequence"] = null });
         Assert.Equal(HttpStatusCode.OK, accepted.StatusCode);
         request = (await accepted.Content.ReadFromJsonAsync<JsonObject>())!;
-        if (status != "ACCEPTED")
-        {
-            // Terminal fixtures exercise invalid actions independently of their creation path.
-            await f.WithDbAsync(async db => {
-                var entity = await db.HireRequests.SingleAsync(r => r.Id == Guid.Parse(request["id"]!.GetValue<string>()));
+        await f.WithDbAsync(async db => {
+            var entity = await db.HireRequests.SingleAsync(r => r.Id == Guid.Parse(request["id"]!.GetValue<string>()));
+            entity.PaymentStatusCode = "PAID";
+            if (status != "ACCEPTED")
+            {
+                // Terminal fixtures exercise invalid actions independently of their creation path.
                 entity.StatusCode = status;
-                await db.SaveChangesAsync();
-                request["version"] = entity.Version.ToString();
-                return true;
-            });
-        }
+            }
+            await db.SaveChangesAsync();
+            request["version"] = entity.Version.ToString();
+            return true;
+        });
         return request;
     }
 
@@ -91,7 +92,12 @@ public sealed class CloseHireRequestTests(PostgreSqlFixture postgres)
         var after = await client.GetFromJsonAsync<JsonObject>($"/api/v1/hire-requests/{request["id"]}");
         Assert.True(JsonNode.DeepEquals(before["initialTerms"], after!["initialTerms"]));
         Assert.True(JsonNode.DeepEquals(before["finalAgreement"], after["finalAgreement"]));
-        if (allowed) Assert.Empty(after["allowedActions"]!.AsArray());
+        if (allowed)
+        {
+            // Only the learner of a completed request may still leave a review.
+            var expected = action == "complete" && !asTutor ? new[] { "review" } : Array.Empty<string>();
+            Assert.Equal(expected, after["allowedActions"]!.AsArray().Select(a => a!.GetValue<string>()));
+        }
     }
 
     [Theory]

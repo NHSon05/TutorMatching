@@ -7,11 +7,17 @@ import {
   useIsViewerAuthenticated,
 } from "./LoginRequiredDialog";
 import { useQuery } from "@tanstack/react-query";
-import { getTutorById, publicAvatarUrl } from "@/lib/api/tutors";
+import {
+  getTutorById,
+  getTutorReviews,
+  publicAvatarUrl,
+} from "@/lib/api/tutors";
 import { ApiError } from "@/lib/api/http";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Avatar } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
+import { formatVietnamDateTime } from "@/lib/date-time";
 const days = ["Thứ 2", "Thứ 3", "Thứ 4", "Thứ 5", "Thứ 6", "Thứ 7", "Chủ nhật"];
 const modes: Record<string, string> = {
   ONLINE: "Trực tuyến",
@@ -40,6 +46,14 @@ export default function TutorDetailClient({
     staleTime: 0,
     refetchOnMount: "always",
     refetchOnWindowFocus: true,
+    retry: false,
+  });
+  const reviewsQuery = useQuery({
+    queryKey: ["public-tutor-reviews", profileId],
+    queryFn: ({ signal }) => getTutorReviews(profileId, 20, signal),
+    enabled: (query.data?.reviewCount ?? 0) > 0,
+    meta: { public: true },
+    staleTime: 0,
     retry: false,
   });
   const back = (
@@ -96,7 +110,19 @@ export default function TutorDetailClient({
               alt={p.displayName}
               fallbackText={p.displayName}
             />
-            <h1 className="text-2xl font-bold">{p.displayName}</h1>
+            <div className="space-y-1">
+              <h1 className="text-2xl font-bold">{p.displayName}</h1>
+              {(p.reviewCount ?? 0) > 0 && p.averageRating != null && (
+                <div className="flex items-center gap-2">
+                  <Badge variant="warning" appearance="solid" shape="pill">
+                    {`★ ${Number(p.averageRating).toFixed(1)}`}
+                  </Badge>
+                  <span className="text-sm text-content-secondary">
+                    {`${p.reviewCount} đánh giá từ học viên`}
+                  </span>
+                </div>
+              )}
+            </div>
           </div>
           <p className="text-lg font-semibold">
             {p.sessionRateVnd.toLocaleString("vi-VN")} VNĐ/buổi
@@ -195,6 +221,64 @@ export default function TutorDetailClient({
             </ul>
           ) : (
             <p>Gia sư chưa có khóa học đang mở.</p>
+          )}
+        </Card>
+        <Card className="space-y-4">
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <h2 className="text-xl font-bold">Đánh giá từ học viên</h2>
+            {(p.reviewCount ?? 0) > 0 && p.averageRating != null && (
+              <Badge variant="warning" appearance="solid" shape="pill">
+                {`${Number(p.averageRating).toFixed(1)} / 5 ★ (${p.reviewCount} đánh giá)`}
+              </Badge>
+            )}
+          </div>
+          {(p.reviewCount ?? 0) === 0 ? (
+            <p className="text-sm text-content-secondary">
+              Chưa có đánh giá nào cho gia sư này.
+            </p>
+          ) : reviewsQuery.isPending ? (
+            <p className="text-sm text-content-secondary">
+              Đang tải đánh giá...
+            </p>
+          ) : reviewsQuery.data?.items.length ? (
+            <ul className="space-y-4">
+              {reviewsQuery.data.items.map((rev) => (
+                <li
+                  key={rev.id}
+                  className="p-4 rounded-xl border border-border-default bg-surface-card space-y-2"
+                >
+                  <div className="flex items-center justify-between gap-2">
+                    <div className="font-semibold text-sm">
+                      {rev.reviewerName}
+                      {rev.subjectName ? ` • ${rev.subjectName}` : ""}
+                    </div>
+                    <Badge variant="warning" size="small" shape="pill">
+                      {`${rev.rating} / 5 ★`}
+                    </Badge>
+                  </div>
+                  {rev.comment && (
+                    <p className="text-sm whitespace-pre-wrap">{rev.comment}</p>
+                  )}
+                  <p className="text-xs text-content-muted">
+                    {formatVietnamDateTime(rev.createdAt)}
+                  </p>
+                  {rev.tutorReply && (
+                    <div className="mt-2 p-3 rounded-lg bg-gray-50 border border-border-default space-y-1">
+                      <p className="text-xs font-semibold text-brand">
+                        Phản hồi từ gia sư:
+                      </p>
+                      <p className="text-sm whitespace-pre-wrap">
+                        {rev.tutorReply}
+                      </p>
+                    </div>
+                  )}
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p className="text-sm text-content-secondary">
+              Chưa có đánh giá nào hiển thị.
+            </p>
           )}
         </Card>
       </div>

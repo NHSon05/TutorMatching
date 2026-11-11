@@ -11,7 +11,7 @@ Component `Badge` hiển thị trạng thái hồ sơ, vai trò tài khoản, th
 
 | Prop | Type | Default | Description |
 | :--- | :--- | :--- | :--- |
-| `variant` | `"gray" \| "brand" \| "tutor" \| "admin" \| "success" \| "warning" \| "error"` | `'gray'` | Biến thể màu sắc ngữ nghĩa. |
+| `variant` | `"gray" \| "brand" \| "admin" \| "success" \| "warning" \| "error"` | `'gray'` | Biến thể màu sắc ngữ nghĩa. |
 | `appearance` | `"subtle" \| "solid" \| "outline"` | `'subtle'` | Phong cách hiển thị (Nền nhạt, Nền đậm đặc, hoặc Viền trong suốt). |
 | `shape` | `"pill" \| "rounded"` | `'pill'` | Kiểu bo tròn hoàn toàn hoặc bo góc nhẹ. |
 | `size` | `"small" \| "medium" \| "large"` | `'medium'` | Kích thước nhãn. |
@@ -35,7 +35,7 @@ export default function BadgeDemo() {
 
       {/* Vai trò tài khoản */}
       <Badge variant="brand" appearance="solid">HỌC VIÊN</Badge>
-      <Badge variant="tutor" appearance="solid">GIA SƯ</Badge>
+      <Badge variant="brand" appearance="solid">GIA SƯ</Badge>
       <Badge variant="admin" appearance="solid">QUẢN TRỊ VIÊN</Badge>
 
       {/* Nhãn môn học */}

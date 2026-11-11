@@ -32,7 +32,7 @@ export function ProfilePageClient() {
   if (error) return <Card><p role="alert" className="mb-4 text-status-error">Không thể tải thông tin cá nhân. Vui lòng kiểm tra kết nối.</p><Button variant="secondary" onClick={() => void refetch()}>Thử lại</Button></Card>;
   if (!account || account.role === "ADMIN") return null;
   const tutor = account.role === "TUTOR";
-  const accent = tutor ? "text-role-tutor" : "text-brand";
+  const accent = tutor ? "text-brand" : "text-brand";
 
   return (
     <div className="mx-auto w-full max-w-6xl space-y-6 text-content-primary">
@@ -44,12 +44,12 @@ export function ProfilePageClient() {
       <div className="grid items-start gap-6 lg:grid-cols-[260px_minmax(0,1fr)]">
         <aside className="space-y-4 lg:sticky lg:top-24">
           <Card padding="none" className="overflow-hidden">
-            <div className={`h-20 ${tutor ? "bg-tutor-100" : "bg-brand-100"}`} />
+            <div className={`h-20 ${tutor ? "bg-brand-100" : "bg-brand-100"}`} />
             <div className="space-y-4 px-5 pb-6">
               <Avatar key={account.avatarUrl ?? "initials"} src={resolveAvatarUrl(account.avatarUrl)} alt={account.fullName} fallbackText={account.fullName} size="xlarge" className="-mt-8 rounded-full ring-4 ring-surface-card" />
               <div className="space-y-2">
                 <h2 className="wrap-break-word text-lg font-bold">{account.fullName}</h2>
-                <Badge variant={tutor ? "tutor" : "brand"}>{tutor ? "Gia sư" : "Học viên"}</Badge>
+                <Badge variant="brand">{tutor ? "Gia sư" : "Học viên"}</Badge>
                 <p className="break-all text-sm text-content-secondary">{account.email}</p>
               </div>
               <div className="space-y-2 border-t border-border-default pt-4 text-sm">

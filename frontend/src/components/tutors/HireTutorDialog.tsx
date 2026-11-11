@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef } from "react";
+import { useRef, useState } from "react";
 import { useHireRequestForm } from "@/hooks/use-hire-request-form";
 import { usePublicTutorDetail } from "@/hooks/use-public-tutor-detail";
 import { Dialog } from "@/components/ui/dialog";
@@ -30,6 +30,16 @@ const modes: Record<string, string> = {
   HYBRID: "Kết hợp",
 };
 const money = (value: number) => `${value.toLocaleString("vi-VN")}đ/buổi`;
+const FREQUENCY_OPTIONS = Array.from({ length: 10 }, (_, i) => ({
+  value: String(i + 1),
+  label: `${i + 1} buổi`,
+}));
+const DURATION_PRESETS = ["60", "90", "120", "150"];
+const CUSTOM_DURATION = "other";
+const DURATION_OPTIONS = [
+  ...DURATION_PRESETS.map((value) => ({ value, label: `${value} phút` })),
+  { value: CUSTOM_DURATION, label: "Khác" },
+];
 
 export function HireTutorDialog(props: HireTutorDialogProps) {
   const submitting = useRef(false);
@@ -50,15 +60,17 @@ export function HireTutorDialog(props: HireTutorDialogProps) {
             ? `Đăng ký học: ${props.tutor.displayName}`
             : "Đăng ký học"
       }
-      maxWidth="lg"
+      maxWidth="big_size"
       className="max-h-[90dvh] overflow-y-auto"
     >
       {detail.isPending ? (
-        <Spinner />
+        <Spinner variant="brand" />
       ) : !detail.data ? (
         <div role="alert">
           Không tải được hồ sơ.{" "}
-          <Button onClick={() => detail.refetch()}>Thử lại</Button>
+          <Button variant="brand" onClick={() => detail.refetch()}>
+            Thử lại
+          </Button>
         </div>
       ) : (
         <HireForm
@@ -116,6 +128,9 @@ function HireForm({
     price,
     note,
   } = values;
+  const [isCustomDuration, setIsCustomDuration] = useState(
+    !DURATION_PRESETS.includes(duration)
+  );
   const result =
     submission.status === "success" ? submission.result : undefined;
   const error = submission.status === "error" ? submission.message : "";
@@ -135,7 +150,9 @@ function HireForm({
         <p className="break-all text-sm text-content-secondary">
           Mã yêu cầu: {result.id}
         </p>
-        <Button onClick={onClose}>Đóng</Button>
+        <Button variant="brand" onClick={onClose}>
+          Đóng
+        </Button>
       </div>
     );
   return (
@@ -144,19 +161,36 @@ function HireForm({
         event.preventDefault();
         void submit();
       }}
-      className="space-y-5"
+      className="space-y-6"
     >
-      <fieldset disabled={busy} className="space-y-5 min-w-0">
+      <fieldset disabled={busy} className="min-w-0 space-y-6">
+        <div className="grid gap-6 lg:grid-cols-2">
+          <RadioGroup
+            variant="brand"
+            orientation="horizontal"
+            label="Môn học"
+            value={subject}
+            onChange={actions.changeSubject}
+          >
+            {tutor.subjects.map((s) => (
+              <Radio key={s.subjectId} value={s.subjectId} label={s.name} />
+            ))}
+          </RadioGroup>
+          <RadioGroup
+            variant="brand"
+            orientation="horizontal"
+            label="Hình thức học"
+            value={mode}
+            onChange={(value) => actions.changeField("mode", value)}
+            error={fieldError("teachingMode")}
+          >
+            {tutor.teachingModes.map((m) => (
+              <Radio key={m} value={m} label={modes[m]} />
+            ))}
+          </RadioGroup>
+        </div>
         <RadioGroup
-          label="Môn học"
-          value={subject}
-          onChange={actions.changeSubject}
-        >
-          {tutor.subjects.map((s) => (
-            <Radio key={s.subjectId} value={s.subjectId} label={s.name} />
-          ))}
-        </RadioGroup>
-        <RadioGroup
+          variant="brand"
           label="Khóa học"
           value={course}
           onChange={(value) => actions.changeField("course", value)}
@@ -172,7 +206,7 @@ function HireForm({
               />
             ))}
         </RadioGroup>
-        <div className="grid gap-4 sm:grid-cols-2">
+        <div className="grid items-start gap-4 sm:grid-cols-2 lg:grid-cols-4">
           <TextField
             label="Ngày bắt đầu"
             type="date"
@@ -181,64 +215,90 @@ function HireForm({
             onChange={(e) => actions.changeField("startDate", e.target.value)}
             error={fieldError("startDate")}
           />
-          <TextField
+          <Dropdown
             label="Số buổi mỗi tuần"
-            type="number"
-            required
-            min={1}
-            max={21}
-            step={1}
             value={frequency}
-            onChange={(e) => actions.changeField("frequency", e.target.value)}
+            options={FREQUENCY_OPTIONS}
+            isSearchable={false}
+            onChange={(value) => actions.changeField("frequency", value)}
             error={fieldError("sessionsPerWeek")}
           />
+          <div className="space-y-2">
+            <Dropdown
+              label="Thời lượng mỗi buổi"
+              value={isCustomDuration ? CUSTOM_DURATION : duration}
+              options={DURATION_OPTIONS}
+              isSearchable={false}
+              onChange={(value) => {
+                if (value === CUSTOM_DURATION) {
+                  setIsCustomDuration(true);
+                  return;
+                }
+                setIsCustomDuration(false);
+                actions.changeField("duration", value);
+              }}
+              error={
+                isCustomDuration ? undefined : fieldError("durationMinutes")
+              }
+            />
+            {isCustomDuration && (
+              <TextField
+                label="Số phút mỗi buổi"
+                type="number"
+                required
+                min={30}
+                max={240}
+                step={1}
+                value={duration}
+                onChange={(e) =>
+                  actions.changeField("duration", e.target.value)
+                }
+                helperText="Từ 30 đến 240 phút."
+                error={fieldError("durationMinutes")}
+              />
+            )}
+          </div>
           <TextField
-            label="Thời lượng mỗi buổi (phút)"
+            label="Giá đề xuất (VND/buổi)"
             type="number"
-            required
-            min={30}
-            max={240}
+            min={1}
+            max={2147483647}
             step={1}
-            value={duration}
-            onChange={(e) => actions.changeField("duration", e.target.value)}
-            error={fieldError("durationMinutes")}
+            placeholder={String(listed)}
+            value={price}
+            onChange={(e) => actions.changeField("price", e.target.value)}
+            helperText={`Giá niêm yết: ${money(listed)}. Để trống để dùng giá này.`}
+            error={fieldError("priceVnd")}
           />
         </div>
-        <RadioGroup
-          label="Hình thức học"
-          value={mode}
-          onChange={(value) => actions.changeField("mode", value)}
-          error={fieldError("teachingMode")}
-        >
-          {tutor.teachingModes.map((m) => (
-            <Radio key={m} value={m} label={modes[m]} />
-          ))}
-        </RadioGroup>
         {mode !== "ONLINE" && (
-          <div className="space-y-3">
-            <Dropdown
-              label="Tỉnh / thành phố"
-              value={province}
-              onChange={actions.changeProvince}
-              options={(provinces.data ?? [])
-                .filter((p) => p.isActive)
-                .map((p) => ({ value: p.code, label: p.name }))}
-              error={fieldError("provinceCode")}
-            />
-            <Dropdown
-              label="Quận / huyện"
-              value={district}
-              onChange={(value) => actions.changeField("district", value)}
-              options={(districts.data ?? [])
-                .filter((d) => d.isActive && d.provinceCode === province)
-                .map((d) => ({ value: d.code, label: d.name }))}
-              error={fieldError("districtCode")}
-            />
+          <div className="space-y-4">
+            <div className="grid gap-4 sm:grid-cols-2">
+              <Dropdown
+                label="Tỉnh / thành phố"
+                value={province}
+                onChange={actions.changeProvince}
+                options={(provinces.data ?? [])
+                  .filter((p) => p.isActive)
+                  .map((p) => ({ value: p.code, label: p.name }))}
+                error={fieldError("provinceCode")}
+              />
+              <Dropdown
+                label="Quận / huyện"
+                value={district}
+                onChange={(value) => actions.changeField("district", value)}
+                options={(districts.data ?? [])
+                  .filter((d) => d.isActive && d.provinceCode === province)
+                  .map((d) => ({ value: d.code, label: d.name }))}
+                error={fieldError("districtCode")}
+              />
+            </div>
             {(provinces.isError || districts.isError) && (
               <p role="alert">
                 Không tải được danh mục địa điểm.{" "}
                 <Button
                   type="button"
+                  variant="brand"
                   onClick={() => {
                     void provinces.refetch();
                     void districts.refetch();
@@ -261,53 +321,63 @@ function HireForm({
           <legend className="font-semibold">
             Khung giờ học (giờ Việt Nam)
           </legend>
-          <p className="text-sm text-content-secondary">
+          <p className="text-base text-content-secondary">
             Chọn lịch rảnh và chỉnh khoảng giờ phù hợp. Tổng thời gian cần đủ số
             buổi đã chọn.
           </p>
-          {tutor.availability.map((slot) => (
-            <div key={slot.id} className="space-y-2">
-              <Checkbox
-                label={`${slot.dayOfWeek === 7 ? "Chủ nhật" : `Thứ ${slot.dayOfWeek + 1}`}: ${slot.startTime} – ${slot.endTime}`}
-                checked={!!windows[slot.id]}
-                onChange={(checked) => actions.toggleSchedule(slot.id, checked)}
-              />
-              {windows[slot.id] && (
-                <div className="grid grid-cols-2 gap-3">
-                  <TextField
-                    label={`Bắt đầu ${slot.dayOfWeek}`}
-                    type="time"
-                    required
-                    min={slot.startTime}
-                    max={slot.endTime}
-                    value={windows[slot.id].startTime}
-                    onChange={(e) =>
-                      actions.changeScheduleTime(
-                        slot.id,
-                        "startTime",
-                        e.target.value
-                      )
+          {tutor.availability.length > 0 && (
+            <div className="grid gap-3 md:grid-cols-2">
+              {tutor.availability.map((slot) => (
+                <div
+                  key={slot.id}
+                  className="space-y-3 rounded-xl border border-border-default p-3"
+                >
+                  <Checkbox
+                    variant="brand"
+                    label={`${slot.dayOfWeek === 7 ? "Chủ nhật" : `Thứ ${slot.dayOfWeek + 1}`}: ${slot.startTime} – ${slot.endTime}`}
+                    checked={!!windows[slot.id]}
+                    onChange={(checked) =>
+                      actions.toggleSchedule(slot.id, checked)
                     }
                   />
-                  <TextField
-                    label={`Kết thúc ${slot.dayOfWeek}`}
-                    type="time"
-                    required
-                    min={slot.startTime}
-                    max={slot.endTime}
-                    value={windows[slot.id].endTime}
-                    onChange={(e) =>
-                      actions.changeScheduleTime(
-                        slot.id,
-                        "endTime",
-                        e.target.value
-                      )
-                    }
-                  />
+                  {windows[slot.id] && (
+                    <div className="grid grid-cols-2 gap-3">
+                      <TextField
+                        label={`Bắt đầu ${slot.dayOfWeek}`}
+                        type="time"
+                        required
+                        min={slot.startTime}
+                        max={slot.endTime}
+                        value={windows[slot.id].startTime}
+                        onChange={(e) =>
+                          actions.changeScheduleTime(
+                            slot.id,
+                            "startTime",
+                            e.target.value
+                          )
+                        }
+                      />
+                      <TextField
+                        label={`Kết thúc ${slot.dayOfWeek}`}
+                        type="time"
+                        required
+                        min={slot.startTime}
+                        max={slot.endTime}
+                        value={windows[slot.id].endTime}
+                        onChange={(e) =>
+                          actions.changeScheduleTime(
+                            slot.id,
+                            "endTime",
+                            e.target.value
+                          )
+                        }
+                      />
+                    </div>
+                  )}
                 </div>
-              )}
+              ))}
             </div>
-          ))}
+          )}
           {!tutor.availability.length && (
             <p>Gia sư chưa có lịch rảnh để nhận yêu cầu.</p>
           )}
@@ -317,18 +387,6 @@ function HireForm({
             </p>
           )}
         </fieldset>
-        <TextField
-          label="Giá đề xuất (VND/buổi)"
-          type="number"
-          min={1}
-          max={2147483647}
-          step={1}
-          placeholder={String(listed)}
-          value={price}
-          onChange={(e) => actions.changeField("price", e.target.value)}
-          helperText={`Giá niêm yết: ${money(listed)}. Để trống để dùng giá này.`}
-          error={fieldError("priceVnd")}
-        />
         <TextArea
           label="Ghi chú"
           maxLength={2000}
@@ -353,7 +411,7 @@ function HireForm({
           Cập nhật giá và lịch
         </Button>
       )}
-      <div className="flex flex-wrap justify-end gap-3">
+      <div className="flex flex-wrap justify-end gap-3 border-t border-border-default pt-4">
         <Button
           type="button"
           variant="secondary"

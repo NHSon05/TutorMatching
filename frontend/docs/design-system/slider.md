@@ -21,7 +21,7 @@ Component `Slider` cho phép người dùng chọn một giá trị số trong m
 | `label` | `React.ReactNode` | `-` | Tiêu đề của thanh trượt. |
 | `helperText` | `React.ReactNode` | `-` | Ghi chú hướng dẫn phía dưới. |
 | `marks` | `Array<{ value: number, label?: string }>` | `-` | Các mốc đánh dấu giá trị trên thanh trượt. |
-| `variant` | `"primary" \| "brand" \| "tutor"` | `'brand'` | Biến thể màu sắc cho đoạn trượt đang chọn. |
+| `variant` | `"primary" \| "brand"` | `'brand'` | Biến thể màu sắc cho đoạn trượt đang chọn. |
 | `disabled` | `boolean` | `false` | Khóa thanh trượt. |
 
 ---

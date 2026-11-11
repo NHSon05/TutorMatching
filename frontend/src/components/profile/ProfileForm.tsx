@@ -106,7 +106,7 @@ export function ProfileForm({ account }: { account: AccountResponse }) {
           <p className="text-xs text-content-secondary">{dirty ? "Bạn có thay đổi chưa lưu." : "Thông tin đang được đồng bộ với tài khoản."}</p>
           <div className="flex gap-2">
             <Button type="button" variant="secondary" disabled={!dirty || mutation.isPending} onClick={() => { setValues(saved); setErrors({}); setMessage(""); }}>Hủy thay đổi</Button>
-            <Button type="submit" variant={account.role === "TUTOR" ? "tutor" : "brand"} disabled={!dirty} isLoading={mutation.isPending}>{mutation.isPending ? "Đang lưu..." : "Lưu thay đổi"}</Button>
+            <Button type="submit" variant="brand" disabled={!dirty} isLoading={mutation.isPending}>{mutation.isPending ? "Đang lưu..." : "Lưu thay đổi"}</Button>
           </div>
         </div>
       </form>

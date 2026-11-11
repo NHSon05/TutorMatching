@@ -130,13 +130,13 @@ public sealed class HireRequestStore(ApplicationDbContext db) : IHireRequestStor
                 if (request.TutorProfileId != profile.Id || request.RequesterUserId != hint.RequesterUserId ||
                     request.SubjectId != subjectId || request.CourseId != courseId)
                     throw new HireStoreException("version_conflict");
-                if (target.ExpectedVersion is null || target.ExpectedVersion == Guid.Empty || request.Version != target.ExpectedVersion)
+                if (target.RequireExpectedVersion && (target.ExpectedVersion is null || target.ExpectedVersion == Guid.Empty || request.Version != target.ExpectedVersion))
                     throw new HireStoreException("version_conflict");
                 await db.Entry(request).Collection(r => r.Negotiations).LoadAsync(cancellationToken);
             }
             var offering = new HireOffering(profile.UserId, price, profile.TeachingModes.ToImmutableArray(), windows.ToImmutableArray(),
                 (provinceCode is null && districtCode is null) || (province?.IsActive == true && district?.IsActive == true && district.ProvinceCode == provinceCode),
-                province?.ProvinceName, district?.DistrictName);
+                province?.ProvinceName, district?.DistrictName, course?.SessionCount);
             var session = new WriteSession(db, target with { TutorProfileId = profileId, SubjectId = subjectId, CourseId = courseId }, request, offering);
             await action(session, cancellationToken);
             await db.SaveChangesAsync(cancellationToken);
@@ -163,6 +163,43 @@ public sealed class HireRequestStore(ApplicationDbContext db) : IHireRequestStor
         private HireRequest RequiredRequest => Request ?? throw new InvalidOperationException("Create a request first.");
         public Task<HireCreateOperation?> FindCreateOperationAsync(Guid key, CancellationToken ct) =>
             db.HireCreateOperations.AsNoTracking().SingleOrDefaultAsync(x => x.LearnerId == target.ActorId && x.IdempotencyKey == key, ct);
+        public Task<HirePayment?> FindPaymentByIdempotencyAsync(Guid idempotencyKey, CancellationToken ct) =>
+            db.HirePayments.SingleOrDefaultAsync(x => x.PayerUserId == target.ActorId && x.IdempotencyKey == idempotencyKey, ct);
+        public Task<HirePayment?> FindPaymentByIdAsync(Guid paymentId, CancellationToken ct) =>
+            db.HirePayments.SingleOrDefaultAsync(x => x.Id == paymentId && x.HireRequestId == RequiredRequest.Id, ct);
+        public Task<HirePayment?> FindPendingPaymentAsync(CancellationToken ct) =>
+            db.HirePayments.Where(x => x.HireRequestId == RequiredRequest.Id && x.StatusCode == "PENDING")
+                .OrderByDescending(x => x.CreatedAt).FirstOrDefaultAsync(ct);
+        public Task<HireReview?> FindReviewByRequestIdAsync(Guid requestId, CancellationToken ct) =>
+            db.HireReviews.SingleOrDefaultAsync(x => x.HireRequestId == requestId, ct);
+        public void AddPayment(HirePayment value)
+        {
+            if (value.HireRequestId != RequiredRequest.Id || value.PayerUserId != target.ActorId)
+                throw new InvalidOperationException("Payment does not match the request actor.");
+            db.HirePayments.Add(value);
+        }
+        public void AddReview(HireReview value)
+        {
+            if (value.HireRequestId != RequiredRequest.Id || value.ReviewerUserId != target.ActorId)
+                throw new InvalidOperationException("Review does not match the request actor.");
+            db.HireReviews.Add(value);
+        }
+        public async Task RecalculateTutorRatingAsync(Guid tutorProfileId, int? additionalRating, CancellationToken ct)
+        {
+            var persistedRatings = await db.HireReviews
+                .AsNoTracking()
+                .Where(x => x.TutorProfileId == tutorProfileId && x.IsVisible)
+                .Select(x => x.Rating)
+                .ToListAsync(ct);
+
+            if (additionalRating.HasValue)
+            {
+                persistedRatings.Add(additionalRating.Value);
+            }
+
+            var trackedProfile = await db.TutorProfiles.SingleAsync(p => p.Id == tutorProfileId, ct);
+            trackedProfile.UpdateRatingAggregate(persistedRatings);
+        }
         public void AddRequest(HireRequest value)
         {
             if (Request is not null || value.RequesterUserId != target.ActorId || value.TutorProfileId != target.TutorProfileId ||

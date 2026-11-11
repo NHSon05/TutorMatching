@@ -24,6 +24,8 @@ export interface TutorListItemResponse {
   districtName: string | null;
   subjects: PublicSubject[];
   approvedAt: string | null;
+  averageRating?: number;
+  reviewCount?: number;
 }
 export interface TutorQueryParameters {
   name?: string;
@@ -103,5 +105,41 @@ export async function getTutorById(
     await http.get<PublicTutorDetail>(`/tutors/${encodeURIComponent(id)}`, {
       signal,
     })
+  ).data;
+}
+
+export interface PublicTutorReviewItem {
+  id: string;
+  hireRequestId: string;
+  tutorProfileId: string;
+  reviewerName: string;
+  subjectName?: string | null;
+  rating: number;
+  comment?: string | null;
+  tutorReply?: string | null;
+  tutorRepliedAt?: string | null;
+  createdAt: string;
+}
+
+export interface PublicTutorReviewsResponse {
+  tutorProfileId: string;
+  averageRating: number;
+  reviewCount: number;
+  items: PublicTutorReviewItem[];
+}
+
+export async function getTutorReviews(
+  id: string,
+  pageSize = 20,
+  signal?: AbortSignal
+): Promise<PublicTutorReviewsResponse> {
+  return (
+    await http.get<PublicTutorReviewsResponse>(
+      `/tutors/${encodeURIComponent(id)}/reviews`,
+      {
+        params: { pageSize },
+        signal,
+      }
+    )
   ).data;
 }

@@ -25,7 +25,7 @@ public sealed class TutorDetailTests(PostgreSqlFixture fixture)
         }
         using var client=factory.CreateApiClient(); using var response=await client.GetAsync($"/api/v1/tutors/{ids[0]}"); Assert.Equal(HttpStatusCode.OK,response.StatusCode);Assert.True(response.Headers.CacheControl?.NoStore);
         var body=await response.Content.ReadFromJsonAsync<JsonElement>();
-        var expected=new[]{"id","displayName","avatarUrl","bio","qualification","schoolName","specialization","experienceYears","teachingMethodology","achievements","sessionRateVnd","teachingModes","provinceCode","provinceName","districtCode","districtName","subjects","approvedAt","availability","courses"};
+        var expected=new[]{"id","displayName","avatarUrl","bio","qualification","schoolName","specialization","experienceYears","teachingMethodology","achievements","sessionRateVnd","teachingModes","provinceCode","provinceName","districtCode","districtName","subjects","approvedAt","availability","courses","averageRating","reviewCount"};
         Assert.Equal(expected.Order(),body.EnumerateObject().Select(x=>x.Name).Order());
         Assert.Equal(2,body.GetProperty("availability").GetArrayLength());Assert.Equal("Asia/Ho_Chi_Minh",body.GetProperty("availability")[0].GetProperty("timeZone").GetString());
         Assert.Equal("ACTIVE",Assert.Single(body.GetProperty("courses").EnumerateArray()).GetProperty("name").GetString());

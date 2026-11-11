@@ -59,7 +59,7 @@ export function PublicSmartDemandSearch({
             htmlFor="public-demand-query"
             className="block text-xl font-semibold text-neutral-900 dark:text-gray-100"
           >
-            Nhập nhu cầu tìm gia sư bằng câu tự nhiên
+            Nhập nhu cầu tìm gia sư
           </label>
           <textarea
             id="public-demand-query"

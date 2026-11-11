@@ -3,7 +3,7 @@
 import * as React from "react";
 
 export type RadioSize = "small" | "medium" | "large";
-export type RadioVariant = "primary" | "brand" | "tutor";
+export type RadioVariant = "primary" | "brand";
 
 interface RadioGroupContextValue {
   name?: string;
@@ -14,7 +14,9 @@ interface RadioGroupContextValue {
   disabled?: boolean;
 }
 
-const RadioGroupContext = React.createContext<RadioGroupContextValue | null>(null);
+const RadioGroupContext = React.createContext<RadioGroupContextValue | null>(
+  null
+);
 
 export interface RadioGroupProps {
   name?: string;
@@ -48,7 +50,8 @@ export function RadioGroup({
   children,
 }: RadioGroupProps) {
   const isControlled = controlledValue !== undefined;
-  const [uncontrolledValue, setUncontrolledValue] = React.useState(defaultValue);
+  const [uncontrolledValue, setUncontrolledValue] =
+    React.useState(defaultValue);
   const resolvedValue = isControlled ? controlledValue : uncontrolledValue;
 
   const generatedName = React.useId();
@@ -81,31 +84,39 @@ export function RadioGroup({
   return (
     <fieldset className={`space-y-2 border-0 p-0 m-0 ${className}`}>
       {label && (
-        <legend className="text-sm font-semibold text-gray-900 dark:text-gray-100 mb-1">
+        <legend className="text-base font-semibold text-gray-900 dark:text-gray-100 mb-1">
           {label}
         </legend>
       )}
       <RadioGroupContext.Provider value={contextValue}>
         <div
           className={`flex ${
-            orientation === "horizontal" ? "flex-row flex-wrap gap-5" : "flex-col gap-2.5"
+            orientation === "horizontal"
+              ? "flex-row flex-wrap gap-5"
+              : "flex-col gap-2.5"
           }`}
         >
           {children}
         </div>
       </RadioGroupContext.Provider>
       {helperText && !errorMessage && (
-        <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">{helperText}</p>
+        <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+          {helperText}
+        </p>
       )}
       {errorMessage && (
-        <p className="text-xs text-status-error font-medium mt-1">{errorMessage}</p>
+        <p className="text-xs text-status-error font-medium mt-1">
+          {errorMessage}
+        </p>
       )}
     </fieldset>
   );
 }
 
-export interface RadioProps
-  extends Omit<React.InputHTMLAttributes<HTMLInputElement>, "size" | "onChange"> {
+export interface RadioProps extends Omit<
+  React.InputHTMLAttributes<HTMLInputElement>,
+  "size" | "onChange"
+> {
   value: string;
   label?: React.ReactNode;
   helperText?: React.ReactNode;
@@ -143,7 +154,10 @@ const sizeConfig: Record<
   },
 };
 
-const activeStyles: Record<RadioVariant, { border: string; dot: string; ring: string }> = {
+const activeStyles: Record<
+  RadioVariant,
+  { border: string; dot: string; ring: string }
+> = {
   primary: {
     border: "border-gray-900 dark:border-white",
     dot: "bg-gray-900 dark:bg-white",
@@ -153,11 +167,6 @@ const activeStyles: Record<RadioVariant, { border: string; dot: string; ring: st
     border: "border-brand",
     dot: "bg-brand",
     ring: "focus-visible:ring-brand",
-  },
-  tutor: {
-    border: "border-role-tutor",
-    dot: "bg-role-tutor",
-    ring: "focus-visible:ring-role-tutor",
   },
 };
 
@@ -182,7 +191,8 @@ export const Radio = React.forwardRef<HTMLInputElement, RadioProps>(
     const size = propSize || group?.size || "medium";
     const variant = propVariant || group?.variant || "primary";
     const disabled = propDisabled || group?.disabled || false;
-    const isChecked = group?.value !== undefined ? group.value === value : props.checked;
+    const isChecked =
+      group?.value !== undefined ? group.value === value : props.checked;
 
     const generatedId = React.useId();
     const inputId = id || generatedId;
@@ -221,8 +231,8 @@ export const Radio = React.forwardRef<HTMLInputElement, RadioProps>(
               error
                 ? "border-status-error focus-visible:ring-status-error"
                 : isChecked
-                ? `${currentActive.border} ${currentActive.ring}`
-                : "border-gray-300 bg-white hover:border-gray-400 dark:border-gray-700 dark:bg-gray-900 focus-visible:ring-gray-400 shadow-2xs"
+                  ? `${currentActive.border} ${currentActive.ring}`
+                  : "border-gray-300 bg-white hover:border-gray-400 dark:border-gray-700 dark:bg-gray-900 focus-visible:ring-gray-400 shadow-2xs"
             }`}
           >
             {isChecked && (
@@ -238,12 +248,16 @@ export const Radio = React.forwardRef<HTMLInputElement, RadioProps>(
         {(label || helperText) && (
           <div className="flex flex-col">
             {label && (
-              <span className={`font-medium text-gray-900 dark:text-gray-100 ${currentSize.label}`}>
+              <span
+                className={`font-medium text-gray-900 dark:text-gray-100 ${currentSize.label}`}
+              >
                 {label}
               </span>
             )}
             {helperText && (
-              <span className={`text-gray-500 dark:text-gray-400 mt-0.5 ${currentSize.helper}`}>
+              <span
+                className={`text-gray-500 dark:text-gray-400 mt-0.5 ${currentSize.helper}`}
+              >
                 {helperText}
               </span>
             )}

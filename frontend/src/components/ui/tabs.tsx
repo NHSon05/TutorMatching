@@ -2,7 +2,7 @@
 
 import * as React from "react";
 
-export type TabRoleVariant = "brand" | "tutor" | "admin" | "shared";
+export type TabRoleVariant = "brand" | "admin" | "shared";
 export type TabVisualVariant = "line" | "pill";
 export type TabSize = "small" | "medium" | "large";
 export type TabOverflowControls = "auto" | "never";
@@ -61,7 +61,6 @@ export interface TabsProps {
   /**
    * Brand semantic color role:
    * - brand: Blue (Learner / Platform primary)
-   * - tutor: Amber (Tutor workspace)
    * - admin: Crimson (Admin workspace)
    * - shared: Indigo (Negotiations / Messaging)
    * @default 'brand'
@@ -172,12 +171,6 @@ const roleStyles: Record<
     pillActive: "bg-brand-50 text-brand-700 dark:bg-brand-950/60 dark:text-brand-300 font-semibold shadow-2xs",
     indicator: "bg-brand-600 dark:bg-brand-400",
     badgeActive: "bg-brand-100 text-brand-800 dark:bg-brand-900/60 dark:text-brand-200",
-  },
-  tutor: {
-    lineActive: "text-amber-600 dark:text-amber-400 font-semibold",
-    pillActive: "bg-amber-50 text-amber-800 dark:bg-amber-950/60 dark:text-amber-300 font-semibold shadow-2xs",
-    indicator: "bg-amber-600 dark:bg-amber-400",
-    badgeActive: "bg-amber-100 text-amber-900 dark:bg-amber-900/60 dark:text-amber-200",
   },
   admin: {
     lineActive: "text-red-600 dark:text-red-400 font-semibold",

@@ -616,6 +616,99 @@ namespace TutorMatching.Infrastructure.Persistence.Migrations
                         });
                 });
 
+            modelBuilder.Entity("TutorMatching.Domain.Hiring.HirePayment", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<int>("AmountVnd")
+                        .HasColumnType("integer")
+                        .HasColumnName("amount_vnd");
+
+                    b.Property<int>("BillingSessions")
+                        .HasColumnType("integer")
+                        .HasColumnName("billing_sessions");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at")
+                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
+
+                    b.Property<Guid>("HireRequestId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("hire_request_id");
+
+                    b.Property<Guid>("IdempotencyKey")
+                        .HasColumnType("uuid")
+                        .HasColumnName("idempotency_key");
+
+                    b.Property<DateTimeOffset?>("PaidAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("paid_at");
+
+                    b.Property<Guid>("PayerUserId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("payer_user_id");
+
+                    b.Property<string>("ProviderCode")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasMaxLength(32)
+                        .HasColumnType("character varying(32)")
+                        .HasDefaultValue("VIETQR_SANDBOX")
+                        .HasColumnName("provider_code");
+
+                    b.Property<string>("QrPayload")
+                        .IsRequired()
+                        .HasMaxLength(1000)
+                        .HasColumnType("character varying(1000)")
+                        .HasColumnName("qr_payload");
+
+                    b.Property<string>("StatusCode")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasMaxLength(24)
+                        .HasColumnType("character varying(24)")
+                        .HasDefaultValue("PENDING")
+                        .HasColumnName("status_code");
+
+                    b.Property<string>("TransferReference")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)")
+                        .HasColumnName("transfer_reference");
+
+                    b.Property<int>("UnitPriceVnd")
+                        .HasColumnType("integer")
+                        .HasColumnName("unit_price_vnd");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at")
+                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
+
+                    b.HasKey("Id")
+                        .HasName("pk_hire_payments");
+
+                    b.HasIndex("HireRequestId", "CreatedAt")
+                        .HasDatabaseName("ix_hire_payments_hire_request_id_created_at");
+
+                    b.HasIndex("PayerUserId", "IdempotencyKey")
+                        .IsUnique()
+                        .HasDatabaseName("ix_hire_payments_payer_user_id_idempotency_key");
+
+                    b.ToTable("hire_payments", null, t =>
+                        {
+                            t.HasCheckConstraint("ck_hire_payment_amounts", "unit_price_vnd > 0 AND billing_sessions > 0 AND amount_vnd = unit_price_vnd * billing_sessions");
+
+                            t.HasCheckConstraint("ck_hire_payment_status", "status_code IN ('PENDING','PAID','FAILED','CANCELLED','REFUNDED')");
+                        });
+                });
+
             modelBuilder.Entity("TutorMatching.Domain.Hiring.HireRequest", b =>
                 {
                     b.Property<Guid>("Id")
@@ -694,6 +787,18 @@ namespace TutorMatching.Infrastructure.Persistence.Migrations
                         .HasColumnType("character varying(2000)")
                         .HasColumnName("note");
 
+                    b.Property<DateTimeOffset?>("PaidAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("paid_at");
+
+                    b.Property<string>("PaymentStatusCode")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasMaxLength(24)
+                        .HasColumnType("character varying(24)")
+                        .HasDefaultValue("UNPAID")
+                        .HasColumnName("payment_status_code");
+
                     b.Property<int>("ProposedPriceVnd")
                         .HasColumnType("integer")
                         .HasColumnName("proposed_price_vnd");
@@ -771,11 +876,87 @@ namespace TutorMatching.Infrastructure.Persistence.Migrations
                         {
                             t.HasCheckConstraint("ck_hire_request_mode", "teaching_mode_code IN ('ONLINE','OFFLINE','HYBRID')");
 
+                            t.HasCheckConstraint("ck_hire_request_payment_status", "payment_status_code IN ('UNPAID','PENDING','PAID','REFUNDED')");
+
                             t.HasCheckConstraint("ck_hire_request_snapshot", "initial_terms IS NOT NULL AND (is_legacy OR listed_price_vnd IS NOT NULL) AND (status_code NOT IN ('ACCEPTED','COMPLETED') OR final_agreement IS NOT NULL)");
 
                             t.HasCheckConstraint("ck_hire_request_status", "status_code IN ('PENDING','NEGOTIATING','ACCEPTED','REJECTED','CANCELLED','COMPLETED')");
 
                             t.HasCheckConstraint("ck_hire_request_values", "sessions_per_week BETWEEN 1 AND 21 AND duration_minutes BETWEEN 30 AND 240 AND proposed_price_vnd > 0 AND (listed_price_vnd IS NULL OR listed_price_vnd > 0) AND latest_proposal_sequence >= 0 AND next_event_sequence > 0");
+                        });
+                });
+
+            modelBuilder.Entity("TutorMatching.Domain.Hiring.HireReview", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<string>("Comment")
+                        .HasMaxLength(1000)
+                        .HasColumnType("character varying(1000)")
+                        .HasColumnName("comment");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at")
+                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
+
+                    b.Property<Guid>("HireRequestId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("hire_request_id");
+
+                    b.Property<bool>("IsVisible")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(true)
+                        .HasColumnName("is_visible");
+
+                    b.Property<int>("Rating")
+                        .HasColumnType("integer")
+                        .HasColumnName("rating");
+
+                    b.Property<Guid>("ReviewerUserId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("reviewer_user_id");
+
+                    b.Property<Guid>("TutorProfileId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("tutor_profile_id");
+
+                    b.Property<DateTimeOffset?>("TutorRepliedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("tutor_replied_at");
+
+                    b.Property<string>("TutorReply")
+                        .HasMaxLength(1000)
+                        .HasColumnType("character varying(1000)")
+                        .HasColumnName("tutor_reply");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at")
+                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
+
+                    b.HasKey("Id")
+                        .HasName("pk_hire_reviews");
+
+                    b.HasIndex("HireRequestId")
+                        .IsUnique()
+                        .HasDatabaseName("ix_hire_reviews_hire_request_id");
+
+                    b.HasIndex("ReviewerUserId")
+                        .HasDatabaseName("ix_hire_reviews_reviewer_user_id");
+
+                    b.HasIndex("TutorProfileId", "IsVisible", "CreatedAt")
+                        .HasDatabaseName("ix_hire_reviews_tutor_profile_id_is_visible_created_at");
+
+                    b.ToTable("hire_reviews", null, t =>
+                        {
+                            t.HasCheckConstraint("ck_hire_review_rating", "rating BETWEEN 1 AND 5");
                         });
                 });
 
@@ -1495,6 +1676,13 @@ namespace TutorMatching.Infrastructure.Persistence.Migrations
                         .HasColumnType("character varying(2048)")
                         .HasColumnName("avatar_url");
 
+                    b.Property<decimal>("AverageRating")
+                        .ValueGeneratedOnAdd()
+                        .HasPrecision(3, 2)
+                        .HasColumnType("numeric(3,2)")
+                        .HasDefaultValue(0.00m)
+                        .HasColumnName("average_rating");
+
                     b.Property<string>("Bio")
                         .HasMaxLength(4000)
                         .HasColumnType("character varying(4000)")
@@ -1565,6 +1753,12 @@ namespace TutorMatching.Infrastructure.Persistence.Migrations
                         .HasMaxLength(32)
                         .HasColumnType("character varying(32)")
                         .HasColumnName("province_code");
+
+                    b.Property<int>("ReviewCount")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasDefaultValue(0)
+                        .HasColumnName("review_count");
 
                     b.Property<string>("SchoolName")
                         .HasMaxLength(256)
@@ -2207,6 +2401,25 @@ namespace TutorMatching.Infrastructure.Persistence.Migrations
                         .HasConstraintName("fk_hire_create_operations_hire_requests_request_id");
                 });
 
+            modelBuilder.Entity("TutorMatching.Domain.Hiring.HirePayment", b =>
+                {
+                    b.HasOne("TutorMatching.Domain.Hiring.HireRequest", "HireRequest")
+                        .WithMany("Payments")
+                        .HasForeignKey("HireRequestId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_hire_payments_hire_requests_hire_request_id");
+
+                    b.HasOne("TutorMatching.Infrastructure.Persistence.ApplicationUser", null)
+                        .WithMany()
+                        .HasForeignKey("PayerUserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_hire_payments_user_accounts_payer_user_id");
+
+                    b.Navigation("HireRequest");
+                });
+
             modelBuilder.Entity("TutorMatching.Domain.Hiring.HireRequest", b =>
                 {
                     b.HasOne("TutorMatching.Domain.Courses.Course", "Course")
@@ -2257,6 +2470,32 @@ namespace TutorMatching.Infrastructure.Persistence.Migrations
                     b.Navigation("Subject");
 
                     b.Navigation("TutorProfile");
+                });
+
+            modelBuilder.Entity("TutorMatching.Domain.Hiring.HireReview", b =>
+                {
+                    b.HasOne("TutorMatching.Domain.Hiring.HireRequest", "HireRequest")
+                        .WithOne("Review")
+                        .HasForeignKey("TutorMatching.Domain.Hiring.HireReview", "HireRequestId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_hire_reviews_hire_requests_hire_request_id");
+
+                    b.HasOne("TutorMatching.Infrastructure.Persistence.ApplicationUser", null)
+                        .WithMany()
+                        .HasForeignKey("ReviewerUserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_hire_reviews_user_accounts_reviewer_user_id");
+
+                    b.HasOne("TutorMatching.Domain.Tutors.TutorProfile", null)
+                        .WithMany()
+                        .HasForeignKey("TutorProfileId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_hire_reviews_tutor_profiles_tutor_profile_id");
+
+                    b.Navigation("HireRequest");
                 });
 
             modelBuilder.Entity("TutorMatching.Domain.Hiring.Negotiation", b =>
@@ -2595,6 +2834,10 @@ namespace TutorMatching.Infrastructure.Persistence.Migrations
             modelBuilder.Entity("TutorMatching.Domain.Hiring.HireRequest", b =>
                 {
                     b.Navigation("Negotiations");
+
+                    b.Navigation("Payments");
+
+                    b.Navigation("Review");
 
                     b.Navigation("Schedules");
 

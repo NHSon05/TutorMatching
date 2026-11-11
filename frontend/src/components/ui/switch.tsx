@@ -1,7 +1,7 @@
 import * as React from "react";
 
 export type SwitchSize = "small" | "medium" | "large";
-export type SwitchVariant = "primary" | "brand" | "tutor" | "success";
+export type SwitchVariant = "primary" | "brand" | "success";
 
 export interface SwitchProps
   extends Omit<React.ButtonHTMLAttributes<HTMLButtonElement>, "size" | "onChange"> {
@@ -55,7 +55,6 @@ const sizeConfig: Record<
 const activeStyles: Record<SwitchVariant, string> = {
   primary: "bg-gray-900 dark:bg-white focus-visible:ring-gray-900",
   brand: "bg-brand focus-visible:ring-brand",
-  tutor: "bg-role-tutor focus-visible:ring-role-tutor",
   success: "bg-status-success focus-visible:ring-status-success",
 };
 

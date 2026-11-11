@@ -81,7 +81,7 @@ export function Step6Pricing({ data, onChange, errors, fullState }: Step6Pricing
       {/* Checkbox thương lượng */}
       <div className="p-4 bg-gray-50 rounded-xl border border-gray-200">
         <Checkbox
-          variant="tutor"
+          variant="brand"
           checked={data.isNegotiable}
           onChange={(checked) => onChange({ isNegotiable: checked })}
           label={<span className="text-sm font-semibold text-gray-800">Cho phép phụ huynh / học viên thương lượng học phí</span>}
@@ -90,8 +90,8 @@ export function Step6Pricing({ data, onChange, errors, fullState }: Step6Pricing
       </div>
 
       {/* Tóm tắt nhanh hồ sơ trước khi nộp */}
-      <div className="p-5 bg-amber-50/60 rounded-xl border border-amber-200/70 space-y-3">
-        <h4 className="font-bold text-amber-950 text-sm flex items-center gap-1.5">
+      <div className="p-5 bg-brand-50/60 rounded-xl border border-brand-200/70 space-y-3">
+        <h4 className="font-bold text-brand-950 text-sm flex items-center gap-1.5">
           <span>📋</span> Tóm tắt hồ sơ gia sư của bạn:
         </h4>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs text-gray-700">

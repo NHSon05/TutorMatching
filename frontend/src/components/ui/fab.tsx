@@ -7,7 +7,7 @@ export type FABPosition =
   | "top-left"
   | "none";
 
-export type FABVariant = "primary" | "brand" | "tutor" | "success";
+export type FABVariant = "primary" | "brand" | "success";
 export type FABSize = "small" | "medium" | "large";
 
 export interface FABProps
@@ -30,7 +30,6 @@ const positionStyles: Record<FABPosition, string> = {
 const variantStyles: Record<FABVariant, string> = {
   primary: "bg-gray-900 text-white hover:bg-gray-800 focus-visible:ring-gray-900 shadow-lg dark:bg-white dark:text-gray-900",
   brand: "bg-brand text-white hover:bg-brand-hover focus-visible:ring-brand shadow-lg",
-  tutor: "bg-role-tutor text-white hover:bg-tutor-700 focus-visible:ring-role-tutor shadow-lg",
   success: "bg-status-success text-white hover:bg-status-success-dark focus-visible:ring-status-success shadow-lg",
 };
 

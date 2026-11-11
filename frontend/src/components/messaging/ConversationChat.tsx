@@ -60,7 +60,7 @@ export function ConversationChat({
               : `/learner/requests/${conversation.hireRequestId}`
           }
           className={`text-base hover:underline ${
-            isTutor ? "text-role-tutor hover:text-tutor-700" : "text-brand"
+            isTutor ? "text-brand hover:text-brand-700" : "text-brand"
           }`}
         >
           Xem chi tiết yêu cầu &rarr;
@@ -93,7 +93,7 @@ export function ConversationChat({
                   className={`max-w-md px-4 py-2.5 rounded-2xl text-base shadow-2xs wrap-break-word ${
                     isMine
                       ? isTutor
-                        ? "bg-role-tutor text-white rounded-br-none"
+                        ? "bg-brand text-white rounded-br-none"
                         : "bg-blue-600 text-white rounded-br-none"
                       : "bg-white text-neutral-900 border border-gray-200 rounded-bl-none"
                   }`}
@@ -107,7 +107,7 @@ export function ConversationChat({
                   {isMine && (
                     <span
                       className={`text-sm ${
-                        isTutor ? "text-role-tutor font-medium" : "text-brand"
+                        isTutor ? "text-brand font-medium" : "text-brand"
                       }`}
                     >
                       {msg.readAt ? "✓✓ Đã xem" : "✓ Đã gửi"}

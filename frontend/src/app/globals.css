@@ -32,22 +32,6 @@
     var(--color-brand-900) 100%
   );
 
-  /* =========================================================================
-     2. ROLE: TUTOR PALETTE (Amber / Warm Gold)
-     Used for Tutor workspace, badges, and verification status
-     ========================================================================= */
-  --color-tutor-50: #fff3e0;
-  --color-tutor-100: #ffe0b2;
-  --color-tutor-200: #ffcc80;
-  --color-tutor-300: #ffb74d;
-  --color-tutor-400: #ffa726;
-  --color-tutor-500: #ff9800;
-  --color-tutor-600: #fb8c00;
-  --color-tutor-700: #f57c00;
-  --color-tutor-800: #ef6c00;
-  --color-tutor-900: #e65100;
-  --color-tutor-950: #451a03;
-  --color-role-tutor: var(--color-tutor-600);
 
   /* =========================================================================
      3. ROLE: ADMIN PALETTE (Crimson / Red)
@@ -165,19 +149,6 @@
   --color-brand-hover: var(--color-brand-hover);
 
   /* Role Tokens */
-  --color-tutor-50: var(--color-tutor-50);
-  --color-tutor-100: var(--color-tutor-100);
-  --color-tutor-200: var(--color-tutor-200);
-  --color-tutor-300: var(--color-tutor-300);
-  --color-tutor-400: var(--color-tutor-400);
-  --color-tutor-500: var(--color-tutor-500);
-  --color-tutor-600: var(--color-tutor-600);
-  --color-tutor-700: var(--color-tutor-700);
-  --color-tutor-800: var(--color-tutor-800);
-  --color-tutor-900: var(--color-tutor-900);
-  --color-tutor-950: var(--color-tutor-950);
-  --color-role-tutor: var(--color-role-tutor);
-
   --color-admin-50: var(--color-admin-50);
   --color-admin-100: var(--color-admin-100);
   --color-admin-200: var(--color-admin-200);

@@ -3,7 +3,7 @@
 > **Nguồn tham khảo / Clone từ:** [Photonix UI - Tabs](https://www.photonix.dev/components/tabs)  
 > **Đường dẫn component:** [`components/ui/tabs.tsx`](file:///Users/nguyenhongson/Documents/Learning/TutorMatching/frontend/src/components/ui/tabs.tsx) (hoặc re-export từ `@/components`)
 
-Component `Tabs` là thanh điều hướng theo thẻ phân nhóm nội dung trên cùng một trang hoặc trong modal/card (ví dụ: Thông tin lớp học / Lịch dạy / Đánh giá, Lịch sử yêu cầu thuê, Thiết lập tài khoản). Hỗ trợ đầy đủ phong cách thiết kế Photonix với chuẩn WAI-ARIA, 2 kiểu hiển thị (`line`, `pill`), 4 biến thể màu sắc thương hiệu của TutorMatching (`brand`, `tutor`, `admin`, `shared`), bố cục icon xếp dọc (`stacked`), nút trượt khi tràn (`overflowControls`), và cố định (`sticky`/`elevated`).
+Component `Tabs` là thanh điều hướng theo thẻ phân nhóm nội dung trên cùng một trang hoặc trong modal/card (ví dụ: Thông tin lớp học / Lịch dạy / Đánh giá, Lịch sử yêu cầu thuê, Thiết lập tài khoản). Hỗ trợ đầy đủ phong cách thiết kế Photonix với chuẩn WAI-ARIA, 2 kiểu hiển thị (`line`, `pill`), 3 biến thể màu sắc thương hiệu của TutorMatching (`brand`, `admin`, `shared`; Học viên và Gia sư cùng dùng `brand`), bố cục icon xếp dọc (`stacked`), nút trượt khi tràn (`overflowControls`), và cố định (`sticky`/`elevated`).
 
 ---
 
@@ -18,7 +18,7 @@ Component `Tabs` là thanh điều hướng theo thẻ phân nhóm nội dung tr
 | `activeTab` | `string` | `undefined` | ID tab đang kích hoạt (Controlled). |
 | `defaultTab` | `string` | `tabs[0].id` | ID tab mặc định khi khởi tạo (Uncontrolled). |
 | `onChange` | `(tabId: string) => void` | `-` | Callback khi người dùng chuyển tab. |
-| `roleVariant` | `"brand" \| "tutor" \| "admin" \| "shared"` | `'brand'` | Màu sắc ngữ nghĩa theo vai trò (Học viên: Xanh dương, Gia sư: Hổ phách, Admin: Đỏ, Chung: Chàm). |
+| `roleVariant` | `"brand" \| "admin" \| "shared"` | `'brand'` | Màu sắc ngữ nghĩa theo vai trò (Học viên & Gia sư: Xanh dương, Admin: Đỏ, Chung: Chàm). |
 | `variant` | `"line" \| "pill"` | `'line'` | Kiểu hiển thị gạch chân chỉ báo (`line`) hoặc dạng viên thuốc phân đoạn (`pill`). |
 | `size` | `"small" \| "medium" \| "large"` | `'medium'` | Kích thước thẻ tab, chữ và icon. |
 | `stacked` | `boolean` | `false` | Bố cục icon nằm trên nhãn chữ (xếp dọc - vertical item). |
@@ -64,8 +64,6 @@ Component tự động căn chỉnh màu sắc theo Design System Tokens của d
 
 - **`roleVariant="brand"` (Mặc định - Học viên / Hệ thống)**:  
   Active gạch chân & viền xanh dương `#2563eb` (`--color-brand-600`), nền pill `bg-brand-50 text-brand-700`.
-- **`roleVariant="tutor"` (Phân hệ Gia sư)**:  
-  Active gạch chân & viền màu hổ phách ấm `#d97706` (`--color-tutor-600`), nền pill `bg-amber-50 text-amber-800`.
 - **`roleVariant="admin"` (Phân hệ Quản trị viên)**:  
   Active gạch chân & viền đỏ `#dc2626` (`--color-admin-600`), nền pill `bg-red-50 text-red-800`.
 - **`roleVariant="shared"` (Tin nhắn / Thương lượng)**:  
@@ -121,12 +119,12 @@ export default function BasicTabsDemo() {
 
 ---
 
-### 3.2. Phong cách Pill & Phân hệ Gia sư (`roleVariant="tutor"`)
+### 3.2. Phong cách Pill cho Phân hệ Gia sư (`roleVariant="brand"`)
 
 ```tsx
 <Tabs
   variant="pill"
-  roleVariant="tutor"
+  roleVariant="brand"
   activeTab={currentTab}
   onChange={setCurrentTab}
   tabs={[

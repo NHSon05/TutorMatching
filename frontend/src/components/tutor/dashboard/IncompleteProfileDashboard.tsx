@@ -55,7 +55,7 @@ export function IncompleteProfileDashboard({
             size="medium"
             shape="rounded"
             aria-label="Thông báo hệ thống"
-            className="border-border-default hover:bg-tutor-50 hover:text-role-tutor"
+            className="border-border-default hover:bg-brand-50 hover:text-brand"
           >
             <BellIcon className="w-5 h-5 text-content-primary" />
           </IconButton>
@@ -63,7 +63,7 @@ export function IncompleteProfileDashboard({
           {/* Avatar mang phong cách Tutor Warm Gold */}
           <div
             title={`Gia sư ${account?.fullName || "Minh"}`}
-            className="w-11 h-11 rounded-full border border-tutor-200 bg-tutor-50 flex items-center justify-center font-bold text-sm text-tutor-900 select-none shadow-2xs"
+            className="w-11 h-11 rounded-full border border-brand-200 bg-brand-50 flex items-center justify-center font-bold text-sm text-brand-900 select-none shadow-2xs"
           >
             MN
           </div>
@@ -106,17 +106,17 @@ export function IncompleteProfileDashboard({
 
         <Card
           padding="medium"
-          className="flex flex-col justify-between border-tutor-200/80 bg-tutor-50/20"
+          className="flex flex-col justify-between border-brand-200/80 bg-brand-50/20"
         >
           <div>
-            <p className="text-3xl font-bold text-role-tutor">—</p>
+            <p className="text-3xl font-bold text-brand">—</p>
             <p className="text-base text-content-secondary mt-2">
               cơ hội mới phù hợp
             </p>
           </div>
           <Link
             href="/onboarding"
-            className="text-sm font-semibold text-role-tutor hover:text-tutor-700 underline mt-4 inline-block transition-colors"
+            className="text-sm font-semibold text-brand hover:text-brand-700 underline mt-4 inline-block transition-colors"
           >
             Hoàn thiện hồ sơ
           </Link>
@@ -183,7 +183,7 @@ export function IncompleteProfileDashboard({
               Thêm học sinh bạn đã xác nhận nhận dạy để quản lý lịch học, nội
               dung và tiến độ.
             </p>
-            <Button asChild variant="tutor" size="medium">
+            <Button asChild variant="brand" size="medium">
               <Link href="/teaching-classes">Thêm học sinh</Link>
             </Button>
           </Card>
@@ -214,16 +214,16 @@ export function IncompleteProfileDashboard({
 
           <Card
             padding="large"
-            className="space-y-5 border-tutor-200 shadow-2xs"
+            className="space-y-5 border-brand-200 shadow-2xs"
           >
             <div className="flex items-start justify-between gap-3">
               <div>
                 <div className="flex items-center gap-2 mb-1.5">
-                  <Badge variant="tutor" size="small" appearance="subtitle">
+                  <Badge variant="brand" size="small" appearance="subtitle">
                     Cần hoàn thiện
                   </Badge>
                 </div>
-                <h3 className="font-bold text-lg text-tutor-900">
+                <h3 className="font-bold text-lg text-brand-900">
                   Hoàn thiện hồ sơ để nhận cơ hội phù hợp
                 </h3>
                 <p className="text-base text-content-secondary mt-1.5 leading-relaxed">
@@ -242,7 +242,7 @@ export function IncompleteProfileDashboard({
                   onChange={(checked) =>
                     setSteps((prev) => ({ ...prev, subjects: checked }))
                   }
-                  variant="tutor"
+                  variant="brand"
                   className="mt-1"
                 />
                 <div>
@@ -265,7 +265,7 @@ export function IncompleteProfileDashboard({
                   onChange={(checked) =>
                     setSteps((prev) => ({ ...prev, locations: checked }))
                   }
-                  variant="tutor"
+                  variant="brand"
                   className="mt-1"
                 />
                 <div>
@@ -288,7 +288,7 @@ export function IncompleteProfileDashboard({
                   onChange={(checked) =>
                     setSteps((prev) => ({ ...prev, times: checked }))
                   }
-                  variant="tutor"
+                  variant="brand"
                   className="mt-1"
                 />
                 <div>
@@ -306,7 +306,7 @@ export function IncompleteProfileDashboard({
             </div>
 
             <div className="border-t border-border-default pt-4">
-              <Button asChild variant="tutor" size="medium">
+              <Button asChild variant="brand" size="medium">
                 <Link href="/onboarding">Hoàn thiện hồ sơ</Link>
               </Button>
             </div>

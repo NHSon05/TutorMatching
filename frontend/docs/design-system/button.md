@@ -14,7 +14,7 @@ Component `Button` cung cấp các nút tương tác tiêu chuẩn của hệ th
 | `variant`      | `"primary" \| "secondary" \| "tertiary" \| "brand"`                                     | `'primary'` | Biến thể hiển thị của button.                                                      |
 | Prop           | Type                                                                                    | Default     | Description                                                                        |
 | :---           | :---                                                                                    | :---        | :---                                                                               |
-| `variant`      | `"primary" \| "secondary" \| "tertiary" \| "brand" \| "tutor" \| "danger" \| "success"` | `'primary'` | Biến thể hiển thị của button.                                                      |
+| `variant`      | `"primary" \| "secondary" \| "tertiary" \| "brand" \| "danger" \| "success"` | `'primary'` | Biến thể hiển thị của button.                                                      |
 | `size`         | `"small" \| "medium" \| "large"`                                                        | `'medium'`  | Kích thước button (chiều cao tương ứng 36px, 44px, 48px).                          |
 | `shape`        | `"rounded" \| "pill"`                                                                   | `'rounded'` | Kiểu bo góc của button (`rounded` bo góc chuẩn, `pill` bo tròn hoàn toàn).         |
 | `isFullWidth`  | `boolean`                                                                               | `false`     | Khi bật, button sẽ chiếm 100% chiều rộng container (`w-full`).                     |
@@ -42,7 +42,6 @@ Button hỗ trợ các biến thể chuẩn Photonix cùng các biến thể m�
 
 ### Biến thể nghiệp vụ mở rộng (TutorMatching Specific):
 
-5. **`tutor`**: Nền vàng hổ phách (`bg-role-tutor text-white`), dành riêng cho các hành động trong Workspace Gia sư (Lưu hồ sơ, Đăng lịch dạy).
 6. **`danger`**: Nền đỏ thẫm cảnh báo (`bg-status-error text-white`), dùng cho Quản trị viên (Khóa tài khoản, Từ chối hồ sơ, Hủy đơn thuê).
 7. **`success`**: Nền xanh lá xác nhận (`bg-status-success text-white`), dùng cho phê duyệt hồ sơ gia sư hoặc chấp nhận đơn thuê.
 
@@ -58,7 +57,7 @@ export default function ButtonVariantsExample() {
       <Button variant="secondary">Secondary</Button>
       <Button variant="tertiary">Tertiary</Button>
       <Button variant="brand">Brand (Learner)</Button>
-      <Button variant="tutor">Tutor Action</Button>
+      <Button variant="brand">Tutor Action</Button>
       <Button variant="success">Duyệt hồ sơ</Button>
       <Button variant="danger">Khóa tài khoản</Button>
     </div>

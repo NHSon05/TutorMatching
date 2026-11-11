@@ -5,7 +5,6 @@ export type IconButtonVariant =
   | "secondary"
   | "tertiary"
   | "brand"
-  | "tutor"
   | "danger"
   | "success"
   | "ghost";
@@ -26,7 +25,6 @@ export interface IconButtonProps
    * - secondary: Border only, transparent background
    * - tertiary: No border, transparent background
    * - brand: Blue brand color background (Learner / Public CTA)
-   * - tutor: Amber color background (Tutor workspace)
    * - danger: Crimson red background (Admin / Destructive action)
    * - success: Emerald green background (Approval / Confirmation)
    * - ghost: Subtle transparent background, hover tint (navbars / headers)
@@ -92,8 +90,6 @@ const variantStyles: Record<IconButtonVariant, string> = {
     "border-transparent bg-transparent text-content-primary hover:bg-gray-100 active:bg-gray-200/70 focus-visible:ring-gray-400 dark:text-gray-100 dark:hover:bg-gray-800 dark:active:bg-gray-700",
   brand:
     "bg-brand text-white hover:bg-brand-hover active:bg-brand-800 focus-visible:ring-brand shadow-sm",
-  tutor:
-    "bg-role-tutor text-white hover:bg-tutor-700 active:bg-tutor-800 focus-visible:ring-role-tutor shadow-sm",
   danger:
     "bg-status-error text-white hover:bg-admin-700 active:bg-admin-800 focus-visible:ring-status-error shadow-sm",
   success:

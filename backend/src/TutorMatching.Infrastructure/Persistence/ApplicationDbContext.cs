@@ -32,6 +32,8 @@ public sealed class ApplicationDbContext(
     public DbSet<TutorProfileReview> TutorProfileReviews => Set<TutorProfileReview>();
     public DbSet<HireCreateOperation> HireCreateOperations => Set<HireCreateOperation>();
     public DbSet<HireRequest> HireRequests => Set<HireRequest>();
+    public DbSet<HirePayment> HirePayments => Set<HirePayment>();
+    public DbSet<HireReview> HireReviews => Set<HireReview>();
     public DbSet<RequestSchedule> RequestSchedules => Set<RequestSchedule>();
     public DbSet<Negotiation> Negotiations => Set<Negotiation>();
     public DbSet<NegotiationSchedule> NegotiationSchedules => Set<NegotiationSchedule>();
@@ -63,6 +65,8 @@ public sealed class ApplicationDbContext(
         builder.ApplyConfiguration(new CourseConfiguration());
         builder.ApplyConfiguration(new TutorProfileReviewConfiguration());
         builder.ApplyConfiguration(new HireRequestConfiguration());
+        builder.ApplyConfiguration(new HirePaymentConfiguration());
+        builder.ApplyConfiguration(new HireReviewConfiguration());
         builder.ApplyConfiguration(new HireCreateOperationConfiguration());
         builder.ApplyConfiguration(new RequestScheduleConfiguration());
         builder.ApplyConfiguration(new NegotiationConfiguration());
@@ -166,6 +170,15 @@ public sealed class ApplicationDbContext(
         foreach (var entry in ChangeTracker.Entries<TutorProfile>())
         {
             if (entry.State is not (EntityState.Added or EntityState.Modified))
+            {
+                continue;
+            }
+
+            // Review-driven rating aggregates are derived data, not tutor edits:
+            // leave the concurrency version and UpdatedAt untouched for them.
+            if (entry.State == EntityState.Modified && entry.Properties
+                    .Where(p => p.IsModified)
+                    .All(p => p.Metadata.Name is nameof(TutorProfile.AverageRating) or nameof(TutorProfile.ReviewCount)))
             {
                 continue;
             }

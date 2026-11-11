@@ -9,7 +9,7 @@ export default function PublicNavbar() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   return (
-    <header className="w-full fixed top-4 z-90 px-3 sm:px-6 pt-2 transition-all">
+    <header className="w-full fixed top-2 z-20 px-3 sm:px-6 transition-all">
       <div className="max-w-[1776px] mx-auto h-18 rounded-[36px] bg-surface-card backdrop-blur-2xl border border-border-default shadow-sm px-4 sm:px-7 lg:px-9 flex items-center justify-between gap-4">
         {/* Left: Mobile Toggle & Desktop Pill Navigation Links */}
         <div className="flex items-center gap-2 lg:flex-1">
@@ -113,7 +113,7 @@ export default function PublicNavbar() {
           >
             Đăng nhập
           </Link>
-          <Button variant="brand" shape="pill" size="large">
+          <Button variant="linear" shape="pill" size="large">
             <Link href="/tutors">Chọn gia sư ngay</Link>
           </Button>
         </div>

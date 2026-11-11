@@ -42,13 +42,16 @@ export function GuestGuard({ children, initialRole }: GuestGuardProps) {
   const { data: sessionAccount, isLoading } = useSession();
   const storeUser = useAuthStore((state) => state.user);
 
-  const activeRole = sessionAccount?.role ?? storeUser?.role ?? initialRole;
+  // initialRole is an SSR hint from the layout; layouts are not re-rendered on
+  // client navigation, so it goes stale after logout. Trust it only while the
+  // session query is still resolving.
+  const pendingRole = isLoading ? initialRole : null;
+  const activeRole = sessionAccount?.role ?? storeUser?.role ?? pendingRole;
   const activeTutorStatus =
     sessionAccount?.tutorProfileStatus ?? storeUser?.tutorProfileStatus;
-  const isAuthenticated = Boolean(sessionAccount || storeUser || initialRole);
+  const isAuthenticated = Boolean(sessionAccount || storeUser || pendingRole);
 
   useEffect(() => {
-    if (isLoading && !initialRole && !storeUser) return;
     if (isAuthenticated) {
       router.replace(getHomeRouteForRole(activeRole, activeTutorStatus));
     }

@@ -14,7 +14,7 @@ Component `FAB` (Floating Action Button) là nút hành động nổi được g
 | `icon` | `React.ReactNode` | **Bắt buộc** | Biểu tượng chính trong nút. |
 | `label` | `React.ReactNode` | `-` | Nhãn chữ mở rộng (Extended FAB). Nếu không có, nút sẽ có dạng tròn gọn gàng. |
 | `position` | `"bottom-right" \| "bottom-left" \| "top-right" \| "top-left" \| "none"` | `'bottom-right'` | Vị trí ghim cố định trên màn hình. |
-| `variant` | `"primary" \| "brand" \| "tutor" \| "success"` | `'brand'` | Biến thể màu sắc. |
+| `variant` | `"primary" \| "brand" \| "success"` | `'brand'` | Biến thể màu sắc. |
 | `size` | `"small" \| "medium" \| "large"` | `'medium'` | Kích thước nút. |
 
 ---

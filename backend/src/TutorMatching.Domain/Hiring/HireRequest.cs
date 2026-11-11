@@ -30,9 +30,11 @@ public sealed class HireRequest
     public int ProposedPriceVnd { get; set; }
     public int? AgreedPriceVnd { get; set; }
     public string StatusCode { get; set; } = "PENDING";
+    public string PaymentStatusCode { get; set; } = "UNPAID";
     public string? Note { get; set; }
     public string? CancelReason { get; set; }
     public DateTimeOffset? AcceptedAt { get; set; }
+    public DateTimeOffset? PaidAt { get; set; }
     public DateTimeOffset? CompletedAt { get; set; }
     public DateTimeOffset CreatedAt { get; set; }
     public DateTimeOffset UpdatedAt { get; set; }
@@ -42,6 +44,7 @@ public sealed class HireRequest
     public Course? Course { get; set; }
     public Province? Province { get; set; }
     public District? District { get; set; }
+    public HireReview? Review { get; set; }
 
     public bool CanRespond(Guid actor, Guid tutor) => actor == tutor && StatusCode is "PENDING" or "NEGOTIATING";
     public bool CanAcceptInitial(Guid actor, Guid tutor) => CanRespond(actor, tutor) && LatestProposalSequence == 0 && FinalAgreement is null;
@@ -106,11 +109,107 @@ public sealed class HireRequest
         return Transition("ACCEPTED", actor, null, now);
     }
 
+    public bool CanPay(Guid actor) =>
+        actor == RequesterUserId &&
+        StatusCode == "ACCEPTED" &&
+        PaymentStatusCode is "UNPAID" or "PENDING";
+
+    public (int UnitPriceVnd, int BillingSessions, int AmountVnd) CalculatePackageBilling(int? explicitCourseSessionCount = null)
+    {
+        var unitPrice = AgreedPriceVnd ?? FinalAgreement?.Terms.PriceVnd ?? CurrentTerms.PriceVnd;
+        if (unitPrice <= 0)
+        {
+            throw new HireRuleException("invalid_terms");
+        }
+
+        var sessionsPerWeek = FinalAgreement?.Terms.SessionsPerWeek is > 0
+            ? FinalAgreement.Terms.SessionsPerWeek
+            : (SessionsPerWeek > 0 ? SessionsPerWeek : InitialTerms.SessionsPerWeek);
+
+        var courseSessions = explicitCourseSessionCount ?? Course?.SessionCount;
+        var billingSessions = courseSessions is > 0 ? courseSessions.Value : Math.Max(1, sessionsPerWeek) * 4;
+        var amountVnd = checked(unitPrice * billingSessions);
+
+        return (unitPrice, billingSessions, amountVnd);
+    }
+
+    public HirePayment InitiatePayment(
+        Guid actor,
+        Guid idempotencyKey,
+        DateTimeOffset now,
+        int? explicitCourseSessionCount = null)
+    {
+        if (actor != RequesterUserId) throw new HireRuleException("forbidden");
+        if (StatusCode != "ACCEPTED") throw new HireRuleException("state_conflict");
+        if (PaymentStatusCode == "PAID") throw new HireRuleException("already_paid");
+
+        var (unitPrice, billingSessions, amountVnd) = CalculatePackageBilling(explicitCourseSessionCount);
+        var utcNow = now.ToUniversalTime();
+        var shortRef = Id.ToString("N")[..8].ToUpperInvariant();
+        var transferReference = $"TM {shortRef}";
+        var qrPayload = $"https://img.vietqr.io/image/MB-0000123456789-compact2.png?amount={amountVnd}&addInfo={Uri.EscapeDataString(transferReference)}";
+
+        var payment = new HirePayment
+        {
+            Id = Guid.NewGuid(),
+            HireRequestId = Id,
+            PayerUserId = actor,
+            IdempotencyKey = idempotencyKey,
+            UnitPriceVnd = unitPrice,
+            BillingSessions = billingSessions,
+            AmountVnd = amountVnd,
+            ProviderCode = "VIETQR_SANDBOX",
+            TransferReference = transferReference,
+            QrPayload = qrPayload,
+            StatusCode = "PENDING",
+            CreatedAt = utcNow,
+            UpdatedAt = utcNow,
+        };
+
+        PaymentStatusCode = "PENDING";
+        UpdatedAt = utcNow;
+        Payments.Add(payment);
+        return payment;
+    }
+
+    public RequestStatusHistory ConfirmPayment(HirePayment payment, Guid actor, DateTimeOffset now)
+    {
+        ArgumentNullException.ThrowIfNull(payment);
+        if (actor != RequesterUserId) throw new HireRuleException("forbidden");
+        if (StatusCode != "ACCEPTED" || payment.HireRequestId != Id) throw new HireRuleException("state_conflict");
+        if (payment.StatusCode == "PAID" || PaymentStatusCode == "PAID")
+        {
+            throw new HireRuleException("already_paid");
+        }
+        if (payment.StatusCode != "PENDING") throw new HireRuleException("state_conflict");
+
+        var utcNow = now.ToUniversalTime();
+        payment.StatusCode = "PAID";
+        payment.PaidAt = utcNow;
+        payment.UpdatedAt = utcNow;
+
+        PaymentStatusCode = "PAID";
+        PaidAt = utcNow;
+        UpdatedAt = utcNow;
+
+        return new RequestStatusHistory
+        {
+            Id = Guid.NewGuid(),
+            HireRequestId = Id,
+            ActorUserId = actor,
+            FromStatusCode = StatusCode,
+            ToStatusCode = StatusCode,
+            Reason = $"Đã thanh toán gói {payment.BillingSessions} buổi ({payment.AmountVnd:N0} VND)",
+            CreatedAt = utcNow,
+        };
+    }
+
     public bool CanCancel(Guid actor, Guid tutor) =>
         (actor == RequesterUserId && StatusCode is "PENDING" or "NEGOTIATING") ||
         ((actor == RequesterUserId || actor == tutor) && StatusCode == "ACCEPTED");
     public bool CanComplete(Guid actor, Guid tutor) =>
         (actor == RequesterUserId || actor == tutor) && StatusCode == "ACCEPTED";
+    public bool RequiresPaymentBeforeComplete => !IsLegacy && PaymentStatusCode != "PAID";
 
     public RequestStatusHistory Cancel(Guid actor, Guid tutor, bool confirmed, string? reason, DateTimeOffset now)
     {
@@ -125,6 +224,7 @@ public sealed class HireRequest
     {
         if (actor != RequesterUserId && actor != tutor) throw new HireRuleException("forbidden");
         if (!CanComplete(actor, tutor)) throw new HireRuleException("state_conflict");
+        if (RequiresPaymentBeforeComplete) throw new HireRuleException("payment_required");
         ValidateClosing(confirmed, reason, false);
         CompletedAt = now.ToUniversalTime();
         return Transition("COMPLETED", actor, reason?.Trim(), now);
@@ -157,4 +257,5 @@ public sealed class HireRequest
     public ICollection<RequestSchedule> Schedules { get; set; } = [];
     public ICollection<Negotiation> Negotiations { get; set; } = [];
     public ICollection<RequestStatusHistory> StatusHistories { get; set; } = [];
+    public ICollection<HirePayment> Payments { get; set; } = [];
 }

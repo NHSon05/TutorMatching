@@ -65,6 +65,53 @@ export interface HireSummary {
   createdAt: string;
 }
 
+export interface HirePaymentDto {
+  id: string;
+  hireRequestId: string;
+  unitPriceVnd: number;
+  billingSessions: number;
+  amountVnd: number;
+  providerCode: string;
+  transferReference: string;
+  qrPayload: string;
+  status: "PENDING" | "PAID" | "CANCELLED" | string;
+  paidAt?: string | null;
+  createdAt: string;
+  requestVersion?: string | null;
+}
+
+export interface HirePaymentsResponse {
+  hireRequestId: string;
+  paymentStatus: "UNPAID" | "PENDING" | "PAID" | string;
+  paidAt?: string | null;
+  unitPriceVnd: number;
+  billingSessions: number;
+  amountVnd: number;
+  items: HirePaymentDto[];
+}
+
+export interface HireReviewDto {
+  id: string;
+  hireRequestId: string;
+  tutorProfileId: string;
+  reviewerName: string;
+  subjectName?: string | null;
+  rating: number;
+  comment?: string | null;
+  tutorReply?: string | null;
+  tutorRepliedAt?: string | null;
+  createdAt: string;
+}
+
+export interface SubmitHireReviewCommand {
+  rating: number;
+  comment?: string;
+}
+
+export interface ReplyHireReviewCommand {
+  reply: string;
+}
+
 export interface HireDetail {
   id: string;
   version: string;
@@ -86,8 +133,20 @@ export interface HireDetail {
   history: HireEvent[];
   conversationId: string;
   allowedActions: Array<
-    "accept" | "reject" | "propose" | "cancel" | "complete" | string
+    | "accept"
+    | "reject"
+    | "propose"
+    | "cancel"
+    | "complete"
+    | "pay"
+    | "review"
+    | "replyReview"
+    | string
   >;
+  paymentStatus?: "UNPAID" | "PENDING" | "PAID" | string;
+  paidAt?: string | null;
+  latestPayment?: HirePaymentDto | null;
+  review?: HireReviewDto | null;
 }
 
 export interface HirePage {
@@ -219,4 +278,59 @@ export async function completeHireRequest(
 ): Promise<HireResult> {
   return (await http.post<HireResult>(`/hire-requests/${id}/complete`, body))
     .data;
+}
+
+export async function getHireRequestPayments(
+  id: string,
+  signal?: AbortSignal
+): Promise<HirePaymentsResponse> {
+  return (
+    await http.get<HirePaymentsResponse>(`/hire-requests/${id}/payments`, {
+      signal,
+    })
+  ).data;
+}
+
+export async function initiateHirePayment(
+  id: string,
+  idempotencyKey: string
+): Promise<HirePaymentDto> {
+  return (
+    await http.post<HirePaymentDto>(
+      `/hire-requests/${id}/payments`,
+      {},
+      {
+        headers: { "Idempotency-Key": idempotencyKey },
+      }
+    )
+  ).data;
+}
+
+export async function confirmHirePayment(
+  id: string,
+  paymentId: string
+): Promise<HirePaymentDto> {
+  return (
+    await http.post<HirePaymentDto>(
+      `/hire-requests/${id}/payments/${paymentId}/confirm`,
+      {}
+    )
+  ).data;
+}
+
+export async function submitHireReview(
+  id: string,
+  body: SubmitHireReviewCommand
+): Promise<HireReviewDto> {
+  return (await http.post<HireReviewDto>(`/hire-requests/${id}/review`, body))
+    .data;
+}
+
+export async function replyHireReview(
+  id: string,
+  body: ReplyHireReviewCommand
+): Promise<HireReviewDto> {
+  return (
+    await http.post<HireReviewDto>(`/hire-requests/${id}/review/reply`, body)
+  ).data;
 }

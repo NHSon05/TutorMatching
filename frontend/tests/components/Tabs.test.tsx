@@ -47,7 +47,7 @@ describe("Tabs Component (UI Primitive)", () => {
         tabs={sampleTabs}
         defaultTab="tab-2"
         variant="pill"
-        roleVariant="tutor"
+        roleVariant="brand"
       />
     );
 

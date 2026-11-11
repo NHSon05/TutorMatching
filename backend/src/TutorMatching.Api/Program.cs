@@ -23,6 +23,8 @@ builder.Services.AddScoped<TutorMatching.Application.Hiring.CreateHireRequest>()
 builder.Services.AddScoped<TutorMatching.Application.Hiring.RespondToHireRequest>();
 builder.Services.AddScoped<TutorMatching.Application.Hiring.NegotiateHireRequest>();
 builder.Services.AddScoped<TutorMatching.Application.Hiring.CloseHireRequest>();
+builder.Services.AddScoped<TutorMatching.Application.Hiring.PayHireRequest>();
+builder.Services.AddScoped<TutorMatching.Application.Hiring.ReviewHireRequest>();
 builder.Services.AddScoped<TutorMatching.Application.Users.Profile.CurrentProfileHandler>();
 builder.Services.AddScoped<TutorMatching.Application.Authentication.Sessions.SessionHandler>();
 builder.Services.AddInfrastructure(builder.Configuration);

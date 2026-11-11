@@ -61,7 +61,7 @@ export function Step2Photo({ avatarUrl, onUploaded, error, onUploadingChange }: 
       <div className="flex flex-col sm:flex-row items-center sm:items-start gap-8 p-6 bg-white rounded-2xl border border-gray-200">
         {/* Khung hiển thị ảnh đại diện */}
         <div className="flex flex-col items-center gap-3">
-          <div className="relative w-36 h-36 rounded-full overflow-hidden border-4 border-amber-500/20 bg-gray-100 shadow-md flex items-center justify-center">
+          <div className="relative w-36 h-36 rounded-full overflow-hidden border-4 border-brand-500/20 bg-gray-100 shadow-md flex items-center justify-center">
             {avatarUrl ? (
               <Image
                 src={avatarUrl.startsWith("http") ? avatarUrl : `http://localhost:5014${avatarUrl}`}
@@ -91,7 +91,7 @@ export function Step2Photo({ avatarUrl, onUploaded, error, onUploadingChange }: 
 
           <Button
             type="button"
-            variant="tutor"
+            variant="brand"
             size="small"
             disabled={isUploading}
             onClick={() => fileInputRef.current?.click()}

@@ -29,7 +29,7 @@ export default function TutorCardDemo() {
     <Card hoverable className="max-w-sm">
       <CardHeader>
         <div className="flex justify-between items-center">
-          <Badge variant="tutor" appearance="solid">Gia sư Tiếng Anh</Badge>
+          <Badge variant="brand" appearance="solid">Gia sư Tiếng Anh</Badge>
           <span className="text-xs font-bold text-brand">300.000 đ/buổi</span>
         </div>
         <CardTitle>Nguyễn Thùy Linh</CardTitle>

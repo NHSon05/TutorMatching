@@ -14,7 +14,7 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 - **Typography:** Montserrat is enforced globally in `src/app/globals.css`. Do not declare alternative fonts.
 - **Color Tokens:** Never hardcode raw hex values in JSX or CSS. Always use design system semantic tokens:
   - Brand / Learner: `brand-*`, `bg-brand`, `text-brand`
-  - Tutor: `tutor-*`, `bg-role-tutor`, `text-role-tutor`
+  - Tutor: same as Learner — use `brand-*` tokens and `variant="brand"` (no `tutor-*` palette)
   - Admin: `admin-*`, `bg-role-admin`, `text-role-admin`
   - Shared / Messaging: `shared-*`, `bg-role-shared`, `text-role-shared`
   - Status: `status-success`, `status-warning`, `status-error`, `status-info`

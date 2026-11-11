@@ -1,7 +1,7 @@
 import * as React from "react";
 
 export type SpinnerSize = "small" | "medium" | "large" | "xlarge";
-export type SpinnerVariant = "primary" | "brand" | "tutor" | "white" | "gray";
+export type SpinnerVariant = "primary" | "brand" | "white" | "gray";
 
 export interface SpinnerProps extends React.HTMLAttributes<HTMLDivElement> {
   size?: SpinnerSize;
@@ -19,7 +19,6 @@ const sizeConfig: Record<SpinnerSize, { spinner: string; text: string }> = {
 const variantStyles: Record<SpinnerVariant, string> = {
   primary: "text-gray-900 dark:text-white border-gray-200 dark:border-gray-700 border-t-current",
   brand: "text-brand border-brand/20 border-t-brand",
-  tutor: "text-role-tutor border-role-tutor/20 border-t-role-tutor",
   white: "text-white border-white/20 border-t-white",
   gray: "text-gray-500 border-gray-200 dark:border-gray-800 border-t-gray-500",
 };

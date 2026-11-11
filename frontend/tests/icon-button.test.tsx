@@ -35,8 +35,8 @@ describe("IconButton Component - Design System & Photonix Alignment", () => {
     rerender(<IconButton aria-label="Action" variant="brand" icon={<span>★</span>} />);
     expect(screen.getByRole("button")).toHaveClass("bg-brand");
 
-    rerender(<IconButton aria-label="Action" variant="tutor" icon={<span>★</span>} />);
-    expect(screen.getByRole("button")).toHaveClass("bg-role-tutor");
+    rerender(<IconButton aria-label="Action" variant="brand" icon={<span>★</span>} />);
+    expect(screen.getByRole("button")).toHaveClass("bg-brand");
 
     rerender(<IconButton aria-label="Action" variant="danger" icon={<span>★</span>} />);
     expect(screen.getByRole("button")).toHaveClass("bg-status-error");

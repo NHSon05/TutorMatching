@@ -17,7 +17,7 @@ Component `Switch` là công tắc gạt 2 trạng thái Bật/Tắt (On/Off), t
 | `label` | `React.ReactNode` | `-` | Nhãn chính hiển thị bên cạnh công tắc. |
 | `helperText` | `React.ReactNode` | `-` | Ghi chú hướng dẫn phía dưới nhãn. |
 | `size` | `"small" \| "medium" \| "large"` | `'medium'` | Kích thước công tắc. |
-| `variant` | `"primary" \| "brand" \| "tutor" \| "success"` | `'primary'` | Màu sắc đường trượt khi bật. |
+| `variant` | `"primary" \| "brand" \| "success"` | `'primary'` | Màu sắc đường trượt khi bật. |
 | `isLoading` | `boolean` | `false` | Hiển thị spinner nhỏ bên trong núm gạt khi đang cập nhật API. |
 | `disabled` | `boolean` | `false` | Khóa công tắc. |
 
@@ -37,7 +37,7 @@ export default function SwitchDemo() {
       <Switch
         checked={acceptingStudents}
         onChange={setAcceptingStudents}
-        variant="tutor"
+        variant="brand"
         label="Sẵn sàng nhận học viên mới"
         helperText="Hồ sơ của bạn sẽ hiển thị công khai trên danh sách tìm kiếm gia sư."
       />

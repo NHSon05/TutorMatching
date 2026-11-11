@@ -19,7 +19,7 @@ Component `Checkbox` cho phép người dùng chọn một hoặc nhiều mục 
 | `helperText` | `React.ReactNode` | `-` | Dòng mô tả chi tiết dưới nhãn. |
 | `error` | `string \| boolean` | `-` | Chuỗi thông báo lỗi hoặc cờ báo lỗi. |
 | `size` | `"small" \| "medium" \| "large"` | `'medium'` | Kích thước hộp chọn (16px, 20px, 24px). |
-| `variant` | `"primary" \| "brand" \| "tutor"` | `'primary'` | Biến thể màu sắc khi được chọn. |
+| `variant` | `"primary" \| "brand"` | `'primary'` | Biến thể màu sắc khi được chọn. |
 | `disabled` | `boolean` | `false` | Vô hiệu hóa tương tác. |
 
 ---

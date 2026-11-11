@@ -406,7 +406,7 @@ export function TutorOnboardingWizard() {
         <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
           <Button
             type="button"
-            variant="tutor"
+            variant="brand"
             size="medium"
             onClick={() => {
               setIsSubmittedSuccess(false);
@@ -476,16 +476,16 @@ export function TutorOnboardingWizard() {
                 <div
                   className={`w-full h-2 rounded-full mb-2 transition-all ${
                     isPassed
-                      ? "bg-amber-600"
+                      ? "bg-brand-600"
                       : isCurrent
-                        ? "bg-amber-500 ring-2 ring-amber-300 ring-offset-1"
+                        ? "bg-brand-500 ring-2 ring-brand-300 ring-offset-1"
                         : "bg-gray-200"
                   }`}
                 />
                 <span
                   className={`text-[11px] font-semibold text-center truncate max-w-full hidden sm:block ${
                     isCurrent
-                      ? "text-amber-700"
+                      ? "text-brand-700"
                       : isPassed
                         ? "text-gray-900"
                         : "text-gray-400"
@@ -612,7 +612,7 @@ export function TutorOnboardingWizard() {
             {currentStep < 6 ? (
               <Button
                 type="button"
-                variant="tutor"
+                variant="brand"
                 size="medium"
                 disabled={isSavingDraft || isSubmitting || isAvatarUploading}
                 onClick={handleNext}
@@ -622,7 +622,7 @@ export function TutorOnboardingWizard() {
             ) : (
               <Button
                 type="button"
-                variant="tutor"
+                variant="brand"
                 size="medium"
                 disabled={isSubmitting || isSavingDraft || isAvatarUploading}
                 onClick={handleSubmit}

@@ -49,13 +49,13 @@ export function MessageInput({
               placeholder="Nhập nội dung tin nhắn..."
               className={`flex-1 px-3.5 py-2 text-base border border-gray-200 rounded-lg focus:outline-none transition-colors ${
                 isTutor
-                  ? "focus:border-role-tutor focus:ring-1 focus:ring-role-tutor"
+                  ? "focus:border-brand focus:ring-1 focus:ring-brand"
                   : "focus:border-blue-500"
               }`}
             />
             <Button
               type="submit"
-              variant={isTutor ? "tutor" : "brand"}
+              variant="brand"
               size="medium"
               disabled={!content.trim() || isSending}
               className={isTutor ? "px-5" : "bg-brand hover:bg-blue-700 text-white px-5"}

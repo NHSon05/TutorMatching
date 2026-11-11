@@ -7,10 +7,11 @@ namespace TutorMatching.Application.Hiring;
 // ActorId must come from ICurrentUser, never from the HTTP body. The store rechecks account/ownership.
 public sealed record HireWriteTarget(Guid ActorId, Guid TutorProfileId, Guid SubjectId, Guid? CourseId = null,
     Guid? RequestId = null, Guid? ExpectedVersion = null, bool RequireOffering = true,
-    string? ProvinceCode = null, string? DistrictCode = null);
+    string? ProvinceCode = null, string? DistrictCode = null, bool RequireExpectedVersion = true);
 
 public sealed record HireOffering(Guid TutorUserId, int? ListedPriceVnd, ImmutableArray<string> Modes,
-    ImmutableArray<WeeklyWindow> Availability, bool ValidLocation, string? ProvinceName, string? DistrictName);
+    ImmutableArray<WeeklyWindow> Availability, bool ValidLocation, string? ProvinceName, string? DistrictName,
+    int? CourseSessionCount = null);
 
 public interface IHireRequestStore
 {
@@ -26,9 +27,16 @@ public interface IHireWriteSession
     HireRequest? Request { get; }
     HireOffering Offering { get; }
     Task<HireCreateOperation?> FindCreateOperationAsync(Guid key, CancellationToken cancellationToken);
+    Task<HirePayment?> FindPaymentByIdempotencyAsync(Guid idempotencyKey, CancellationToken cancellationToken);
+    Task<HirePayment?> FindPaymentByIdAsync(Guid paymentId, CancellationToken cancellationToken);
+    Task<HirePayment?> FindPendingPaymentAsync(CancellationToken cancellationToken);
+    Task<HireReview?> FindReviewByRequestIdAsync(Guid requestId, CancellationToken cancellationToken);
     void AddRequest(HireRequest request);
     void AddProposal(Negotiation proposal);
     void AddStatusEvent(RequestStatusHistory statusEvent);
+    void AddPayment(HirePayment payment);
+    void AddReview(HireReview review);
+    Task RecalculateTutorRatingAsync(Guid tutorProfileId, int? additionalRating, CancellationToken cancellationToken);
     Guid AddConversation(DateTimeOffset now);
     void NotifyOtherParticipant(string type, string title, DateTimeOffset now);
     void AddCreateOperation(HireCreateOperation operation);

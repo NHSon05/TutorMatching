@@ -96,13 +96,13 @@ export function Step3Certifications({
           }}
           className={`p-4 rounded-xl border text-left transition-all ${
             !hasCertifications
-              ? "border-amber-600 bg-amber-50/50 ring-1 ring-amber-600"
+              ? "border-brand-600 bg-brand-50/50 ring-1 ring-brand-600"
               : "border-gray-200 bg-white hover:border-gray-300"
           }`}
         >
           <div className="flex items-center gap-2 mb-1">
             <span className={`w-4 h-4 rounded-full border flex items-center justify-center ${
-              !hasCertifications ? "border-amber-600 bg-amber-600 text-white text-xs" : "border-gray-300"
+              !hasCertifications ? "border-brand-600 bg-brand-600 text-white text-xs" : "border-gray-300"
             }`}>
               {!hasCertifications && "✓"}
             </span>
@@ -123,13 +123,13 @@ export function Step3Certifications({
           }}
           className={`p-4 rounded-xl border text-left transition-all ${
             hasCertifications
-              ? "border-amber-600 bg-amber-50/50 ring-1 ring-amber-600"
+              ? "border-brand-600 bg-brand-50/50 ring-1 ring-brand-600"
               : "border-gray-200 bg-white hover:border-gray-300"
           }`}
         >
           <div className="flex items-center gap-2 mb-1">
             <span className={`w-4 h-4 rounded-full border flex items-center justify-center ${
-              hasCertifications ? "border-amber-600 bg-amber-600 text-white text-xs" : "border-gray-300"
+              hasCertifications ? "border-brand-600 bg-brand-600 text-white text-xs" : "border-gray-300"
             }`}>
               {hasCertifications && "✓"}
             </span>
@@ -158,7 +158,7 @@ export function Step3Certifications({
               className="p-5 bg-white rounded-xl border border-gray-200 shadow-2xs space-y-4"
             >
               <div className="flex items-center justify-between">
-                <span className="text-xs font-bold text-amber-700 bg-amber-50 px-2.5 py-1 rounded-md">
+                <span className="text-xs font-bold text-brand-700 bg-brand-50 px-2.5 py-1 rounded-md">
                   Chứng chỉ #{index + 1}
                 </span>
                 {certifications.length > 1 && (
@@ -235,7 +235,7 @@ export function Step3Certifications({
             variant="tertiary"
             size="small"
             onClick={handleAddCertificate}
-            className="text-amber-700 hover:bg-amber-50"
+            className="text-brand-700 hover:bg-brand-50"
           >
             + Thêm chứng chỉ khác
           </Button>

@@ -3,7 +3,6 @@ import * as React from "react";
 export type BadgeVariant =
   | "gray"
   | "brand"
-  | "tutor"
   | "admin"
   | "success"
   | "warning"
@@ -35,11 +34,6 @@ const colorStyles: Record<
     subtitle: { base: "bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-950/40 dark:text-blue-300 dark:border-blue-900", dot: "bg-brand" },
     solid: { base: "bg-brand text-white border-transparent", dot: "bg-white" },
     outline: { base: "bg-transparent text-brand border-brand/40", dot: "bg-brand" },
-  },
-  tutor: {
-    subtitle: { base: "bg-amber-50 text-amber-800 border-amber-200 dark:bg-amber-950/40 dark:text-amber-300 dark:border-amber-900", dot: "bg-role-tutor" },
-    solid: { base: "bg-role-tutor text-white border-transparent", dot: "bg-white" },
-    outline: { base: "bg-transparent text-role-tutor border-role-tutor/40", dot: "bg-role-tutor" },
   },
   admin: {
     subtitle: { base: "bg-rose-50 text-rose-800 border-rose-200 dark:bg-rose-950/40 dark:text-rose-300 dark:border-rose-900", dot: "bg-rose-600" },
