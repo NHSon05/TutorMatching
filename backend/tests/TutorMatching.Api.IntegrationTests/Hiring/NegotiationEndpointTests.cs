@@ -59,7 +59,8 @@ public sealed class NegotiationEndpointTests(PostgreSqlFixture postgres)
         var final = (await Detail(learner, second))!;
         Assert.Equal(2, final["finalAgreement"]!["proposalSequence"]!.GetValue<int>());
         Assert.Equal("19:00", final["finalAgreement"]!["terms"]!["schedules"]![0]!["startTime"]!.ToString());
-        Assert.Equal(new[] { "cancel", "complete" }, final["allowedActions"]!.AsArray().Select(a => a!.GetValue<string>()));
+        // Unpaid non-legacy request: learner is offered payment instead of completion.
+        Assert.Equal(new[] { "cancel", "pay" }, final["allowedActions"]!.AsArray().Select(a => a!.GetValue<string>()));
         Assert.Equal(HttpStatusCode.Conflict, (await Send(learner, final, "proposals", new() { ["priceVnd"] = 190000 })).StatusCode);
         await f.WithDbAsync(async db => {
             Assert.Equal(2, await db.Negotiations.CountAsync()); Assert.Equal(2, await db.NegotiationSchedules.CountAsync());

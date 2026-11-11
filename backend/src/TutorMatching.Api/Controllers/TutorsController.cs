@@ -1,15 +1,17 @@
+using System.ComponentModel.DataAnnotations;
 using System.Globalization;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using TutorMatching.Api.Contracts.Tutors;
+using TutorMatching.Application.Hiring;
 using TutorMatching.Application.Tutors;
 using TutorMatching.Domain.Tutors;
 namespace TutorMatching.Api.Controllers;
 
 [ApiController, AllowAnonymous, Route("tutors")]
-public sealed class TutorsController(IPublicTutorService tutors) : ControllerBase
+public sealed class TutorsController(IPublicTutorService tutors, IHireRequestQueries hireQueries) : ControllerBase
 {
     private static readonly HashSet<string> QueryKeys = new(StringComparer.OrdinalIgnoreCase) {
         "name","subjectId","levelCode","qualification","minPrice","maxPrice","mode","provinceCode","districtCode","sessionsPerWeek","durationMinutes","weeklyWindows","sort","page","pageSize" };
@@ -65,5 +67,22 @@ public sealed class TutorsController(IPublicTutorService tutors) : ControllerBas
         Response.Headers.CacheControl = "no-store";
         var result = await tutors.FindAsync(id, cancellationToken);
         return result is null ? Problem(statusCode: 404, title: "Hồ sơ gia sư không còn khả dụng.") : Ok(result);
+    }
+
+    [HttpGet("{id:guid}/reviews"), ProducesResponseType<PublicTutorReviewsResponse>(200), ProducesResponseType<ProblemDetails>(404)]
+    public async Task<IActionResult> Reviews(
+        Guid id,
+        [FromQuery, Range(1, 50)] int pageSize = 20,
+        CancellationToken cancellationToken = default)
+    {
+        Response.Headers.CacheControl = "no-store";
+        try
+        {
+            return Ok(await hireQueries.PublicReviewsAsync(id, pageSize, cancellationToken));
+        }
+        catch (HireStoreException e) when (e.Code == "not_found")
+        {
+            return Problem(statusCode: 404, title: "Hồ sơ gia sư không còn khả dụng.");
+        }
     }
 }

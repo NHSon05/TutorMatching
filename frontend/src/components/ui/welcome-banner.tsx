@@ -1,6 +1,6 @@
 import * as React from "react";
 
-export type WelcomeBannerVariant = "brand" | "tutor" | "gradient" | "gray";
+export type WelcomeBannerVariant = "brand" | "gradient" | "gray";
 
 export interface WelcomeBannerProps {
   title: React.ReactNode;
@@ -24,11 +24,6 @@ const variantStyles: Record<
     container: "bg-gradient-to-r from-brand to-indigo-700 text-white border-transparent",
     title: "text-white",
     desc: "text-blue-100",
-  },
-  tutor: {
-    container: "bg-gradient-to-r from-amber-600 to-orange-700 text-white border-transparent",
-    title: "text-white",
-    desc: "text-amber-100",
   },
   gradient: {
     container: "bg-gradient-to-r from-gray-900 via-indigo-950 to-gray-900 text-white border-transparent",

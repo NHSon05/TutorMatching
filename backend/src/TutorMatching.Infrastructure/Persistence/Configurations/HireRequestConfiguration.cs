@@ -14,6 +14,7 @@ public sealed class HireRequestConfiguration : IEntityTypeConfiguration<HireRequ
         {
             t.HasCheckConstraint("ck_hire_request_values", "sessions_per_week BETWEEN 1 AND 21 AND duration_minutes BETWEEN 30 AND 240 AND proposed_price_vnd > 0 AND (listed_price_vnd IS NULL OR listed_price_vnd > 0) AND latest_proposal_sequence >= 0 AND next_event_sequence > 0");
             t.HasCheckConstraint("ck_hire_request_status", "status_code IN ('PENDING','NEGOTIATING','ACCEPTED','REJECTED','CANCELLED','COMPLETED')");
+            t.HasCheckConstraint("ck_hire_request_payment_status", "payment_status_code IN ('UNPAID','PENDING','PAID','REFUNDED')");
             t.HasCheckConstraint("ck_hire_request_mode", "teaching_mode_code IN ('ONLINE','OFFLINE','HYBRID')");
             t.HasCheckConstraint("ck_hire_request_snapshot", "initial_terms IS NOT NULL AND (is_legacy OR listed_price_vnd IS NOT NULL) AND (status_code NOT IN ('ACCEPTED','COMPLETED') OR final_agreement IS NOT NULL)");
         });
@@ -55,6 +56,11 @@ public sealed class HireRequestConfiguration : IEntityTypeConfiguration<HireRequ
             .HasMaxLength(32)
             .IsRequired();
 
+        builder.Property(x => x.PaymentStatusCode)
+            .HasMaxLength(24)
+            .HasDefaultValue("UNPAID")
+            .IsRequired();
+
         builder.Property(x => x.Note)
             .HasMaxLength(2000);
 
@@ -62,6 +68,9 @@ public sealed class HireRequestConfiguration : IEntityTypeConfiguration<HireRequ
             .HasMaxLength(1000);
 
         builder.Property(x => x.AcceptedAt)
+            .HasColumnType("timestamp with time zone");
+
+        builder.Property(x => x.PaidAt)
             .HasColumnType("timestamp with time zone");
 
         builder.Property(x => x.CompletedAt)
@@ -120,6 +129,16 @@ public sealed class HireRequestConfiguration : IEntityTypeConfiguration<HireRequ
         builder.HasMany(x => x.StatusHistories)
             .WithOne(x => x.HireRequest)
             .HasForeignKey(x => x.HireRequestId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        builder.HasMany(x => x.Payments)
+            .WithOne(x => x.HireRequest)
+            .HasForeignKey(x => x.HireRequestId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        builder.HasOne(x => x.Review)
+            .WithOne(x => x.HireRequest)
+            .HasForeignKey<HireReview>(x => x.HireRequestId)
             .OnDelete(DeleteBehavior.Cascade);
     }
 }

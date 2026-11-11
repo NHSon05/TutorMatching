@@ -101,7 +101,7 @@ function ProfessionalEditor({ initial, accountId }: { initial: TutorOnboardingRe
         </fieldset>
         <section className="rounded-xl bg-surface-base p-4" aria-label="Chứng chỉ hiện có">
           <h3 className="mb-2 text-sm font-semibold">Chứng chỉ trong hồ sơ</h3>
-          {draft.certifications.length ? <div className="flex flex-wrap gap-2">{draft.certifications.map((certificate, index) => <Badge key={`${certificate.name}-${index}`} variant="tutor">{certificate.name} · {certificate.issuer}</Badge>)}</div> : <p className="text-sm text-content-secondary">Chưa có chứng chỉ được cập nhật.</p>}
+          {draft.certifications.length ? <div className="flex flex-wrap gap-2">{draft.certifications.map((certificate, index) => <Badge key={`${certificate.name}-${index}`} variant="brand">{certificate.name} · {certificate.issuer}</Badge>)}</div> : <p className="text-sm text-content-secondary">Chưa có chứng chỉ được cập nhật.</p>}
         </section>
         {message && <p role={success ? "status" : "alert"} className={`text-sm ${success ? "text-status-success" : "text-status-error"}`}>{message}</p>}
         {locked && <p role="status">Hồ sơ đang chờ duyệt. Bạn có thể sửa sau khi nhận kết quả.</p>}
@@ -109,7 +109,7 @@ function ProfessionalEditor({ initial, accountId }: { initial: TutorOnboardingRe
           const ownerSession=client.getQueryData(sessionKey); setReviewing(true);try {await submitTutorOnboarding(saved.version); const result=await getTutorOnboarding();if(!ownerSession || client.getQueryData(sessionKey)!==ownerSession)return;setSaved(result);setDraft(result);client.setQueryData(["tutor-profile",accountId],result);setSuccess(true);setMessage("Đã gửi hồ sơ chờ duyệt.");}catch {setSuccess(false);setMessage("Chưa gửi được. Kiểm tra thông tin cá nhân, ảnh, trình độ, môn/lớp, hình thức và giá theo buổi; tải lại nếu hồ sơ đã thay đổi.");}finally{setReviewing(false);}
         }}>Gửi duyệt hồ sơ</Button>}
         <div className="flex justify-end border-t border-border-default pt-5">
-          <Button type="submit" variant="tutor" disabled={!dirty || locked || reviewing} isLoading={mutation.isPending}>{mutation.isPending ? "Đang lưu hồ sơ..." : "Lưu hồ sơ giảng dạy"}</Button>
+          <Button type="submit" variant="brand" disabled={!dirty || locked || reviewing} isLoading={mutation.isPending}>{mutation.isPending ? "Đang lưu hồ sơ..." : "Lưu hồ sơ giảng dạy"}</Button>
         </div>
       </form>
     </Card>

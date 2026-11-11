@@ -45,7 +45,7 @@ function RequestListContent({ audience }: { audience: "learner" | "tutor" }) {
         tabs={statusTabs}
         activeTab={list.status}
         onChange={list.changeStatus}
-        roleVariant={audience === "tutor" ? "tutor" : "brand"}
+        roleVariant="brand"
         variant="line"
         className="mb-4"
       />
@@ -87,9 +87,15 @@ function RequestListContent({ audience }: { audience: "learner" | "tutor" }) {
                   </div>
                   <Button
                     asChild
-                    variant={audience === "tutor" ? "tutor" : "brand"}
+                    variant="brand"
                   >
-                    <Link href={`/${audience}/requests/${item.id}`}>
+                    <Link
+                      href={
+                        audience === "tutor"
+                          ? `/request/${item.id}`
+                          : `/learner/requests/${item.id}`
+                      }
+                    >
                       Xem chi tiết →
                     </Link>
                   </Button>

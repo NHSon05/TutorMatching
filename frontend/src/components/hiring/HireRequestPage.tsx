@@ -11,6 +11,10 @@ import {
   useRejectHireRequest,
   useCancelHireRequest,
   useCompleteHireRequest,
+  useInitiateHirePayment,
+  useConfirmHirePayment,
+  useSubmitHireReview,
+  useReplyHireReview,
 } from "@/hooks/use-hire-requests";
 import { HireRequestDetail } from "@/components/hiring/HireRequestDetail";
 import { Button } from "@/components/ui/button";
@@ -46,6 +50,10 @@ function HireRequestPageContent({
   const rejectMutation = useRejectHireRequest(id);
   const cancelMutation = useCancelHireRequest(id);
   const completeMutation = useCompleteHireRequest(id);
+  const initiatePaymentMutation = useInitiateHirePayment(id);
+  const confirmPaymentMutation = useConfirmHirePayment(id);
+  const submitReviewMutation = useSubmitHireReview(id);
+  const replyReviewMutation = useReplyHireReview(id);
 
   const [reasonDraft, setReasonDraft] = React.useState("");
   const [isConflict, setIsConflict] = React.useState(false);
@@ -132,6 +140,55 @@ function HireRequestPageContent({
     }
   };
 
+  const handleInitiatePayment = async () => {
+    if (!detail || isConflict) return undefined;
+    setIsConflict(false);
+    setErrorMessage(null);
+    try {
+      const key = createIdempotencyKey();
+      return await initiatePaymentMutation.mutateAsync(key);
+    } catch (e) {
+      extractError(e);
+      return undefined;
+    }
+  };
+
+  const handleConfirmPayment = async (paymentId: string) => {
+    if (!detail || isConflict) return;
+    setIsConflict(false);
+    setErrorMessage(null);
+    try {
+      await confirmPaymentMutation.mutateAsync(paymentId);
+    } catch (e) {
+      extractError(e);
+    }
+  };
+
+  const handleSubmitReview = async (payload: {
+    rating: number;
+    comment?: string;
+  }) => {
+    if (!detail || isConflict) return;
+    setIsConflict(false);
+    setErrorMessage(null);
+    try {
+      await submitReviewMutation.mutateAsync(payload);
+    } catch (e) {
+      extractError(e);
+    }
+  };
+
+  const handleReplyReview = async (reply: string) => {
+    if (!detail || isConflict) return;
+    setIsConflict(false);
+    setErrorMessage(null);
+    try {
+      await replyReviewMutation.mutateAsync({ reply });
+    } catch (e) {
+      extractError(e);
+    }
+  };
+
   if (isLoading) {
     return (
       <div className="space-y-4">
@@ -155,7 +212,7 @@ function HireRequestPageContent({
               Thử lại
             </Button>
             <Link href={backHref}>
-              <Button variant="tutor" size="small">
+              <Button variant="brand" size="small">
                 ← Quay lại danh sách
               </Button>
             </Link>
@@ -182,11 +239,19 @@ function HireRequestPageContent({
         onReject={handleReject}
         onCancel={handleCancel}
         onComplete={handleComplete}
+        onInitiatePayment={handleInitiatePayment}
+        onConfirmPayment={handleConfirmPayment}
+        onSubmitReview={handleSubmitReview}
+        onReplyReview={handleReplyReview}
         onRefresh={handleRefresh}
         isAccepting={acceptMutation.isPending}
         isRejecting={rejectMutation.isPending}
         isCancelling={cancelMutation.isPending}
         isCompleending={completeMutation.isPending}
+        isInitiatingPayment={initiatePaymentMutation.isPending}
+        isConfirmingPayment={confirmPaymentMutation.isPending}
+        isSubmittingReview={submitReviewMutation.isPending}
+        isReplyingReview={replyReviewMutation.isPending}
         errorMessage={errorMessage}
         isConflict={isConflict}
         reasonDraft={reasonDraft}
@@ -194,4 +259,22 @@ function HireRequestPageContent({
       />
     </div>
   );
+}
+
+// crypto.randomUUID is missing in non-secure contexts (plain HTTP on a LAN IP),
+// so fall back to a valid RFC 4122 v4 UUID built from getRandomValues/Math.random.
+function createIdempotencyKey(): string {
+  if (typeof crypto !== "undefined" && typeof crypto.randomUUID === "function") {
+    return crypto.randomUUID();
+  }
+  const bytes = new Uint8Array(16);
+  if (typeof crypto !== "undefined" && typeof crypto.getRandomValues === "function") {
+    crypto.getRandomValues(bytes);
+  } else {
+    for (let i = 0; i < bytes.length; i++) bytes[i] = Math.floor(Math.random() * 256);
+  }
+  bytes[6] = (bytes[6] & 0x0f) | 0x40;
+  bytes[8] = (bytes[8] & 0x3f) | 0x80;
+  const hex = Array.from(bytes, (b) => b.toString(16).padStart(2, "0")).join("");
+  return `${hex.slice(0, 8)}-${hex.slice(8, 12)}-${hex.slice(12, 16)}-${hex.slice(16, 20)}-${hex.slice(20)}`;
 }

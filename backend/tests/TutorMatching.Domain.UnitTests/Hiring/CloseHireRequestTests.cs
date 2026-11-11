@@ -12,7 +12,11 @@ public sealed class CloseHireRequestTests
         var request = new HireRequest { Id = Guid.NewGuid(), RequesterUserId = Learner,
             InitialTerms = new(new DateOnly(2026, 11, 10), 1, 60, "ONLINE", null, null, null, 150000,
                 [new WeeklyWindow(1, new TimeOnly(18, 0), new TimeOnly(19, 0))]) };
-        if (status == "ACCEPTED") request.AcceptInitial(Tutor, Tutor, Now.AddDays(-1), null, null);
+        if (status == "ACCEPTED")
+        {
+            request.AcceptInitial(Tutor, Tutor, Now.AddDays(-1), null, null);
+            request.PaymentStatusCode = "PAID";
+        }
         request.StatusCode = status;
         return request;
     }

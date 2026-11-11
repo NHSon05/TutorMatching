@@ -127,6 +127,7 @@ describe("GuestGuard", () => {
   });
 
   it("immediately blocks when SSR initialRole is provided without flashing form", async () => {
+    vi.mocked(getSession).mockReturnValue(new Promise(() => {}));
     render(
       <QueryProvider>
         <GuestGuard initialRole="LEARNER">
@@ -137,6 +138,18 @@ describe("GuestGuard", () => {
 
     expect(screen.queryByText("Login Form Content")).not.toBeInTheDocument();
     await waitFor(() => expect(replace).toHaveBeenCalledWith("/"));
+  });
+
+  it("ignores a stale SSR initialRole once the session resolves as logged out", async () => {
+    render(
+      <QueryProvider>
+        <GuestGuard initialRole="LEARNER">
+          <p>Login Form Content</p>
+        </GuestGuard>
+      </QueryProvider>
+    );
+
+    expect(await screen.findByText("Login Form Content")).toBeInTheDocument();
   });
 
   it("blocks when user is stored in useAuthStore even while session query is pending", async () => {

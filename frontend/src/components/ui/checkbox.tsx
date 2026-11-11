@@ -1,7 +1,7 @@
 import * as React from "react";
 
 export type CheckboxSize = "small" | "medium" | "large";
-export type CheckboxVariant = "primary" | "brand" | "tutor";
+export type CheckboxVariant = "primary" | "brand";
 
 export interface CheckboxProps
   extends Omit<React.InputHTMLAttributes<HTMLInputElement>, "size" | "onChange"> {
@@ -46,7 +46,6 @@ export interface CheckboxProps
    * Visual color variant when checked:
    * - primary: Dark solid (gray-900)
    * - brand: Blue brand color (Learner)
-   * - tutor: Amber color (Tutor)
    * @default 'primary'
    */
   variant?: CheckboxVariant;
@@ -86,8 +85,6 @@ const checkedVariantStyles: Record<CheckboxVariant, string> = {
     "bg-gray-900 border-gray-900 text-white dark:bg-white dark:border-white dark:text-gray-900 focus-visible:ring-gray-900",
   brand:
     "bg-brand border-brand text-white focus-visible:ring-brand",
-  tutor:
-    "bg-role-tutor border-role-tutor text-white focus-visible:ring-role-tutor",
 };
 
 export const Checkbox = React.forwardRef<HTMLInputElement, CheckboxProps>(

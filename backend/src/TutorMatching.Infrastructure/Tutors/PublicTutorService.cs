@@ -97,7 +97,8 @@ public sealed class PublicTutorService(ApplicationDbContext db) : IPublicTutorSe
         return new PublicTutorDetail(
             p.Id, p.DisplayName, p.AvatarUrl, p.Bio, p.Qualification, p.SchoolName, p.Specialization, p.ExperienceYears, p.TeachingMethodology,
             p.Achievements, p.SessionRateVnd, p.TeachingModes, p.ProvinceCode, p.ProvinceName, p.DistrictCode, p.DistrictName, p.Subjects, p.ApprovedAt,
-            slots.Select(s => new PublicAvailability(s.Id, s.DayOfWeek!.Value, s.StartTime.ToString("HH:mm"), s.EndTime.ToString("HH:mm"), "Asia/Ho_Chi_Minh")).ToList(), courses);
+            slots.Select(s => new PublicAvailability(s.Id, s.DayOfWeek!.Value, s.StartTime.ToString("HH:mm"), s.EndTime.ToString("HH:mm"), "Asia/Ho_Chi_Minh")).ToList(), courses,
+            p.AverageRating, p.ReviewCount);
     });
 
     private async Task<Dictionary<Guid, PublicTutorSummary>> Summaries(List<Guid> ids, CancellationToken ct)
@@ -121,7 +122,9 @@ public sealed class PublicTutorService(ApplicationDbContext db) : IPublicTutorSe
                               p.TeachingModes,
                               p.ProvinceCode,
                               p.DistrictCode,
-                              p.ApprovedAt
+                              p.ApprovedAt,
+                              p.AverageRating,
+                              p.ReviewCount
                           }).ToListAsync(ct);
         var subjects = await (from s in db.TutorSubjects.AsNoTracking()
                               join sub in db.Subjects.AsNoTracking() on s.SubjectId equals sub.Id
@@ -138,6 +141,7 @@ public sealed class PublicTutorService(ApplicationDbContext db) : IPublicTutorSe
             p.ProvinceCode is not null ? provinces.GetValueOrDefault(p.ProvinceCode) : null, p.DistrictCode, p.DistrictCode is not null ? districts.GetValueOrDefault(p.DistrictCode) : null,
             subjects.Where(s => s.TutorProfileId == p.Id).OrderBy(s => s.Name).ThenBy(s => s.SubjectId).Select(s => new PublicSubject(s.SubjectId, s.Name,
                 levels.Where(l => l.TutorProfileId == p.Id && l.SubjectId == s.SubjectId).OrderBy(l => l.LevelCode).Select(l => l.LevelCode).ToList(),
-                levels.Where(l => l.TutorProfileId == p.Id && l.SubjectId == s.SubjectId).OrderBy(l => l.LevelCode).Select(l => l.Name).ToList())).ToList(), p.ApprovedAt));
+                levels.Where(l => l.TutorProfileId == p.Id && l.SubjectId == s.SubjectId).OrderBy(l => l.LevelCode).Select(l => l.Name).ToList())).ToList(), p.ApprovedAt,
+            p.AverageRating, p.ReviewCount));
     }
 }

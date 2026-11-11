@@ -5,9 +5,9 @@ import { TutorSearchView } from "@/components/tutors/TutorsListClient";
 import { getTutors, type TutorListItemResponse } from "@/lib/api/tutors";
 import { getPublicCatalog } from "@/lib/api/catalog";
 import { ApiError } from "@/lib/api/http";
-const { push } = vi.hoisted(() => ({ push: vi.fn() }));
+const { push, replace } = vi.hoisted(() => ({ push: vi.fn(), replace: vi.fn() }));
 vi.mock("next/navigation", () => ({
-  useRouter: () => ({ push }),
+  useRouter: () => ({ push, replace }),
   usePathname: () => "/tutors",
   useSearchParams: () => new URLSearchParams(),
 }));
@@ -73,10 +73,16 @@ async function selectFilter(label: string, option: string) {
   });
   fireEvent.click(trigger);
 }
+/** Waits for the debounced auto-search and returns its query params. */
+async function autoSearchParams() {
+  await waitFor(() => expect(replace).toHaveBeenCalled(), { timeout: 1500 });
+  return new URL(replace.mock.calls.at(-1)![0], "https://example.test")
+    .searchParams;
+}
 function advanced() {
   fireEvent.click(screen.getByRole("button", { name: /Bộ lọc nâng cao/ }));
 }
-it("loads without filters and only applies draft criteria on submission", async () => {
+it("loads without filters and auto-applies draft criteria after the debounce", async () => {
   view();
   await screen.findByRole("link", { name: "Xem hồ sơ Nguyễn An" });
   expect(getTutors).toHaveBeenCalledTimes(1);
@@ -87,15 +93,15 @@ it("loads without filters and only applies draft criteria on submission", async 
   });
   await selectFilter("Môn học", "Toán");
   expect(push).not.toHaveBeenCalled();
-  expect(getTutors).toHaveBeenCalledTimes(1);
+  expect(replace).not.toHaveBeenCalled();
 
-  fireEvent.click(screen.getByRole("button", { name: "Áp dụng bộ lọc" }));
-  const params = new URL(push.mock.calls[0][0], "https://example.test").searchParams;
+  const params = await autoSearchParams();
   expect(params.get("name")).toBe("An");
   expect(params.getAll("subjectId")).toEqual(["math"]);
   expect(params.has("weeklyWindows")).toBe(false);
   expect(params.has("sessionsPerWeek")).toBe(false);
   expect(params.has("durationMinutes")).toBe(false);
+  expect(push).not.toHaveBeenCalled();
 });
 it("uses URL criteria and links to the canonical profile without inventing price or ratings", async () => {
   view("name=An&subjectId=math&mode=ONLINE");
@@ -117,27 +123,23 @@ it("applies multiple filters and resets pagination", async () => {
   await selectFilter("Môn học", "Toán");
   await selectFilter("Cấp học có thể dạy", "THPT");
   await selectFilter("Hình thức dạy", "Trực tuyến");
-  fireEvent.click(screen.getByRole("button", { name: "Áp dụng bộ lọc" }));
-  const next = new URL(push.mock.calls[0][0], "https://example.test")
-    .searchParams;
+  const next = await autoSearchParams();
   expect(next.get("name")).toBe("An");
   expect(next.getAll("subjectId")).toEqual(["math"]);
+  expect(next.getAll("levelCode")).toEqual(["HIGH_SCHOOL"]);
+  expect(next.getAll("mode")).toEqual(["ONLINE"]);
   expect(next.get("page")).toBeNull();
 });
-it("preserves filters across pages and clears them explicitly", async () => {
+it("preserves filters across pages", async () => {
   view("name=An&sort=priceAsc");
   fireEvent.click(await screen.findByRole("button", { name: "Trang sau" }));
   expect(push).toHaveBeenCalledWith("/tutors?name=An&sort=priceAsc&page=2");
-  fireEvent.click(screen.getByRole("button", { name: "Xóa tất cả bộ lọc" }));
-  expect(push).toHaveBeenLastCalledWith("/tutors");
 });
 it("serializes the full schedule criteria", async () => {
   view();
   advanced();
   fireEvent.click(screen.getByLabelText("Lọc theo lịch và số buổi mỗi tuần"));
-  fireEvent.click(screen.getByRole("button", { name: "Áp dụng bộ lọc" }));
-  const params = new URL(push.mock.calls[0][0], "https://example.test")
-    .searchParams;
+  const params = await autoSearchParams();
   expect(params.get("sessionsPerWeek")).toBe("2");
   expect(params.get("durationMinutes")).toBe("60");
   expect(JSON.parse(params.get("weeklyWindows")!)[0]).toEqual({
@@ -146,17 +148,13 @@ it("serializes the full schedule criteria", async () => {
     endTime: "20:00",
   });
 });
-it("rejects reversed prices and missing offline area before navigation", async () => {
+it("does not auto-apply an offline mode without a province and district", async () => {
   view();
-  advanced();
-  fireEvent.change(screen.getByLabelText("Giá thấp nhất / buổi (VNĐ)"), {
-    target: { value: "200" },
-  });
-  fireEvent.change(screen.getByLabelText("Giá cao nhất / buổi (VNĐ)"), {
-    target: { value: "100" },
-  });
-  fireEvent.click(screen.getByRole("button", { name: "Áp dụng bộ lọc" }));
-  expect(await screen.findByRole("alert")).toHaveTextContent("Khoảng giá");
+  await selectFilter("Hình thức dạy", "Trực tiếp");
+  expect(
+    await screen.findByRole("alert", undefined, { timeout: 1500 })
+  ).toHaveTextContent("Chọn tỉnh/thành và quận/huyện");
+  expect(replace).not.toHaveBeenCalled();
   expect(push).not.toHaveBeenCalled();
 });
 it("shows an empty result instead of fallback tutors", async () => {
@@ -192,18 +190,6 @@ it("shows invalid URL feedback and supports retry after network failure", async 
   );
 });
 
-it("clears unsaved filter input even when the URL is already empty", async () => {
-  view();
-  await screen.findByLabelText("Môn học");
-  fireEvent.change(screen.getByLabelText("Tên gia sư"), {
-    target: { value: "Draft filter" },
-  });
-  await selectFilter("Môn học", "Toán");
-  fireEvent.click(screen.getByRole("button", { name: "Xóa tất cả bộ lọc" }));
-  expect(screen.getByLabelText("Tên gia sư")).toHaveValue("");
-  expect(screen.getByLabelText("Môn học")).toHaveTextContent("Tất cả môn học");
-});
-
 it("keeps advanced controls collapsed so the tutor list is visible immediately", async () => {
   view();
   expect(
@@ -215,4 +201,42 @@ it("keeps advanced controls collapsed so the tutor list is visible immediately",
   expect(
     screen.getByRole("button", { name: /Bộ lọc nâng cao/ })
   ).toHaveAttribute("aria-expanded", "false");
+});
+
+it("debounces typing and filter changes into a single auto-applied search", async () => {
+  view();
+  await screen.findByLabelText("Môn học");
+  const nameField = screen.getByLabelText("Tên gia sư");
+  fireEvent.change(nameField, { target: { value: "A" } });
+  fireEvent.change(nameField, { target: { value: "An" } });
+  await selectFilter("Môn học", "Toán");
+  expect(replace).not.toHaveBeenCalled();
+
+  await waitFor(() => expect(replace).toHaveBeenCalledTimes(1), {
+    timeout: 1500,
+  });
+  const params = new URL(replace.mock.calls[0][0], "https://example.test")
+    .searchParams;
+  expect(params.get("name")).toBe("An");
+  expect(params.getAll("subjectId")).toEqual(["math"]);
+  expect(push).not.toHaveBeenCalled();
+});
+
+it("does not auto-apply invalid debounced criteria and shows the error once settled", async () => {
+  view();
+  advanced();
+  fireEvent.change(screen.getByLabelText("Giá thấp nhất / buổi (VNĐ)"), {
+    target: { value: "200" },
+  });
+  fireEvent.change(screen.getByLabelText("Giá cao nhất / buổi (VNĐ)"), {
+    target: { value: "100" },
+  });
+  expect(screen.queryByText("Khoảng giá theo buổi không hợp lệ.")).toBeNull();
+  expect(
+    await screen.findByText("Khoảng giá theo buổi không hợp lệ.", undefined, {
+      timeout: 1500,
+    })
+  ).toBeInTheDocument();
+  expect(replace).not.toHaveBeenCalled();
+  expect(push).not.toHaveBeenCalled();
 });

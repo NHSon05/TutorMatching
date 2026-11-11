@@ -6,12 +6,19 @@ import { HireRequestTimeline } from "./HireRequestTimeline";
 import { hireStatuses as statusConfig } from "./hire-status";
 import { NegotiationPanel } from "./NegotiationPanel";
 import { formatVietnamDateTime } from "@/lib/date-time";
-import type { HireDetail, HireTermsDto } from "@/lib/api/hire-requests";
+import type {
+  HireDetail,
+  HirePaymentDto,
+  HireTermsDto,
+} from "@/lib/api/hire-requests";
 import { Badge, type BadgeVariant } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { TextArea } from "@/components/ui/text-area";
 import { CloseRequestDialog } from "./CloseRequestDialog";
+import { PaymentCheckoutDialog } from "./PaymentCheckoutDialog";
+import { LeaveReviewDialog } from "./LeaveReviewDialog";
+import { HireReviewCard } from "./HireReviewCard";
 
 export interface HireRequestDetailProps {
   detail: HireDetail;
@@ -19,11 +26,22 @@ export interface HireRequestDetailProps {
   onReject?: (reason: string) => void;
   onCancel?: (reason?: string) => void | Promise<void>;
   onComplete?: (reason?: string) => void | Promise<void>;
+  onInitiatePayment?: () => Promise<HirePaymentDto | undefined>;
+  onConfirmPayment?: (paymentId: string) => void | Promise<void>;
+  onSubmitReview?: (payload: {
+    rating: number;
+    comment?: string;
+  }) => void | Promise<void>;
+  onReplyReview?: (reply: string) => void | Promise<void>;
   onRefresh?: () => void | Promise<HireDetail | undefined>;
   isAccepting?: boolean;
   isRejecting?: boolean;
   isCancelling?: boolean;
   isCompleending?: boolean;
+  isInitiatingPayment?: boolean;
+  isConfirmingPayment?: boolean;
+  isSubmittingReview?: boolean;
+  isReplyingReview?: boolean;
   errorMessage?: string | null;
   isConflict?: boolean;
   reasonDraft?: string;
@@ -56,11 +74,19 @@ export function HireRequestDetail({
   onReject,
   onCancel,
   onComplete,
+  onInitiatePayment,
+  onConfirmPayment,
+  onSubmitReview,
+  onReplyReview,
   onRefresh,
   isAccepting = false,
   isRejecting = false,
   isCancelling = false,
   isCompleending = false,
+  isInitiatingPayment = false,
+  isConfirmingPayment = false,
+  isSubmittingReview = false,
+  isReplyingReview = false,
   errorMessage = null,
   isConflict = false,
   reasonDraft,
@@ -72,6 +98,21 @@ export function HireRequestDetail({
   const [closeDialogAction, setCloseDialogAction] = React.useState<
     "cancel" | "complete" | null
   >(null);
+  const [activePayment, setActivePayment] =
+    React.useState<HirePaymentDto | null>(detail.latestPayment ?? null);
+  const [isPaymentOpen, setIsPaymentOpen] = React.useState(false);
+  const [isReviewOpen, setIsReviewOpen] = React.useState(false);
+
+  // Sync from props during render (avoids setState-in-effect cascades).
+  const [prevLatestPayment, setPrevLatestPayment] = React.useState(
+    detail.latestPayment
+  );
+  if (detail.latestPayment !== prevLatestPayment) {
+    setPrevLatestPayment(detail.latestPayment);
+    if (detail.latestPayment) {
+      setActivePayment(detail.latestPayment);
+    }
+  }
 
   const reason = reasonDraft !== undefined ? reasonDraft : internalReason;
   const setReason = (val: string) => {
@@ -84,10 +125,39 @@ export function HireRequestDetail({
     variant: "gray" as BadgeVariant,
   };
 
+  // Permissions come from the backend's allowedActions so the UI can never
+  // drift from domain rules (legacy requests, session-loading state, hidden reviews).
   const canAccept = detail.allowedActions.includes("accept");
   const canReject = detail.allowedActions.includes("reject");
   const canCancel = detail.allowedActions.includes("cancel");
   const canComplete = detail.allowedActions.includes("complete");
+  const canPay = detail.allowedActions.includes("pay");
+  const canReview = detail.allowedActions.includes("review");
+  const canReplyReview = Boolean(
+    detail.review && detail.allowedActions.includes("replyReview")
+  );
+  // The backend withholds "complete" while a non-legacy request is unpaid.
+  const requiresPaymentBeforeComplete =
+    detail.status === "ACCEPTED" &&
+    canCancel &&
+    !canComplete &&
+    detail.paymentStatus !== undefined &&
+    detail.paymentStatus !== "PAID";
+
+  const handleOpenPayment = async () => {
+    if (detail.latestPayment) {
+      setActivePayment(detail.latestPayment);
+      setIsPaymentOpen(true);
+      return;
+    }
+    if (onInitiatePayment) {
+      const created = await onInitiatePayment();
+      if (created) {
+        setActivePayment(created);
+        setIsPaymentOpen(true);
+      }
+    }
+  };
 
   const handleRejectSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -121,7 +191,7 @@ export function HireRequestDetail({
           </div>
           <div>
             <span className="text-content-secondary">Học phí: </span>
-            <span className="font-semibold text-role-tutor text-base">
+            <span className="font-semibold text-brand text-base">
               {formatVnd(terms.priceVnd)} / buổi
             </span>
           </div>
@@ -181,7 +251,7 @@ export function HireRequestDetail({
         <div className="p-6">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-border-default pb-4 mb-4">
             <div>
-              <div className="flex items-center gap-3">
+              <div className="flex items-center gap-3 flex-wrap">
                 <h1 className="text-2xl font-bold text-content-primary">
                   Chi tiết yêu cầu thuê gia sư
                 </h1>
@@ -194,6 +264,26 @@ export function HireRequestDetail({
                 >
                   {statusInfo.label}
                 </Badge>
+                {(detail.status === "ACCEPTED" ||
+                  detail.status === "COMPLETED") &&
+                  detail.paymentStatus && (
+                    <Badge
+                      variant={
+                        detail.paymentStatus === "PAID"
+                          ? "success"
+                          : detail.paymentStatus === "PENDING"
+                            ? "warning"
+                            : "gray"
+                      }
+                      shape="pill"
+                    >
+                      {detail.paymentStatus === "PAID"
+                        ? "Đã thanh toán học phí"
+                        : detail.paymentStatus === "PENDING"
+                          ? "Chờ xác nhận thanh toán"
+                          : "Chưa thanh toán học phí"}
+                    </Badge>
+                  )}
               </div>
               <p className="text-xs text-content-muted mt-1">
                 Mã yêu cầu: {detail.id}
@@ -219,34 +309,71 @@ export function HireRequestDetail({
             </Link>
           </div>
 
-          {/* Action buttons (cancel/complete) when permitted */}
-          {(canCancel || canComplete) && (
-            <div className="flex flex-wrap gap-2 mb-4">
-              {canComplete && (
-                <Button
-                  variant="success"
-                  size="small"
-                  onClick={() => setCloseDialogAction("complete")}
-                  isLoading={isCompleending}
-                  disabled={
-                    isAccepting || isRejecting || isCancelling || isCompleending
-                  }
-                >
-                  Hoàn tất việc học...
-                </Button>
-              )}
-              {canCancel && (
-                <Button
-                  variant="secondary"
-                  size="small"
-                  onClick={() => setCloseDialogAction("cancel")}
-                  isLoading={isCancelling}
-                  disabled={
-                    isAccepting || isRejecting || isCancelling || isCompleending
-                  }
-                >
-                  Hủy yêu cầu...
-                </Button>
+          {/* Action buttons (pay/review/cancel/complete) when permitted */}
+          {(canPay || canReview || canCancel || canComplete) && (
+            <div className="space-y-2 mb-4">
+              <div className="flex flex-wrap gap-2">
+                {canPay && (
+                  <Button
+                    variant="brand"
+                    size="small"
+                    onClick={() => void handleOpenPayment()}
+                    isLoading={isInitiatingPayment}
+                    disabled={isInitiatingPayment || isConfirmingPayment}
+                  >
+                    Thanh toán học phí (VietQR)
+                  </Button>
+                )}
+                {canReview && (
+                  <Button
+                    variant="brand"
+                    size="small"
+                    onClick={() => setIsReviewOpen(true)}
+                    isLoading={isSubmittingReview}
+                    disabled={isSubmittingReview}
+                  >
+                    Đánh giá gia sư
+                  </Button>
+                )}
+                {(canComplete || requiresPaymentBeforeComplete) && (
+                  <Button
+                    variant="success"
+                    size="small"
+                    onClick={() => setCloseDialogAction("complete")}
+                    isLoading={isCompleending}
+                    disabled={
+                      isAccepting ||
+                      isRejecting ||
+                      isCancelling ||
+                      isCompleending ||
+                      requiresPaymentBeforeComplete
+                    }
+                  >
+                    Hoàn tất việc học...
+                  </Button>
+                )}
+                {canCancel && (
+                  <Button
+                    variant="secondary"
+                    size="small"
+                    onClick={() => setCloseDialogAction("cancel")}
+                    isLoading={isCancelling}
+                    disabled={
+                      isAccepting ||
+                      isRejecting ||
+                      isCancelling ||
+                      isCompleending
+                    }
+                  >
+                    Hủy yêu cầu...
+                  </Button>
+                )}
+              </div>
+              {requiresPaymentBeforeComplete && (
+                <p className="text-xs text-amber-800 font-medium">
+                  Cần thanh toán học phí (trạng thái Đã thanh toán) trước khi
+                  xác nhận hoàn tất việc học.
+                </p>
               )}
             </div>
           )}
@@ -289,7 +416,7 @@ export function HireRequestDetail({
           </div>
           {onRefresh && (
             <Button
-              variant="tutor"
+              variant="brand"
               size="small"
               onClick={onRefresh}
               className="shrink-0"
@@ -398,7 +525,7 @@ export function HireRequestDetail({
 
       {/* Response Actions for participants */}
       {(canAccept || canReject) && (
-        <Card className="border-role-tutor/40">
+        <Card className="border-brand/40">
           <CardHeader>
             <CardTitle className="text-lg font-semibold text-content-primary">
               Phản hồi yêu cầu
@@ -479,6 +606,17 @@ export function HireRequestDetail({
         </Card>
       )}
 
+      {detail.review && (
+        <HireReviewCard
+          review={detail.review}
+          canReply={canReplyReview}
+          isReplying={isReplyingReview}
+          onReplySubmit={async (reply) => {
+            await onReplyReview?.(reply);
+          }}
+        />
+      )}
+
       <HireRequestTimeline detail={detail} />
 
       <CloseRequestDialog
@@ -494,6 +632,28 @@ export function HireRequestDetail({
             await onComplete?.(reason);
           }
           setCloseDialogAction(null);
+        }}
+      />
+
+      <PaymentCheckoutDialog
+        isOpen={isPaymentOpen}
+        onClose={() => setIsPaymentOpen(false)}
+        payment={activePayment}
+        isConfirming={isConfirmingPayment}
+        onConfirmPayment={async (paymentId) => {
+          await onConfirmPayment?.(paymentId);
+          setIsPaymentOpen(false);
+        }}
+      />
+
+      <LeaveReviewDialog
+        isOpen={isReviewOpen}
+        onClose={() => setIsReviewOpen(false)}
+        tutorName={detail.tutor.displayName}
+        isLoading={isSubmittingReview}
+        onSubmit={async (payload) => {
+          await onSubmitReview?.(payload);
+          setIsReviewOpen(false);
         }}
       />
     </div>

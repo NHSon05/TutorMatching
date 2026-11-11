@@ -134,3 +134,20 @@ Search by ADR ID, subsystem, or keyword. Add only durable decisions; keep each A
 - Enforce live session revocation and recipient authorization; stop/clear on account switch.
 - Message notification outbox remains durable; push failure never rolls back stored business data.
 - Contract: `specs/004-messaging-admin-release/contracts/api.md` SignalR section.
+
+
+## ADR-014 - VietQR sandbox package billing, completion payment gate, and hire reviews
+
+- Date: 2026-11-08; explicitly approved by user.
+- Package billing: `BillingSessions = Course?.SessionCount > 0 ? Course.SessionCount : SessionsPerWeek * 4`, `AmountVnd = AgreedPriceVnd * BillingSessions`.
+- Completion gate: `HireRequest.Complete()` requires `PaymentStatusCode == "PAID"` (or `IsLegacy == true`), throwing `HireRuleException("payment_required")` (`409 Conflict`).
+- Naming isolation: tuition payments use `hire_payments` (`HirePayment`) and post-lesson learner reviews use `hire_reviews` (`HireReview`), keeping `tutor_profile_reviews` dedicated to admin onboarding reviews.
+- Rating aggregates (`average_rating`, `review_count`) are updated transactionally on `tutor_profiles` inside `HireRequestStore`.
+- Evidence: `specs/009-hire-payment-and-reviews/evidence.md`.
+
+## ADR-015 - Tutor workspace uses the brand palette
+
+- Date: 2026-11-11; requested by user.
+- Tutor UI shares the Learner `brand-*` palette; the amber `tutor-*` / `role-tutor` tokens were removed from `frontend/src/app/globals.css`.
+- UI primitives no longer expose a `"tutor"` variant (Button, IconButton, Badge, Tabs, WelcomeBanner, Spinner, Checkbox, Radio, Switch, Slider, FAB); use `"brand"`.
+- Amber stays reserved for warning/pending status (`status-warning`), not role identity.

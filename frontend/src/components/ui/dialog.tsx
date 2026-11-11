@@ -1,4 +1,5 @@
 import * as React from "react";
+import { createPortal } from "react-dom";
 
 export interface DialogProps {
   isOpen: boolean;
@@ -17,7 +18,7 @@ const maxWidthMap = {
   md: "max-w-md",
   lg: "max-w-lg",
   xl: "max-w-xl",
-  big_size: "max-w-8xl",
+  big_size: "max-w-6xl",
 };
 
 export function Dialog({
@@ -56,11 +57,11 @@ export function Dialog({
 
   if (!isOpen) return null;
 
-  return (
+  const dialogContent = (
     <div
       role="dialog"
       aria-modal="true"
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6"
+      className="fixed inset-0 z-90 flex items-center justify-center p-4 sm:p-6"
     >
       {/* Backdrop */}
       <div
@@ -70,7 +71,7 @@ export function Dialog({
 
       {/* Dialog Surface */}
       <div
-        className={`relative w-full ${maxWidthMap[maxWidth]} bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-3xl p-6 shadow-2xl z-10 transition-all duration-200 animate-in zoom-in-95 fade-in ${className}`}
+        className={`relative w-full ${maxWidthMap[maxWidth]} bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-3xl p-6 shadow-2xl z-30 transition-all duration-200 animate-in zoom-in-95 fade-in ${className}`}
       >
         {/* Close Button */}
         <button
@@ -123,6 +124,12 @@ export function Dialog({
       </div>
     </div>
   );
+
+  if (typeof document === "undefined") {
+    return dialogContent;
+  }
+
+  return createPortal(dialogContent, document.body);
 }
 
 export default Dialog;

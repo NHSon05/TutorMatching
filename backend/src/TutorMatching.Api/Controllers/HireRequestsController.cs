@@ -14,7 +14,14 @@ namespace TutorMatching.Api.Controllers;
 [ProducesResponseType(typeof(ProblemDetails), 404, "application/problem+json")]
 [ProducesResponseType(typeof(ProblemDetails), 409, "application/problem+json")]
 [ProducesResponseType(typeof(ProblemDetails), 500, "application/problem+json")]
-public sealed class HireRequestsController(CreateHireRequest create, RespondToHireRequest respond, NegotiateHireRequest negotiate, CloseHireRequest close, IHireRequestQueries queries) : ControllerBase
+public sealed class HireRequestsController(
+    CreateHireRequest create,
+    RespondToHireRequest respond,
+    NegotiateHireRequest negotiate,
+    CloseHireRequest close,
+    PayHireRequest pay,
+    ReviewHireRequest review,
+    IHireRequestQueries queries) : ControllerBase
 {
     [HttpGet, Authorize(Roles = "LEARNER,TUTOR")]
     [ProducesResponseType(typeof(HirePage), 200, "application/json")]
@@ -24,6 +31,73 @@ public sealed class HireRequestsController(CreateHireRequest create, RespondToHi
     [HttpGet("{id:guid}"), Authorize(Roles = "LEARNER,TUTOR")]
     [ProducesResponseType(typeof(HireDetail), 200, "application/json")]
     public Task<IActionResult> Detail(Guid id, CancellationToken ct) => Run(() => queries.DetailAsync(id, ct));
+
+    [HttpGet("{id:guid}/payments"), Authorize(Roles = "LEARNER,TUTOR")]
+    [ProducesResponseType(typeof(HirePaymentsResponse), 200, "application/json")]
+    public Task<IActionResult> Payments(Guid id, CancellationToken ct) => Run(() => queries.PaymentsAsync(id, ct));
+
+    [HttpPost("{id:guid}/payments"), Authorize(Roles = "LEARNER")]
+    [ProducesResponseType(typeof(HirePaymentDto), 201, "application/json")]
+    public async Task<IActionResult> CreatePayment(
+        Guid id,
+        [FromHeader(Name = "Idempotency-Key"), Required] string? idempotencyKey,
+        CancellationToken ct)
+    {
+        Response.Headers.CacheControl = "no-store";
+        if (!Guid.TryParse(idempotencyKey, out var key) || key == Guid.Empty)
+        {
+            return Failure(400, "invalid_idempotency_key", new Dictionary<string, string[]>
+            {
+                ["idempotencyKey"] = ["Cần mã UUID hợp lệ."]
+            });
+        }
+
+        try
+        {
+            var payment = await pay.CreateAsync(id, key, ct);
+            return StatusCode(201, payment);
+        }
+        catch (HireValidationException e)
+        {
+            return Failure(400, "validation_failed", e.Errors);
+        }
+        catch (HireStoreException e)
+        {
+            return Failure(e.Code switch { "unauthorized" => 401, "forbidden" => 403, "not_found" => 404, _ => 409 }, e.Code);
+        }
+    }
+
+    [HttpPost("{id:guid}/payments/{paymentId:guid}/confirm"), Authorize(Roles = "LEARNER")]
+    [ProducesResponseType(typeof(HirePaymentDto), 200, "application/json")]
+    public Task<IActionResult> ConfirmPayment(Guid id, Guid paymentId, CancellationToken ct) =>
+        Run(() => pay.ConfirmAsync(id, paymentId, ct));
+
+    [HttpPost("{id:guid}/review"), Authorize(Roles = "LEARNER")]
+    [Consumes("application/json")]
+    [ProducesResponseType(typeof(HireReviewDto), 201, "application/json")]
+    public async Task<IActionResult> SubmitReview(Guid id, SubmitHireReviewCommand command, CancellationToken ct)
+    {
+        Response.Headers.CacheControl = "no-store";
+        try
+        {
+            var submitted = await review.SubmitAsync(id, command, ct);
+            return StatusCode(201, submitted);
+        }
+        catch (HireValidationException e)
+        {
+            return Failure(400, "validation_failed", e.Errors);
+        }
+        catch (HireStoreException e)
+        {
+            return Failure(e.Code switch { "unauthorized" => 401, "forbidden" => 403, "not_found" => 404, _ => 409 }, e.Code);
+        }
+    }
+
+    [HttpPost("{id:guid}/review/reply"), Authorize(Roles = "TUTOR")]
+    [Consumes("application/json")]
+    [ProducesResponseType(typeof(HireReviewDto), 200, "application/json")]
+    public Task<IActionResult> ReplyReview(Guid id, ReplyHireReviewCommand command, CancellationToken ct) =>
+        Run(() => review.ReplyAsync(id, command, ct));
 
     [HttpPost("{id:guid}/accept"), Authorize(Roles = "LEARNER,TUTOR")]
     [Consumes("application/json")]

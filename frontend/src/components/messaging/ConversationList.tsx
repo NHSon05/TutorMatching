@@ -80,16 +80,16 @@ export function ConversationList({
                 className={`p-3.5 cursor-pointer flex items-center gap-3 transition-colors ${
                   isSelected
                     ? isTutor
-                      ? "bg-tutor-50 border-l-4 border-role-tutor shadow-2xs"
+                      ? "bg-brand-50 border-l-4 border-brand shadow-2xs"
                       : "bg-blue-50/80 border-l-4 border-blue-600 shadow-2xs"
                     : isTutor
-                      ? "hover:bg-tutor-50/40"
+                      ? "hover:bg-brand-50/40"
                       : "hover:bg-gray-50"
                 }`}
               >
                 <div
                   className={`w-12 h-12 rounded-full text-white flex items-center justify-center font-bold text-sm shrink-0 overflow-hidden ${
-                    isTutor ? "bg-role-tutor" : "bg-blue-600"
+                    isTutor ? "bg-brand" : "bg-blue-600"
                   }`}
                 >
                   {c.otherParticipant.avatarUrl || c.avatarUrl ? (
@@ -110,7 +110,7 @@ export function ConversationList({
                     {c.unreadCount > 0 && (
                       <span
                         className={`text-white text-base font-bold px-2 py-0.5 rounded-full ${
-                          isTutor ? "bg-role-tutor" : "bg-blue-600"
+                          isTutor ? "bg-brand" : "bg-blue-600"
                         }`}
                       >
                         {c.unreadCount}

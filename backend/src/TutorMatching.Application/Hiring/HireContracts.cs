@@ -280,6 +280,122 @@ public sealed class HireDetail
     public Guid ConversationId { get; init; }
     [JsonPropertyName("allowedActions"), JsonRequired, Required]
     public string[] AllowedActions { get; init; } = null!;
+    [JsonPropertyName("paymentStatus"), JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public string? PaymentStatus { get; init; }
+    [JsonPropertyName("paidAt"), JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public DateTimeOffset? PaidAt { get; init; }
+    [JsonPropertyName("latestPayment"), JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public HirePaymentDto? LatestPayment { get; init; }
+    [JsonPropertyName("review"), JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public HireReviewDto? Review { get; init; }
+}
+
+[JsonNumberHandling(JsonNumberHandling.Strict)]
+[JsonUnmappedMemberHandling(JsonUnmappedMemberHandling.Disallow)]
+public sealed class HirePaymentDto
+{
+    [JsonPropertyName("id"), JsonRequired, Required]
+    public Guid Id { get; init; }
+    [JsonPropertyName("hireRequestId"), JsonRequired, Required]
+    public Guid HireRequestId { get; init; }
+    [JsonPropertyName("unitPriceVnd"), JsonRequired, Required]
+    public int UnitPriceVnd { get; init; }
+    [JsonPropertyName("billingSessions"), JsonRequired, Required]
+    public int BillingSessions { get; init; }
+    [JsonPropertyName("amountVnd"), JsonRequired, Required]
+    public int AmountVnd { get; init; }
+    [JsonPropertyName("providerCode"), JsonRequired, Required]
+    public string ProviderCode { get; init; } = null!;
+    [JsonPropertyName("transferReference"), JsonRequired, Required]
+    public string TransferReference { get; init; } = null!;
+    [JsonPropertyName("qrPayload"), JsonRequired, Required]
+    public string QrPayload { get; init; } = null!;
+    [JsonPropertyName("status"), JsonRequired, Required]
+    public string Status { get; init; } = null!;
+    [JsonPropertyName("paidAt")]
+    public DateTimeOffset? PaidAt { get; init; }
+    [JsonPropertyName("createdAt"), JsonRequired, Required]
+    public DateTimeOffset CreatedAt { get; init; }
+    [JsonPropertyName("requestVersion"), JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public Guid? RequestVersion { get; init; }
+}
+
+[JsonNumberHandling(JsonNumberHandling.Strict)]
+[JsonUnmappedMemberHandling(JsonUnmappedMemberHandling.Disallow)]
+public sealed class HirePaymentsResponse
+{
+    [JsonPropertyName("hireRequestId"), JsonRequired, Required]
+    public Guid HireRequestId { get; init; }
+    [JsonPropertyName("paymentStatus"), JsonRequired, Required]
+    public string PaymentStatus { get; init; } = null!;
+    [JsonPropertyName("paidAt")]
+    public DateTimeOffset? PaidAt { get; init; }
+    [JsonPropertyName("unitPriceVnd"), JsonRequired, Required]
+    public int UnitPriceVnd { get; init; }
+    [JsonPropertyName("billingSessions"), JsonRequired, Required]
+    public int BillingSessions { get; init; }
+    [JsonPropertyName("amountVnd"), JsonRequired, Required]
+    public int AmountVnd { get; init; }
+    [JsonPropertyName("items"), JsonRequired, Required]
+    public HirePaymentDto[] Items { get; init; } = null!;
+}
+
+[JsonNumberHandling(JsonNumberHandling.Strict)]
+[JsonUnmappedMemberHandling(JsonUnmappedMemberHandling.Disallow)]
+public sealed class SubmitHireReviewCommand
+{
+    [JsonPropertyName("rating"), JsonRequired, Required, Range(1, 5)]
+    public int Rating { get; init; }
+    [JsonPropertyName("comment"), JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull), StringLength(1000, MinimumLength = 1), JsonConverter(typeof(NonNullIfPresentConverter<string>))]
+    public string? Comment { get; init; }
+}
+
+[JsonNumberHandling(JsonNumberHandling.Strict)]
+[JsonUnmappedMemberHandling(JsonUnmappedMemberHandling.Disallow)]
+public sealed class ReplyHireReviewCommand
+{
+    [JsonPropertyName("reply"), JsonRequired, Required, StringLength(1000, MinimumLength = 1)]
+    public string Reply { get; init; } = null!;
+}
+
+[JsonNumberHandling(JsonNumberHandling.Strict)]
+[JsonUnmappedMemberHandling(JsonUnmappedMemberHandling.Disallow)]
+public sealed class HireReviewDto
+{
+    [JsonPropertyName("id"), JsonRequired, Required]
+    public Guid Id { get; init; }
+    [JsonPropertyName("hireRequestId"), JsonRequired, Required]
+    public Guid HireRequestId { get; init; }
+    [JsonPropertyName("tutorProfileId"), JsonRequired, Required]
+    public Guid TutorProfileId { get; init; }
+    [JsonPropertyName("reviewerName"), JsonRequired, Required]
+    public string ReviewerName { get; init; } = null!;
+    [JsonPropertyName("subjectName"), JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public string? SubjectName { get; init; }
+    [JsonPropertyName("rating"), JsonRequired, Required, Range(1, 5)]
+    public int Rating { get; init; }
+    [JsonPropertyName("comment")]
+    public string? Comment { get; init; }
+    [JsonPropertyName("tutorReply")]
+    public string? TutorReply { get; init; }
+    [JsonPropertyName("tutorRepliedAt")]
+    public DateTimeOffset? TutorRepliedAt { get; init; }
+    [JsonPropertyName("createdAt"), JsonRequired, Required]
+    public DateTimeOffset CreatedAt { get; init; }
+}
+
+[JsonNumberHandling(JsonNumberHandling.Strict)]
+[JsonUnmappedMemberHandling(JsonUnmappedMemberHandling.Disallow)]
+public sealed class PublicTutorReviewsResponse
+{
+    [JsonPropertyName("tutorProfileId"), JsonRequired, Required]
+    public Guid TutorProfileId { get; init; }
+    [JsonPropertyName("averageRating"), JsonRequired, Required]
+    public decimal AverageRating { get; init; }
+    [JsonPropertyName("reviewCount"), JsonRequired, Required]
+    public int ReviewCount { get; init; }
+    [JsonPropertyName("items"), JsonRequired, Required]
+    public HireReviewDto[] Items { get; init; } = null!;
 }
 
 [JsonNumberHandling(JsonNumberHandling.Strict)]

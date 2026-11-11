@@ -11,9 +11,16 @@ import {
   rejectHireRequest,
   cancelHireRequest,
   completeHireRequest,
+  getHireRequestPayments,
+  initiateHirePayment,
+  confirmHirePayment,
+  submitHireReview,
+  replyHireReview,
   type AcceptHireRequest,
   type RejectHireRequest,
   type CloseHireRequest,
+  type SubmitHireReviewCommand,
+  type ReplyHireReviewCommand,
 } from "@/lib/api/hire-requests";
 
 export function useHireRequests(params?: {
@@ -116,6 +123,101 @@ export function useCompleteHireRequest(id: string) {
   const accountId = account?.id;
   return useMutation({
     mutationFn: (body: CloseHireRequest) => completeHireRequest(id, body),
+    onSuccess: async () => {
+      await Promise.all([
+        queryClient.invalidateQueries({
+          queryKey: ["hire-request-detail", accountId, id],
+        }),
+        queryClient.invalidateQueries({
+          queryKey: ["hire-requests", accountId],
+        }),
+      ]);
+    },
+  });
+}
+
+export function useHireRequestPayments(id: string, enabled = true) {
+  const { data: account } = useSession();
+  const accountId = account?.id;
+
+  return useQuery({
+    queryKey: ["hire-request-payments", accountId, id],
+    queryFn: ({ signal }) => getHireRequestPayments(id, signal),
+    enabled: !!accountId && !!id && enabled,
+  });
+}
+
+export function useInitiateHirePayment(id: string) {
+  const queryClient = useQueryClient();
+  const { data: account } = useSession();
+  const accountId = account?.id;
+
+  return useMutation({
+    mutationFn: (idempotencyKey: string) =>
+      initiateHirePayment(id, idempotencyKey),
+    onSuccess: async () => {
+      await Promise.all([
+        queryClient.invalidateQueries({
+          queryKey: ["hire-request-detail", accountId, id],
+        }),
+        queryClient.invalidateQueries({
+          queryKey: ["hire-request-payments", accountId, id],
+        }),
+      ]);
+    },
+  });
+}
+
+export function useConfirmHirePayment(id: string) {
+  const queryClient = useQueryClient();
+  const { data: account } = useSession();
+  const accountId = account?.id;
+
+  return useMutation({
+    mutationFn: (paymentId: string) => confirmHirePayment(id, paymentId),
+    onSuccess: async () => {
+      await Promise.all([
+        queryClient.invalidateQueries({
+          queryKey: ["hire-request-detail", accountId, id],
+        }),
+        queryClient.invalidateQueries({
+          queryKey: ["hire-request-payments", accountId, id],
+        }),
+        queryClient.invalidateQueries({
+          queryKey: ["hire-requests", accountId],
+        }),
+      ]);
+    },
+  });
+}
+
+export function useSubmitHireReview(id: string) {
+  const queryClient = useQueryClient();
+  const { data: account } = useSession();
+  const accountId = account?.id;
+
+  return useMutation({
+    mutationFn: (body: SubmitHireReviewCommand) => submitHireReview(id, body),
+    onSuccess: async () => {
+      await Promise.all([
+        queryClient.invalidateQueries({
+          queryKey: ["hire-request-detail", accountId, id],
+        }),
+        queryClient.invalidateQueries({
+          queryKey: ["hire-requests", accountId],
+        }),
+      ]);
+    },
+  });
+}
+
+export function useReplyHireReview(id: string) {
+  const queryClient = useQueryClient();
+  const { data: account } = useSession();
+  const accountId = account?.id;
+
+  return useMutation({
+    mutationFn: (body: ReplyHireReviewCommand) => replyHireReview(id, body),
     onSuccess: async () => {
       await Promise.all([
         queryClient.invalidateQueries({

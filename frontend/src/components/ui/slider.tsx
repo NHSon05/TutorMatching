@@ -1,6 +1,6 @@
 import * as React from "react";
 
-export type SliderVariant = "primary" | "brand" | "tutor";
+export type SliderVariant = "primary" | "brand";
 
 export interface SliderProps {
   value?: number;
@@ -23,13 +23,11 @@ export interface SliderProps {
 const trackVariantStyles: Record<SliderVariant, string> = {
   primary: "bg-gray-900 dark:bg-white",
   brand: "bg-brand",
-  tutor: "bg-role-tutor",
 };
 
 const thumbVariantStyles: Record<SliderVariant, string> = {
   primary: "border-gray-900 dark:border-white focus-visible:ring-gray-900",
   brand: "border-brand focus-visible:ring-brand",
-  tutor: "border-role-tutor focus-visible:ring-role-tutor",
 };
 
 export const Slider = React.forwardRef<HTMLInputElement, SliderProps>(

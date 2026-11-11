@@ -20,7 +20,7 @@ Bộ đôi `Radio` và `RadioGroup` cho phép người dùng chọn duy nhất 1
 | `helperText` | `React.ReactNode` | `-` | Dòng giải thích phía dưới nhóm. |
 | `error` | `string \| boolean` | `-` | Thông báo lỗi của nhóm. |
 | `size` | `"small" \| "medium" \| "large"` | `'medium'` | Kích thước đồng bộ cho toàn bộ radio bên trong. |
-| `variant` | `"primary" \| "brand" \| "tutor"` | `'primary'` | Biến thể màu đồng bộ. |
+| `variant` | `"primary" \| "brand"` | `'primary'` | Biến thể màu đồng bộ. |
 | `disabled` | `boolean` | `false` | Khóa toàn bộ các radio trong nhóm. |
 
 ---

@@ -22,7 +22,8 @@ public sealed record PublicSubject(Guid SubjectId, string Name, IReadOnlyList<st
 public sealed record PublicTutorSummary(Guid Id, string DisplayName, string? AvatarUrl, string? Bio, string? Qualification,
     string? SchoolName, string? Specialization, int? ExperienceYears, string? TeachingMethodology, string? Achievements,
     int SessionRateVnd, IReadOnlyList<string> TeachingModes, string? ProvinceCode, string? ProvinceName,
-    string? DistrictCode, string? DistrictName, IReadOnlyList<PublicSubject> Subjects, DateTimeOffset? ApprovedAt);
+    string? DistrictCode, string? DistrictName, IReadOnlyList<PublicSubject> Subjects, DateTimeOffset? ApprovedAt,
+    decimal AverageRating = 0m, int ReviewCount = 0);
 public sealed record PublicTutorPage(IReadOnlyList<PublicTutorSummary> Items, int TotalCount, int Page, int PageSize);
 public sealed record PublicAvailability(Guid Id, int DayOfWeek, string StartTime, string EndTime, string TimeZone);
 public sealed record PublicCourse(Guid Id, Guid SubjectId, string SubjectName, string Name, string? Content, int SessionCount, int PricePerSessionVnd);
@@ -30,7 +31,8 @@ public sealed record PublicTutorDetail(Guid Id, string DisplayName, string? Avat
     string? SchoolName, string? Specialization, int? ExperienceYears, string? TeachingMethodology, string? Achievements,
     int SessionRateVnd, IReadOnlyList<string> TeachingModes, string? ProvinceCode, string? ProvinceName,
     string? DistrictCode, string? DistrictName, IReadOnlyList<PublicSubject> Subjects, DateTimeOffset? ApprovedAt,
-    IReadOnlyList<PublicAvailability> Availability, IReadOnlyList<PublicCourse> Courses);
+    IReadOnlyList<PublicAvailability> Availability, IReadOnlyList<PublicCourse> Courses,
+    decimal AverageRating = 0m, int ReviewCount = 0);
 public interface IPublicTutorService
 {
     Task<PublicTutorDetail?> FindAsync(Guid profileId, CancellationToken ct);

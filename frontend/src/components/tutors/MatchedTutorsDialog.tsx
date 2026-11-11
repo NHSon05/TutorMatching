@@ -127,7 +127,7 @@ export function MatchedTutorsDialog({
               </Badge>
             )}
             {extractedCriteria.districtName && (
-              <Badge variant="tutor" size="medium">
+              <Badge variant="brand" size="medium">
                 {extractedCriteria.districtName}
               </Badge>
             )}

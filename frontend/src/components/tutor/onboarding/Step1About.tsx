@@ -88,7 +88,7 @@ export function Step1About({ data, onChange, errors }: Step1AboutProps) {
                 onClick={() => onChange({ languages: toggleItem(data.languages, lang) })}
                 className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all ${
                   isSelected
-                    ? "bg-amber-600 text-white shadow-xs"
+                    ? "bg-brand-600 text-white shadow-xs"
                     : "bg-gray-100 text-gray-700 hover:bg-gray-200"
                 }`}
               >

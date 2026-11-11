@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Logo from "@assets/logo/Logo";
 import { LogoutButton } from "@/components/LogoutButton";
 import { usePathname } from "next/navigation";
 import { useSession } from "@/hooks/use-session";
@@ -34,12 +35,10 @@ export default function TutorNavbar() {
             href={isOnboarding ? "/onboarding" : "/"}
             className="flex items-center gap-2"
           >
-            <span className="w-8 h-8 bg-amber-600 rounded-lg flex items-center justify-center text-white font-bold text-lg">
-              T
-            </span>
+            <Logo variant="gradient" size={32} className="shrink-0" />
             <span className="font-bold text-gray-900 tracking-tight">
               TutorMatch{" "}
-              <span className="text-xs font-semibold px-2 py-0.5 bg-amber-50 text-amber-700 rounded-full ml-1">
+              <span className="text-xs font-semibold px-2 py-0.5 bg-brand-50 text-brand-700 rounded-full ml-1">
                 {isOnboarding ? "Hoàn thiện hồ sơ" : "Gia sư"}
               </span>
             </span>
@@ -56,8 +55,8 @@ export default function TutorNavbar() {
                     href={item.href}
                     className={`text-sm font-medium transition-colors py-1 border-b-2 ${
                       isActive
-                        ? "text-amber-600 border-amber-600 font-semibold"
-                        : "text-gray-600 border-transparent hover:text-amber-600"
+                        ? "text-brand-600 border-brand-600 font-semibold"
+                        : "text-gray-600 border-transparent hover:text-brand-600"
                     }`}
                   >
                     {item.label}

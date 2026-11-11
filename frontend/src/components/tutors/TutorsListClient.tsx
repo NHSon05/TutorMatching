@@ -1,5 +1,5 @@
 "use client";
-import { Suspense, useState, type FormEvent } from "react";
+import { Suspense, useEffect, useRef, useState, type FormEvent } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
 import { Card } from "@/components/ui/card";
@@ -19,6 +19,7 @@ import {
   useIsViewerAuthenticated,
 } from "./LoginRequiredDialog";
 import { PublicSmartDemandSearch } from "./PublicSmartDemandSearch";
+import { useDebounce } from "@/hooks/use-debounce";
 export type * from "./types";
 export default function TutorsListClient() {
   return (
@@ -29,8 +30,22 @@ export default function TutorsListClient() {
 }
 function SearchRoute() {
   const params = useSearchParams();
+  const queryString = params.toString();
+  // Remount the form only for URL changes it did not make itself (back/forward,
+  // external links). Self-made changes keep the form mounted so the input being
+  // typed into keeps focus while debounced filters are applied.
+  const [ownQueryString, setOwnQueryString] = useState(queryString);
+  const [formKey, setFormKey] = useState(queryString);
+  if (queryString !== ownQueryString) {
+    setOwnQueryString(queryString);
+    setFormKey(queryString);
+  }
   return (
-    <TutorSearchView key={params.toString()} queryString={params.toString()} />
+    <TutorSearchView
+      key={formKey}
+      queryString={queryString}
+      onNavigate={setOwnQueryString}
+    />
   );
 }
 interface WindowInput {
@@ -44,11 +59,90 @@ const modeNames: Record<string, string> = {
   OFFLINE: "Trực tiếp",
   HYBRID: "Kết hợp",
 };
-export function TutorSearchView({ queryString }: { queryString: string }) {
+const SEARCH_DEBOUNCE_MS = 500;
+const DEFAULT_WINDOW: WindowInput = {
+  dayOfWeek: 1,
+  startTime: "18:00",
+  endTime: "20:00",
+};
+interface SearchFilters {
+  name: string;
+  qualification: string;
+  subjects: string[];
+  levels: string[];
+  modes: string[];
+  province: string;
+  district: string;
+  min: string;
+  max: string;
+  scheduled: boolean;
+  frequency: string;
+  duration: string;
+  windows: WindowInput[];
+  sort: string;
+}
+/** Validates filters and serializes them; returns a stable string key. */
+function buildSearch(f: SearchFilters): { error: string; query: string } {
+  if (
+    (f.min && Number(f.min) <= 0) ||
+    (f.max && Number(f.max) <= 0) ||
+    (f.min && f.max && Number(f.min) > Number(f.max))
+  )
+    return { error: "Khoảng giá theo buổi không hợp lệ.", query: "" };
+  if (f.modes.some((m) => m !== "ONLINE") && (!f.province || !f.district))
+    return {
+      error:
+        "Chọn tỉnh/thành và quận/huyện khi tìm gia sư trực tiếp hoặc kết hợp.",
+      query: "",
+    };
+  if (
+    f.scheduled &&
+    (!f.windows.length ||
+      f.windows.some((w) => w.startTime >= w.endTime) ||
+      Number(f.frequency) < 1 ||
+      Number(f.frequency) > 21 ||
+      Number(f.duration) < 30 ||
+      Number(f.duration) > 240)
+  )
+    return {
+      error: "Kiểm tra số buổi, thời lượng và giờ bắt đầu/kết thúc.",
+      query: "",
+    };
+  const next = new URLSearchParams();
+  for (const [key, value] of Object.entries({
+    name: f.name.trim(),
+    qualification: f.qualification.trim(),
+    provinceCode: f.province,
+    districtCode: f.district,
+    minPrice: f.min,
+    maxPrice: f.max,
+    sort: f.sort,
+  }))
+    if (value) next.set(key, value);
+  f.subjects.forEach((value) => next.append("subjectId", value));
+  f.levels.forEach((value) => next.append("levelCode", value));
+  f.modes.forEach((value) => next.append("mode", value));
+  if (f.scheduled) {
+    next.set("sessionsPerWeek", f.frequency);
+    next.set("durationMinutes", f.duration);
+    next.set("weeklyWindows", JSON.stringify(f.windows));
+  }
+  return { error: "", query: next.toString() };
+}
+const searchKey = (f: SearchFilters) => JSON.stringify(buildSearch(f));
+export function TutorSearchView({
+  queryString,
+  onNavigate,
+}: {
+  queryString: string;
+  onNavigate?: (queryString: string) => void;
+}) {
   const router = useRouter();
   const pathname = usePathname();
   const params = new URLSearchParams(queryString);
-  const [selectedHireTutorId, setSelectedHireTutorId] = useState<string | null>(null);
+  const [selectedHireTutorId, setSelectedHireTutorId] = useState<string | null>(
+    null
+  );
   const [isHireOpen, setIsHireOpen] = useState(false);
   const [isLoginAlertOpen, setIsLoginAlertOpen] = useState(false);
   const isAuthenticated = useIsViewerAuthenticated();
@@ -101,9 +195,35 @@ export function TutorSearchView({ queryString }: { queryString: string }) {
     } catch {
       /* Invalid URL criteria are reported by the API. */
     }
-    return [{ dayOfWeek: 1, startTime: "18:00", endTime: "20:00" }];
+    return [DEFAULT_WINDOW];
   });
-  const [validation, setValidation] = useState("");
+  const [sort, setSort] = useState(params.get("sort") ?? "newest");
+  const filters: SearchFilters = {
+    name,
+    qualification,
+    subjects,
+    levels,
+    modes,
+    province,
+    district,
+    min,
+    max,
+    scheduled,
+    frequency,
+    duration,
+    windows,
+    sort,
+  };
+  const draft = buildSearch(filters);
+  const draftKey = JSON.stringify(draft);
+  // Debounce the serialized criteria (a primitive) so typing and filter
+  // toggles trigger one search after the user pauses.
+  const debouncedKey = useDebounce(draftKey, SEARCH_DEBOUNCE_MS);
+  const lastAppliedKey = useRef(draftKey);
+  const [forcedKey, setForcedKey] = useState("");
+  // Show validation only once input settles (or on explicit submit).
+  const validation =
+    debouncedKey === draftKey || forcedKey === draftKey ? draft.error : "";
   const catalog = useQuery({
     queryKey: ["public-search-catalogs"],
     meta: { public: true },
@@ -125,75 +245,39 @@ export function TutorSearchView({ queryString }: { queryString: string }) {
     staleTime: 0,
     refetchOnWindowFocus: true,
   });
-  function navigate(next: URLSearchParams) {
-    router.push(next.size ? `${pathname}?${next}` : pathname);
+  function navigate(next: URLSearchParams, mode: "push" | "replace" = "push") {
+    const nextQuery = next.toString();
+    onNavigate?.(nextQuery);
+    const href = nextQuery ? `${pathname}?${nextQuery}` : pathname;
+    if (mode === "replace") router.replace(href);
+    else router.push(href);
   }
-  function clearFilters() {
-    setName("");
-    setQualification("");
-    setSubjects([]);
-    setLevels([]);
-    setModes([]);
-    setProvince("");
-    setDistrict("");
-    setMin("");
-    setMax("");
-    setScheduled(false);
-    setFrequency("2");
-    setDuration("60");
-    setWindows([{ dayOfWeek: 1, startTime: "18:00", endTime: "20:00" }]);
-    setValidation("");
-    navigate(new URLSearchParams());
+  // Auto-apply debounced criteria; replace history so each pause while typing
+  // does not add a back-button entry.
+  const navigateRef = useRef(navigate);
+  useEffect(() => {
+    navigateRef.current = navigate;
+  });
+  useEffect(() => {
+    if (debouncedKey === lastAppliedKey.current) return;
+    lastAppliedKey.current = debouncedKey;
+    const { error, query } = JSON.parse(debouncedKey) as {
+      error: string;
+      query: string;
+    };
+    if (!error) navigateRef.current(new URLSearchParams(query), "replace");
+  }, [debouncedKey]);
+  function applyNow(next: SearchFilters) {
+    const key = searchKey(next);
+    setForcedKey(key);
+    const result = buildSearch(next);
+    if (result.error) return;
+    lastAppliedKey.current = key;
+    navigate(new URLSearchParams(result.query));
   }
   function apply(event: FormEvent) {
     event.preventDefault();
-    if (
-      (min && Number(min) <= 0) ||
-      (max && Number(max) <= 0) ||
-      (min && max && Number(min) > Number(max))
-    ) {
-      setValidation("Khoảng giá theo buổi không hợp lệ.");
-      return;
-    }
-    if (modes.some((m) => m !== "ONLINE") && (!province || !district)) {
-      setValidation(
-        "Chọn tỉnh/thành và quận/huyện khi tìm gia sư trực tiếp hoặc kết hợp."
-      );
-      return;
-    }
-    if (
-      scheduled &&
-      (!windows.length ||
-        windows.some((w) => w.startTime >= w.endTime) ||
-        Number(frequency) < 1 ||
-        Number(frequency) > 21 ||
-        Number(duration) < 30 ||
-        Number(duration) > 240)
-    ) {
-      setValidation("Kiểm tra số buổi, thời lượng và giờ bắt đầu/kết thúc.");
-      return;
-    }
-    setValidation("");
-    const next = new URLSearchParams();
-    for (const [key, value] of Object.entries({
-      name: name.trim(),
-      qualification: qualification.trim(),
-      provinceCode: province,
-      districtCode: district,
-      minPrice: min,
-      maxPrice: max,
-      sort: params.get("sort") ?? "newest",
-    }))
-      if (value) next.set(key, value);
-    subjects.forEach((value) => next.append("subjectId", value));
-    levels.forEach((value) => next.append("levelCode", value));
-    modes.forEach((value) => next.append("mode", value));
-    if (scheduled) {
-      next.set("sessionsPerWeek", frequency);
-      next.set("durationMinutes", duration);
-      next.set("weeklyWindows", JSON.stringify(windows));
-    }
-    navigate(next);
+    applyNow(filters);
   }
   function page(number: number) {
     const next = new URLSearchParams(queryString);
@@ -462,14 +546,6 @@ export function TutorSearchView({ queryString }: { queryString: string }) {
                 {validation}
               </p>
             )}
-            <div className="flex flex-wrap gap-3">
-              <Button type="submit" variant="brand">
-                Áp dụng bộ lọc
-              </Button>
-              <Button type="button" variant="secondary" onClick={clearFilters}>
-                Xóa tất cả bộ lọc
-              </Button>
-            </div>
           </form>
         </Card>
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
@@ -485,17 +561,15 @@ export function TutorSearchView({ queryString }: { queryString: string }) {
             {" "}
             <Dropdown
               label="Sắp xếp"
-              value={params.get("sort") ?? "newest"}
+              value={sort}
               options={[
                 { value: "newest", label: "Mới duyệt nhất" },
                 { value: "priceAsc", label: "Giá theo buổi tăng dần" },
                 { value: "priceDesc", label: "Giá theo buổi giảm dần" },
               ]}
               onChange={(value) => {
-                const next = new URLSearchParams(queryString);
-                next.set("sort", value);
-                next.delete("page");
-                navigate(next);
+                setSort(value);
+                applyNow({ ...filters, sort: value });
               }}
             />
           </div>

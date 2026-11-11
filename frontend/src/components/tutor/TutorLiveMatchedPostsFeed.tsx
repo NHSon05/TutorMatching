@@ -50,7 +50,7 @@ export function TutorLiveMatchedPostsFeed() {
                   {`${item.subjectName} • Lớp ${item.gradeLevel}`}
                 </span>
                 <div className="flex items-center gap-2">
-                  <Badge variant="tutor" size="small">
+                  <Badge variant="brand" size="small">
                     {`${item.tuitionFeeVnd.toLocaleString("vi-VN")}đ/buổi`}
                   </Badge>
                   <Badge variant="success" size="small">

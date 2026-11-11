@@ -103,8 +103,51 @@ public sealed class HireRequestQueries(ApplicationDbContext db, ICurrentUser use
             }
         }
         if (request.CanCancel(actor.Id, profile.UserId)) actions.Add("cancel");
-        if (request.CanComplete(actor.Id, profile.UserId)) actions.Add("complete");
+        if (request.CanComplete(actor.Id, profile.UserId) && !request.RequiresPaymentBeforeComplete) actions.Add("complete");
+        if (request.CanPay(actor.Id)) actions.Add("pay");
+        var reviewState = await db.HireReviews.AsNoTracking()
+            .Where(r => r.HireRequestId == id)
+            .Select(r => new { r.IsVisible, HasReply = r.TutorReply != null })
+            .SingleOrDefaultAsync(ct);
+        if (actor.Id == request.RequesterUserId && request.StatusCode == "COMPLETED" && reviewState is null) actions.Add("review");
+        if (actor.Id == profile.UserId && reviewState is { IsVisible: true, HasReply: false }) actions.Add("replyReview");
         var agreement = request.FinalAgreement;
+        var latestPayment = await db.HirePayments.AsNoTracking()
+            .Where(p => p.HireRequestId == id)
+            .OrderByDescending(p => p.CreatedAt)
+            .Select(p => new HirePaymentDto
+            {
+                Id = p.Id,
+                HireRequestId = p.HireRequestId,
+                UnitPriceVnd = p.UnitPriceVnd,
+                BillingSessions = p.BillingSessions,
+                AmountVnd = p.AmountVnd,
+                ProviderCode = p.ProviderCode,
+                TransferReference = p.TransferReference,
+                QrPayload = p.QrPayload,
+                Status = p.StatusCode,
+                PaidAt = p.PaidAt,
+                CreatedAt = p.CreatedAt,
+            })
+            .FirstOrDefaultAsync(ct);
+
+        var learnerName = identities.Single(i => i.Id == request.RequesterUserId).DisplayName;
+        var review = await db.HireReviews.AsNoTracking()
+            .Where(r => r.HireRequestId == id && r.IsVisible)
+            .Select(r => new HireReviewDto
+            {
+                Id = r.Id,
+                HireRequestId = r.HireRequestId,
+                TutorProfileId = r.TutorProfileId,
+                ReviewerName = learnerName,
+                Rating = r.Rating,
+                Comment = r.Comment,
+                TutorReply = r.TutorReply,
+                TutorRepliedAt = r.TutorRepliedAt,
+                CreatedAt = r.CreatedAt,
+            })
+            .SingleOrDefaultAsync(ct);
+
         var result = new HireDetail
         {
             Id = id, Version = request.Version, Status = request.StatusCode, CreatedAt = request.CreatedAt,
@@ -114,10 +157,102 @@ public sealed class HireRequestQueries(ApplicationDbContext db, ICurrentUser use
                 AcceptedAt = agreement.AcceptedAt, ProposalSequence = agreement.ProposalSequence, ProvinceName = agreement.ProvinceName, DistrictName = agreement.DistrictName },
             Proposals = proposals.Select(p => new HireProposal { Sequence = p.Sequence, SenderId = p.SenderUserId,
                 Terms = Terms(p.Terms), Note = p.Note, CreatedAt = p.CreatedAt }).ToArray(),
-            History = history, ConversationId = conversation, AllowedActions = actions.ToArray()
+            History = history, ConversationId = conversation, AllowedActions = actions.ToArray(),
+            PaymentStatus = request.PaymentStatusCode,
+            PaidAt = request.PaidAt,
+            LatestPayment = latestPayment,
+            Review = review
         };
         await tx.CommitAsync(ct);
         return result;
+    }
+
+    public async Task<HirePaymentsResponse> PaymentsAsync(Guid id, CancellationToken ct)
+    {
+        await using var tx = await db.Database.BeginTransactionAsync(IsolationLevel.RepeatableRead, ct);
+        var actor = await Actor(ct);
+        var request = await Scoped(actor).Include(r => r.Course).SingleOrDefaultAsync(r => r.Id == id, ct)
+            ?? throw new HireStoreException("not_found");
+        var (unitPrice, billingSessions, amountVnd) = request.CalculatePackageBilling();
+        var items = await db.HirePayments.AsNoTracking()
+            .Where(p => p.HireRequestId == id)
+            .OrderByDescending(p => p.CreatedAt)
+            .Select(p => new HirePaymentDto
+            {
+                Id = p.Id,
+                HireRequestId = p.HireRequestId,
+                UnitPriceVnd = p.UnitPriceVnd,
+                BillingSessions = p.BillingSessions,
+                AmountVnd = p.AmountVnd,
+                ProviderCode = p.ProviderCode,
+                TransferReference = p.TransferReference,
+                QrPayload = p.QrPayload,
+                Status = p.StatusCode,
+                PaidAt = p.PaidAt,
+                CreatedAt = p.CreatedAt,
+            })
+            .ToArrayAsync(ct);
+        await tx.CommitAsync(ct);
+        return new HirePaymentsResponse
+        {
+            HireRequestId = id,
+            PaymentStatus = request.PaymentStatusCode,
+            PaidAt = request.PaidAt,
+            UnitPriceVnd = unitPrice,
+            BillingSessions = billingSessions,
+            AmountVnd = amountVnd,
+            Items = items,
+        };
+    }
+
+    public async Task<PublicTutorReviewsResponse> PublicReviewsAsync(Guid tutorProfileId, int pageSize, CancellationToken ct)
+    {
+        if (pageSize is < 1 or > 50) pageSize = 20;
+        var profile = await db.TutorProfiles.AsNoTracking()
+            .SingleOrDefaultAsync(p => p.Id == tutorProfileId && p.Status == TutorProfileStatus.APPROVED, ct)
+            ?? throw new HireStoreException("not_found");
+
+        var items = await (
+            from r in db.HireReviews.AsNoTracking()
+            join u in db.Users.AsNoTracking() on r.ReviewerUserId equals u.Id
+            join hr in db.HireRequests.AsNoTracking() on r.HireRequestId equals hr.Id
+            join s in db.Subjects.AsNoTracking() on hr.SubjectId equals s.Id into subj
+            from s in subj.DefaultIfEmpty()
+            where r.TutorProfileId == tutorProfileId && r.IsVisible
+            orderby r.CreatedAt descending
+            select new HireReviewDto
+            {
+                Id = r.Id,
+                HireRequestId = r.HireRequestId,
+                TutorProfileId = r.TutorProfileId,
+                // Anonymous endpoint: never expose a learner's full legal name.
+                ReviewerName = MaskReviewerName(u.FullName),
+                SubjectName = s != null ? s.Name : null,
+                Rating = r.Rating,
+                Comment = r.Comment,
+                TutorReply = r.TutorReply,
+                TutorRepliedAt = r.TutorRepliedAt,
+                CreatedAt = r.CreatedAt,
+            })
+            .Take(pageSize)
+            .ToArrayAsync(ct);
+
+        return new PublicTutorReviewsResponse
+        {
+            TutorProfileId = tutorProfileId,
+            AverageRating = profile.AverageRating,
+            ReviewCount = profile.ReviewCount,
+            Items = items,
+        };
+    }
+
+    internal static string MaskReviewerName(string? fullName)
+    {
+        var parts = (fullName ?? string.Empty).Split(' ', StringSplitOptions.RemoveEmptyEntries);
+        if (parts.Length == 0) return "Học viên";
+        // Vietnamese order is family ... given: keep the given name, reduce the rest to initials.
+        var initials = parts[..^1].Select(p => char.ToUpperInvariant(p[0]) + ".");
+        return string.Join(' ', initials.Append(parts[^1]));
     }
 
     private async Task<bool> CanAccept(HireRequest request, TutorProfile profile, CancellationToken ct, bool proposing = false)

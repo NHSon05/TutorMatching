@@ -26,8 +26,8 @@ describe("Photonix Button Component Clone & Design System Enhancements", () => {
     rerender(<Button variant="brand">Test</Button>);
     expect(screen.getByRole("button")).toHaveClass("bg-brand");
 
-    rerender(<Button variant="tutor">Test</Button>);
-    expect(screen.getByRole("button")).toHaveClass("bg-role-tutor");
+    rerender(<Button variant="brand">Test</Button>);
+    expect(screen.getByRole("button")).toHaveClass("bg-brand");
 
     rerender(<Button variant="danger">Test</Button>);
     expect(screen.getByRole("button")).toHaveClass("bg-status-error");

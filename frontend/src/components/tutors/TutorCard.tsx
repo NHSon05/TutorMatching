@@ -233,6 +233,11 @@ export function TutorCard({
                   {`Phù hợp ${suitablePercent}%`}
                 </Badge>
               )}
+              {(tutor.reviewCount ?? 0) > 0 && tutor.averageRating != null && (
+                <Badge variant="warning" size="small" shape="pill">
+                  {`★ ${Number(tutor.averageRating).toFixed(1)} (${tutor.reviewCount} đánh giá)`}
+                </Badge>
+              )}
             </div>
 
             {matchHighlights && matchHighlights.length > 0 && (

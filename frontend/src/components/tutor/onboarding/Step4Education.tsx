@@ -56,7 +56,7 @@ export function Step4Education({ data, onChange, errors }: Step4EducationProps) 
                 }
                 className={`p-4 rounded-xl border text-left transition-all ${
                   isSelected
-                    ? "border-amber-600 bg-amber-50/50 ring-1 ring-amber-600"
+                    ? "border-brand-600 bg-brand-50/50 ring-1 ring-brand-600"
                     : "border-gray-200 bg-white hover:border-gray-300"
                 }`}
               >
@@ -64,7 +64,7 @@ export function Step4Education({ data, onChange, errors }: Step4EducationProps) 
                   <span
                     className={`w-4 h-4 rounded-full border flex items-center justify-center ${
                       isSelected
-                        ? "border-amber-600 bg-amber-600 text-white text-xs"
+                        ? "border-brand-600 bg-brand-600 text-white text-xs"
                         : "border-gray-300"
                     }`}
                   >

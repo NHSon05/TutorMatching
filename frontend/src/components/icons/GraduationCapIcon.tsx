@@ -1,4 +1,4 @@
-export function GraduationCapIcon({ className = "w-6 h-6 text-role-tutor" }: { className?: string }) {
+export function GraduationCapIcon({ className = "w-6 h-6 text-brand" }: { className?: string }) {
   return (
     <svg
       className={className}

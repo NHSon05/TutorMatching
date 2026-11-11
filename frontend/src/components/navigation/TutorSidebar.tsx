@@ -4,10 +4,10 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useLogout } from "@/hooks/use-auth";
 import { useSession } from "@/hooks/use-session";
+import Logo from "@assets/logo/Logo";
 import {
   CalendarIcon,
   DashboardIcon,
-  GraduationCapIcon,
   LogOutIcon,
   MessagesIcon,
   RequestIcon,
@@ -98,9 +98,13 @@ export function TutorSidebar({ onCloseMobile }: TutorSidebarProps) {
           onClick={onCloseMobile}
           className="flex items-center gap-2.5 group"
         >
-          <GraduationCapIcon className="w-6 h-6 text-role-tutor group-hover:text-tutor-700 transition-colors" />
-          <span className="font-bold text-xl tracking-tight text-content-primary group-hover:text-brand transition-colors">
-            TutorMatching
+          <Logo
+            variant="gradient"
+            size={32}
+            className="group-hover:scale-105 transition-transform shrink-0"
+          />
+          <span className="font-bold text-xl tracking-tight text-brand-950 group-hover:text-brand transition-colors leading-none">
+            TutorMatch
           </span>
         </Link>
       </div>
@@ -117,13 +121,13 @@ export function TutorSidebar({ onCloseMobile }: TutorSidebarProps) {
                 onClick={onCloseMobile}
                 className={`flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-base transition-all ${
                   item.isActive
-                    ? "bg-tutor-50 text-tutor-900 font-semibold border-role-tutor shadow-2xs"
-                    : "text-content-secondary hover:text-tutor-900 hover:bg-tutor-50/50"
+                    ? "bg-brand-50 text-brand-900 font-semibold border-brand shadow-2xs"
+                    : "text-content-secondary hover:text-brand-900 hover:bg-brand-50/50"
                 }`}
               >
                 <Icon
                   className={`w-5 h-5 shrink-0 transition-colors ${
-                    item.isActive ? "text-role-tutor" : "text-content-muted"
+                    item.isActive ? "text-brand" : "text-content-muted"
                   }`}
                 />
                 <span>{item.label}</span>
@@ -143,13 +147,13 @@ export function TutorSidebar({ onCloseMobile }: TutorSidebarProps) {
                 onClick={onCloseMobile}
                 className={`flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-base transition-all ${
                   item.isActive
-                    ? "bg-tutor-50 text-tutor-900 font-semibold border-role-tutor shadow-2xs"
-                    : "text-content-secondary hover:text-tutor-900 hover:bg-tutor-50/50"
+                    ? "bg-brand-50 text-brand-900 font-semibold border-brand shadow-2xs"
+                    : "text-content-secondary hover:text-brand-900 hover:bg-brand-50/50"
                 }`}
               >
                 <Icon
                   className={`w-5 h-5 shrink-0 transition-colors ${
-                    item.isActive ? "text-role-tutor" : "text-content-muted"
+                    item.isActive ? "text-brand" : "text-content-muted"
                   }`}
                 />
                 <span>{item.label}</span>

@@ -134,9 +134,14 @@ public sealed class TutorReviewTests(PostgreSqlFixture fixture)
             VALUES ({userId}, 'Legacy Review', 'ACTIVE', 'TUTOR', 'review-migration@example.test', 'REVIEW-MIGRATION@EXAMPLE.TEST',
                 'review-migration@example.test', 'REVIEW-MIGRATION@EXAMPLE.TEST', false, false, false, true, 0)
             """);
-        var profile=new TutorProfile{Id=Guid.NewGuid(),UserId=userId}; db.TutorProfiles.Add(profile); await db.SaveChangesAsync();
+        // Raw SQL deliberately targets the old schema rather than the current EF model.
+        var profileId=Guid.NewGuid();
+        await db.Database.ExecuteSqlInterpolatedAsync($"""
+            INSERT INTO tutor_profiles(id,user_id,status,current_step,subjects,languages,teaching_levels,teaching_modes,certifications,has_certifications,is_negotiable,version,created_at,updated_at)
+            VALUES ({profileId},{userId},'DRAFT',1,'[]','[]','[]','[]','[]',false,false,{Guid.NewGuid()},CURRENT_TIMESTAMP,CURRENT_TIMESTAMP)
+            """);
         var rid=Guid.NewGuid(); var reason="Keep historical reason";
-        await db.Database.ExecuteSqlInterpolatedAsync($"INSERT INTO tutor_profile_reviews(id,tutor_profile_id,reviewer_user_id,from_status_code,to_status_code,note,reviewed_at) VALUES ({rid},{profile.Id},{userId},'PENDING_REVIEW','REJECTED',{reason},CURRENT_TIMESTAMP)");
+        await db.Database.ExecuteSqlInterpolatedAsync($"INSERT INTO tutor_profile_reviews(id,tutor_profile_id,reviewer_user_id,from_status_code,to_status_code,note,reviewed_at) VALUES ({rid},{profileId},{userId},'PENDING_REVIEW','REJECTED',{reason},CURRENT_TIMESTAMP)");
         await DatabaseMigrationRunner.MigrateAsync(db); db.ChangeTracker.Clear();
         var history=await db.TutorProfileReviews.SingleAsync(x=>x.Id==rid);
         Assert.Equal("REJECT",history.Action); Assert.Null(history.ReviewedVersion); Assert.Equal(reason,history.Note);

@@ -15,7 +15,7 @@ Màu sắc trong TutorMatching được xây dựng dựa trên 3 trụ cột c�
 1. **Tin cậy & Tri thức (Trust & Knowledge):** Nền tảng học tập đòi hỏi sự an tâm, tính chuyên nghiệp và minh bạch giữa người học, phụ huynh và gia sư.
 2. **Phân định vai trò rõ ràng (Role-based Identity):** Hệ thống phục vụ 3 nhóm người dùng có thẩm quyền và giao diện chuyên biệt:
    - **Học viên / Phụ huynh (Learner):** Tông xanh dương (`Brand/Blue`) năng động, khám phá.
-   - **Gia sư (Tutor):** Tông vàng hổ phách (`Tutor/Amber`) tri thức, ấm áp, tin cậy.
+   - **Gia sư (Tutor):** Dùng chung màu thương hiệu xanh dương (`brand-*`) với Học viên; không còn bảng màu riêng.
    - **Quản trị viên (Admin):** Tông đỏ thẫm (`Admin/Crimson`) quyền uy, bảo mật và kiểm soát hệ thống.
    - **Kênh kết nối & Đàm phán (Shared):** Tông tím chàm (`Shared/Indigo`) ngoại giao, cộng tác và tin nhắn.
 3. **Tiêu chuẩn công thái học & Tiếp cận (Accessibility):** Mọi cặp màu chữ và nền đều phải đáp ứng chuẩn **WCAG 2.1 Level AA** (tỉ lệ tương phản tối thiểu 4.5:1 cho body text và 3.0:1 cho tiêu đề/icon).
@@ -41,23 +41,16 @@ Màu sắc trong TutorMatching được xây dựng dựa trên 3 trụ cột c�
 | `brand-800`              | `#1E40AF`     | `30, 64, 175`   | Trạng thái active/press của nút bấm                |
 | `brand-900`              | `#1E3A8A`     | `30, 58, 138`   | Tiêu đề tương phản cao, badge nền tối              |
 | `brand-950`              | `#172554`     | `23, 37, 84`    | Màu nền header cao cấp                             |
+| `bg-linear`              | Gradient      | `brand-200 -> 500 -> 900` | Nền gradient thương hiệu (`bg-linear-to-br from-brand-200 via-brand-500 to-brand-900 border border-white/15`) |
+| `text-linear` / `linear` | Gradient      | `brand-200 -> 500 -> 900` | Chữ/màu gradient thương hiệu (`bg-linear-to-br from-brand-200 via-brand-500 to-brand-900`) |
 
 ---
 
 ### 2.2. Bảng Màu Phân Hệ Vai Trò (Role-based Palettes)
 
-#### A. Phân Hệ Gia Sư (Tutor - Amber / Warm Gold)
+#### A. Phân Hệ Gia Sư (Tutor)
 
-Dành riêng cho không gian làm việc của gia sư, chỉnh sửa hồ sơ dạy học, lịch dạy và huy hiệu xác thực.
-
-| Token                    | Mã HEX        | Mục đích                                       |
-| :----------------------- | :------------ | :--------------------------------------------- |
-| `tutor-50`               | `#FFFBEB`     | Nền workspace gia sư, nền pill role "Gia sư"   |
-| `tutor-100`              | `#FEF3C7`     | Đường viền card gia sư, highlight lịch rảnh    |
-| `tutor-500`              | `#F59E0B`     | Đánh giá sao (rating star), icon huy hiệu      |
-| **`tutor-600`** _(Role)_ | **`#D97706`** | **Màu nhấn chính trang Gia sư, nút lưu hồ sơ** |
-| `tutor-700`              | `#B45309`     | Hover nút bấm không gian gia sư                |
-| `tutor-900`              | `#78350F`     | Chữ nhấn mạnh trong dashboard gia sư           |
+Gia sư dùng chung bảng màu **Brand** (xanh dương) với Học viên: `bg-brand`, `text-brand`, `brand-50`…`brand-950`, và các biến thể component `variant="brand"`. Không còn token `tutor-*` / `role-tutor`.
 
 #### B. Phân Hệ Quản Trị Viên (Admin - Crimson / Red)
 
@@ -152,7 +145,7 @@ Các biến màu đã được khai báo trực tiếp trong `@theme inline` c�
 </button>
 
 <!-- Phân hệ Vai trò -->
-<span class="bg-tutor-50 text-role-tutor border border-tutor-200"
+<span class="bg-brand-50 text-brand border border-brand-200"
   >Gia sư đã xác minh</span
 >
 <div class="border-l-4 border-role-admin bg-admin-50 text-role-admin">
@@ -182,7 +175,7 @@ Các biến màu đã được khai báo trực tiếp trong `@theme inline` c�
 
 ### ✅ NÊN LÀM (DO)
 
-1. **Dùng đúng màu cho đúng vai trò:** Luôn dùng màu **Amber** cho các chi tiết liên quan đến hồ sơ gia sư, **Blue** cho học viên, và **Red** cho admin.
+1. **Dùng đúng màu cho đúng vai trò:** Dùng màu **Blue (brand)** cho cả học viên và gia sư, và **Red** cho admin. Amber chỉ dành cho trạng thái cảnh báo (`status-warning`).
 2. **Sử dụng Semantic Token:** Ưu tiên dùng `bg-status-success` thay vì gán cứng mã hex tùy ý, giúp giao diện đồng nhất khi bảo trì.
 3. **Đảm bảo tương phản:** Khi đặt chữ lên nền màu (như button hoặc badge), luôn đảm bảo chữ dễ đọc ở mọi điều kiện ánh sáng.
 4. **Huy hiệu trạng thái có nền nhạt:** Kết hợp nền nhạt (`*-50` hoặc `*-bg`) với chữ đậm màu (`*-600` hoặc `*-700`) để tạo cảm giác tinh tế, dễ chịu.
@@ -190,5 +183,5 @@ Các biến màu đã được khai báo trực tiếp trong `@theme inline` c�
 ### ❌ KHÔNG NÊN LÀM (DON'T)
 
 1. **Không lạm dụng màu đỏ (`admin` / `error`):** Chỉ dùng màu đỏ cho các cảnh báo lỗi, nút nguy hiểm (Xóa, Hủy, Khóa) hoặc nhận diện quản trị viên. Tránh dùng màu đỏ làm nút bấm thông thường.
-2. **Không trộn lẫn màu vai trò:** Tuyệt đối không dùng nút màu hổ phách (Gia sư) làm nút chính trên không gian của Học viên, tránh gây nhầm lẫn ngữ cảnh.
+2. **Không trộn lẫn màu vai trò:** Không dùng màu Admin (đỏ) cho hành động chính của Học viên/Gia sư, tránh gây nhầm lẫn ngữ cảnh.
 3. **Không dùng mã màu Hex trực tiếp trong JSX:** Tránh viết `style={{ color: "#2563EB" }}`, hãy dùng token `text-brand` hoặc `text-blue-600`.

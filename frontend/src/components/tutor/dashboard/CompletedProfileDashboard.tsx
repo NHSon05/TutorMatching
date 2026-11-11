@@ -8,11 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
 import { IconButton } from "@/components/ui/icon-button";
 import type { AccountResponse } from "@/lib/api/auth";
-import {
-  BellIcon,
-  ChevronDownIcon,
-  MoreHorizontalIcon,
-} from "@/components/icons";
+import { BellIcon, MoreHorizontalIcon } from "@/components/icons";
 
 export interface CompletedProfileDashboardProps {
   account?: AccountResponse | null;
@@ -39,7 +35,7 @@ export function CompletedProfileDashboard({
   });
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 bg-gray-50">
       {/* ----------------------------------------------------------------------
           HEADER KHU VỰC TỔNG QUAN (WIREFRAME 2)
       ---------------------------------------------------------------------- */}
@@ -68,14 +64,14 @@ export function CompletedProfileDashboard({
             size="medium"
             shape="rounded"
             aria-label="Thông báo hệ thống"
-            className="border-border-default hover:bg-tutor-50 hover:text-role-tutor"
+            className="border-border-default hover:bg-brand-50 hover:text-brand"
           >
             <BellIcon className="w-5 h-5 text-content-primary" />
           </IconButton>
 
           <div
             title={`Gia sư ${account?.fullName || "Minh"}`}
-            className="w-11 h-11 rounded-full border border-tutor-200 bg-tutor-50 flex items-center justify-center font-bold text-sm text-tutor-900 select-none shadow-2xs"
+            className="w-11 h-11 rounded-full border border-brand-200 bg-brand-50 flex items-center justify-center font-bold text-sm text-brand-900 select-none shadow-2xs"
           >
             MN
           </div>
@@ -88,7 +84,7 @@ export function CompletedProfileDashboard({
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
         <Card padding="medium" className="flex flex-col justify-between">
           <div>
-            <p className="text-3xl font-bold text-role-tutor">12</p>
+            <p className="text-3xl font-bold text-brand">12</p>
             <p className="text-base text-content-secondary mt-2">
               học sinh đang dạy
             </p>
@@ -103,7 +99,7 @@ export function CompletedProfileDashboard({
 
         <Card padding="medium" className="flex flex-col justify-between">
           <div>
-            <p className="text-3xl font-bold text-role-tutor">2</p>
+            <p className="text-3xl font-bold text-brand">2</p>
             <p className="text-base text-content-secondary mt-2">
               buổi học hôm nay
             </p>
@@ -133,7 +129,7 @@ export function CompletedProfileDashboard({
 
         <Card padding="medium" className="flex flex-col justify-between">
           <div>
-            <p className="text-3xl font-bold text-role-tutor">3</p>
+            <p className="text-3xl font-bold text-brand">3</p>
             <p className="text-base text-content-secondary mt-2">
               liên hệ cần theo dõi
             </p>
@@ -212,13 +208,13 @@ export function CompletedProfileDashboard({
           {/* Card Buổi 2: Sắp diễn ra */}
           <Card
             padding="medium"
-            className="space-y-3 border-tutor-200 shadow-2xs"
+            className="space-y-3 border-brand-200 shadow-2xs"
           >
             <div className="flex items-center justify-between">
               <span className="font-bold text-base text-content-primary">
                 19:00–20:30
               </span>
-              <Badge variant="tutor" appearance="subtitle" size="small">
+              <Badge variant="brand" appearance="subtitle" size="small">
                 Sắp diễn ra · còn 15 phút
               </Badge>
             </div>
@@ -236,7 +232,7 @@ export function CompletedProfileDashboard({
             </p>
 
             <div className="pt-1">
-              <Button variant="tutor" size="small">
+              <Button variant="brand" size="small">
                 Xem buổi học
               </Button>
             </div>
@@ -257,7 +253,7 @@ export function CompletedProfileDashboard({
                   onChange={(checked) =>
                     setTodoTasks((prev) => ({ ...prev, task1: checked }))
                   }
-                  variant="tutor"
+                  variant="brand"
                   className="mt-1"
                 />
                 <div className="flex-1 min-w-0">
@@ -293,7 +289,7 @@ export function CompletedProfileDashboard({
                   onChange={(checked) =>
                     setTodoTasks((prev) => ({ ...prev, task2: checked }))
                   }
-                  variant="tutor"
+                  variant="brand"
                   className="mt-1"
                 />
                 <div className="flex-1 min-w-0">
@@ -344,22 +340,6 @@ export function CompletedProfileDashboard({
             </p>
           </div>
 
-          {/* Bộ lọc Filters */}
-          <div className="flex flex-wrap items-center gap-2">
-            <Button variant="secondary" size="small" shape="rounded">
-              <span>Môn học</span>
-              <ChevronDownIcon />
-            </Button>
-            <Button variant="secondary" size="small" shape="rounded">
-              <span>Khu vực</span>
-              <ChevronDownIcon />
-            </Button>
-            <Button variant="secondary" size="small" shape="rounded">
-              <span>Hình thức</span>
-              <ChevronDownIcon />
-            </Button>
-          </div>
-
           <div className="space-y-4">
             {/* Cơ hội 1: Toán lớp 9 */}
             <Card padding="medium" className="space-y-3">
@@ -378,7 +358,7 @@ export function CompletedProfileDashboard({
               </div>
 
               <div className="flex items-center gap-2">
-                <Badge variant="tutor" appearance="outline" size="small">
+                <Badge variant="brand" appearance="outline" size="small">
                   Đúng môn
                 </Badge>
                 <Badge variant="brand" appearance="outline" size="small">
@@ -430,7 +410,7 @@ export function CompletedProfileDashboard({
                 <h3 className="font-bold text-base text-content-primary">
                   Tìm gia sư Vật lý lớp 10
                 </h3>
-                <Badge variant="tutor" appearance="subtitle" size="small">
+                <Badge variant="brand" appearance="subtitle" size="small">
                   Đã lưu
                 </Badge>
               </div>
@@ -441,7 +421,7 @@ export function CompletedProfileDashboard({
               </div>
 
               <div className="flex items-center gap-2">
-                <Badge variant="tutor" appearance="outline" size="small">
+                <Badge variant="brand" appearance="outline" size="small">
                   Đúng môn
                 </Badge>
               </div>
@@ -501,7 +481,7 @@ export function CompletedProfileDashboard({
               </div>
 
               <div className="flex items-center gap-2">
-                <Badge variant="tutor" appearance="outline" size="small">
+                <Badge variant="brand" appearance="outline" size="small">
                   Đúng môn
                 </Badge>
                 <Badge variant="brand" appearance="outline" size="small">
@@ -651,7 +631,7 @@ export function CompletedProfileDashboard({
                 </p>
               </div>
               <div className="col-span-2">
-                <Badge variant="tutor" appearance="subtitle" size="small">
+                <Badge variant="brand" appearance="subtitle" size="small">
                   Đã hẹn học thử
                 </Badge>
               </div>

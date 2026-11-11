@@ -34,10 +34,10 @@ export function TutorLayoutShell({ children }: { children: React.ReactNode }) {
           >
             <Logo size={32} />
             <div className="flex items-center gap-2">
-              <span className="font-bold text-lg sm:text-xl tracking-tight text-content-primary group-hover:text-amber-600 transition-colors">
+              <span className="font-bold text-lg sm:text-xl tracking-tight text-content-primary group-hover:text-brand-600 transition-colors">
                 TutorMatch
               </span>
-              <span className="text-xs font-semibold px-2.5 py-0.5 bg-amber-50 text-amber-700 dark:bg-amber-950/60 dark:text-amber-300 rounded-full border border-amber-200 dark:border-amber-800">
+              <span className="text-xs font-semibold px-2.5 py-0.5 bg-brand-50 text-brand-700 dark:bg-brand-950/60 dark:text-brand-300 rounded-full border border-brand-200 dark:border-brand-800">
                 {isOnboarding ? "Hoàn thiện hồ sơ" : "Gia sư"}
               </span>
             </div>

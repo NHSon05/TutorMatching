@@ -50,7 +50,7 @@ export default function TutorTeachingClassesPage() {
               </p>
               <p>
                 💰 <strong>Học phí:</strong>{" "}
-                <span className="text-amber-700 font-bold">{c.rate}</span>
+                <span className="text-brand-700 font-bold">{c.rate}</span>
               </p>
             </div>
           </div>

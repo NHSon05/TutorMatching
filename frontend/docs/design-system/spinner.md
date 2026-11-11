@@ -12,7 +12,7 @@ Component `Spinner` là vòng xoay chỉ báo tác vụ nền đang được x�
 | Prop | Type | Default | Description |
 | :--- | :--- | :--- | :--- |
 | `size` | `"small" \| "medium" \| "large" \| "xlarge"` | `'medium'` | Kích thước vòng xoay (16px, 24px, 32px, 48px). |
-| `variant` | `"primary" \| "brand" \| "tutor" \| "white" \| "gray"` | `'brand'` | Màu sắc đường nét vòng xoay. |
+| `variant` | `"primary" \| "brand" \| "white" \| "gray"` | `'brand'` | Màu sắc đường nét vòng xoay. |
 | `label` | `React.ReactNode` | `-` | Dòng chữ mô tả đi kèm (ví dụ: "Đang tải dữ liệu..."). |
 
 ---
@@ -26,7 +26,7 @@ export default function SpinnerDemo() {
   return (
     <div className="flex flex-col gap-4">
       <Spinner size="small" variant="brand" />
-      <Spinner size="medium" variant="tutor" label="Đang cập nhật lịch dạy..." />
+      <Spinner size="medium" variant="brand" label="Đang cập nhật lịch dạy..." />
       <Spinner size="large" variant="primary" label="Đang đối soát hồ sơ gia sư..." />
     </div>
   );

@@ -48,6 +48,24 @@ public sealed class TutorProfile
     public int? MonthlyRateVnd { get; set; }
     public bool IsNegotiable { get; set; } = true;
 
+    // Ratings & Reviews Aggregate
+    public decimal AverageRating { get; set; }
+    public int ReviewCount { get; set; }
+
+    public void UpdateRatingAggregate(IReadOnlyCollection<int> visibleRatings)
+    {
+        if (visibleRatings is null || visibleRatings.Count == 0)
+        {
+            ReviewCount = 0;
+            AverageRating = 0.00m;
+            return;
+        }
+
+        ReviewCount = visibleRatings.Count;
+        var avg = (decimal)visibleRatings.Sum() / visibleRatings.Count;
+        AverageRating = decimal.Round(avg, 2, MidpointRounding.AwayFromZero);
+    }
+
     // Timestamps
     public DateTimeOffset CreatedAt { get; set; }
     public DateTimeOffset UpdatedAt { get; set; }

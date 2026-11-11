@@ -5,9 +5,9 @@ export type ButtonVariant =
   | "secondary"
   | "tertiary"
   | "brand"
-  | "tutor"
   | "danger"
-  | "success";
+  | "success"
+  | "linear";
 
 export type ButtonSize = "small" | "medium" | "large";
 export type ButtonShape = "rounded" | "pill";
@@ -19,7 +19,6 @@ export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElemen
    * - secondary: Border only, transparent background
    * - tertiary: No border, no background (subtle action)
    * - brand: Blue brand color background (Learner / Public CTA)
-   * - tutor: Amber color background (Tutor workspace)
    * - danger: Crimson red background (Admin / Destructive action)
    * - success: Emerald green background (Approval / Confirmation)
    * @default 'primary'
@@ -87,12 +86,11 @@ const variantStyles: Record<ButtonVariant, string> = {
     "border-transparent bg-transparent text-content-primary hover:bg-gray-100 active:bg-gray-200/70 focus-visible:ring-gray-400 dark:text-gray-100 dark:hover:bg-gray-800 dark:active:bg-gray-700",
   brand:
     "bg-brand text-white hover:bg-brand-hover active:bg-brand-800 focus-visible:ring-brand shadow-sm",
-  tutor:
-    "bg-role-tutor text-white hover:bg-tutor-700 active:bg-tutor-800 focus-visible:ring-role-tutor shadow-sm",
   danger:
     "bg-status-error text-white hover:bg-admin-700 active:bg-admin-800 focus-visible:ring-status-error shadow-sm",
   success:
     "bg-status-success text-white hover:bg-status-success-dark active:bg-emerald-800 focus-visible:ring-status-success shadow-sm",
+  linear: "bg-linear text-white hover:bg-linear/90",
 };
 
 const badgeStylesByVariant: Record<ButtonVariant, string> = {
@@ -100,9 +98,9 @@ const badgeStylesByVariant: Record<ButtonVariant, string> = {
   secondary: "bg-gray-900 text-white dark:bg-gray-100 dark:text-gray-900",
   tertiary: "bg-gray-200 text-gray-900 dark:bg-gray-800 dark:text-gray-100",
   brand: "bg-white/25 text-white",
-  tutor: "bg-white/25 text-white",
   danger: "bg-white/25 text-white",
   success: "bg-white/25 text-white",
+  linear: "bg-linear text-white",
 };
 
 const sizeStyles: Record<

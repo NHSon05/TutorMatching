@@ -12,7 +12,7 @@ Component `IconButton` là nút bấm chuyên dụng chứa biểu tượng (ico
 | Prop                      | Type                                                                                               | Default      | Description                                                                                                |
 | :------------------------ | :------------------------------------------------------------------------------------------------- | :----------- | :--------------------------------------------------------------------------------------------------------- |
 | `aria-label` _(Bắt buộc)_ | `string`                                                                                           | **Bắt buộc** | Nhãn mô tả hành động cho trình đọc màn hình (Screen Reader). Tối quan trọng vì nút không hiển thị văn bản. |
-| `variant`                 | `"primary" \| "secondary" \| "tertiary" \| "brand" \| "tutor" \| "danger" \| "success" \| "ghost"` | `'primary'`  | Biến thể hiển thị giao diện của icon button.                                                               |
+| `variant`                 | `"primary" \| "secondary" \| "tertiary" \| "brand" \| "danger" \| "success" \| "ghost"` | `'primary'`  | Biến thể hiển thị giao diện của icon button.                                                               |
 | `size`                    | `"xsmall" \| "small" \| "medium" \| "large"`                                                       | `'medium'`   | Kích thước nút (vuông tương ứng 28px, 36px, 44px, 48px).                                                   |
 | `shape`                   | `"rounded" \| "circle" \| "pill"`                                                                  | `'rounded'`  | Kiểu bo góc (`rounded` bo góc chuẩn `rounded-xl`, `circle`/`pill` bo tròn hoàn toàn `rounded-full`).       |
 | `icon`                    | `React.ReactNode`                                                                                  | `-`          | Phần tử Icon hiển thị trong nút (cũng có thể truyền trực tiếp qua `children`).                             |
@@ -40,7 +40,6 @@ IconButton chia sẻ cùng bảng màu đồng bộ với component `Button`:
 
 ### 2.2 Biến thể nghiệp vụ đặc thù:
 
-6. **`tutor`**: Nền vàng hổ phách (`bg-role-tutor text-white`), dành riêng cho không gian làm việc của Gia sư.
 7. **`danger`**: Nền đỏ cảnh báo (`bg-status-error text-white`), dùng cho hành động xóa, khóa tài khoản, từ chối hồ sơ.
 8. **`success`**: Nền xanh lá xác nhận (`bg-status-success text-white`), dùng cho phê duyệt hồ sơ, chấp thuận đơn mời dạy.
 

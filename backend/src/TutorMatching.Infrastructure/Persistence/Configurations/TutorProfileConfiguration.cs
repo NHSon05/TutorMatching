@@ -71,6 +71,15 @@ public sealed class TutorProfileConfiguration : IEntityTypeConfiguration<TutorPr
 
         builder.Property(x => x.IsNegotiable).IsRequired();
 
+        builder.Property(x => x.AverageRating)
+            .HasPrecision(3, 2)
+            .HasDefaultValue(0.00m)
+            .IsRequired();
+
+        builder.Property(x => x.ReviewCount)
+            .HasDefaultValue(0)
+            .IsRequired();
+
         builder.Property(x => x.CreatedAt)
             .HasColumnType("timestamp with time zone")
             .HasDefaultValueSql("CURRENT_TIMESTAMP")
