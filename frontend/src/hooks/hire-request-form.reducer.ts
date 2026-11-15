@@ -1,5 +1,6 @@
 import type { PublicTutorDetail } from "@/lib/api/tutors";
 import type { HireCreated, HireSchedule } from "@/lib/api/hire-requests";
+import { freeGaps } from "@/lib/hiring/busy-windows";
 
 export interface HireFormValues {
   subject: string;
@@ -104,11 +105,13 @@ export function hireFormReducer(
       const slot = state.offer.availability.find(
         (item) => item.id === action.slotId
       );
-      if (action.checked && slot) {
+      // Start from the first free part of the slot; a fully booked slot cannot be chosen.
+      const gap = slot ? freeGaps(slot, state.offer.busyWindows ?? [])[0] : undefined;
+      if (action.checked && slot && gap) {
         windows[slot.id] = {
           dayOfWeek: slot.dayOfWeek,
-          startTime: slot.startTime,
-          endTime: slot.endTime,
+          startTime: gap.startTime,
+          endTime: gap.endTime,
         };
       } else delete windows[action.slotId];
       return { ...state, values: { ...state.values, windows } };

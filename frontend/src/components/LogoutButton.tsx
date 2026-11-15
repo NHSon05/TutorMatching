@@ -4,6 +4,7 @@ import { useId, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { useLogout } from "@/hooks/use-auth";
+import { AUTH_OUT_TYPES } from "@/lib/navigation/transition-types";
 
 export function LogoutButton() {
   const router = useRouter();
@@ -16,7 +17,7 @@ export function LogoutButton() {
     setError("");
     try {
       await logout();
-      router.replace("/login");
+      router.replace("/login", { transitionTypes: AUTH_OUT_TYPES });
     } catch {
       setError("Đăng xuất chưa thành công. Vui lòng thử lại.");
     }

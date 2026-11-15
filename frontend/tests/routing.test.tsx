@@ -94,7 +94,7 @@ describe("TutorMatching Routing & Role Architecture", () => {
     });
 
     render(<LoginPage />);
-    await waitFor(() => expect(router.replace).toHaveBeenCalledWith("/"));
+    await waitFor(() => expect(router.replace).toHaveBeenCalledWith("/", { transitionTypes: ["auth-in"] }));
     expect(screen.queryByRole("heading", { name: "Đăng Nhập" })).not.toBeInTheDocument();
   });
 
@@ -109,7 +109,7 @@ describe("TutorMatching Routing & Role Architecture", () => {
     });
 
     render(<LoginPage />);
-    await waitFor(() => expect(router.replace).toHaveBeenCalledWith("/"));
+    await waitFor(() => expect(router.replace).toHaveBeenCalledWith("/", { transitionTypes: ["auth-in"] }));
     expect(screen.queryByRole("heading", { name: "Đăng Nhập" })).not.toBeInTheDocument();
   });
 
@@ -124,7 +124,7 @@ describe("TutorMatching Routing & Role Architecture", () => {
     });
 
     render(<LoginPage />);
-    await waitFor(() => expect(router.replace).toHaveBeenCalledWith("/onboarding"));
+    await waitFor(() => expect(router.replace).toHaveBeenCalledWith("/onboarding", { transitionTypes: ["auth-in"] }));
     expect(screen.queryByRole("heading", { name: "Đăng Nhập" })).not.toBeInTheDocument();
   });
 

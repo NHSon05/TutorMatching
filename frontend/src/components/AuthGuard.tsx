@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useSession } from "@/hooks/use-session";
 import type { AccountResponse } from "@/lib/api/auth";
 import { AuthenticatedAccountContext } from "@/hooks/use-authenticated-account";
+import { AUTH_OUT_TYPES } from "@/lib/navigation/transition-types";
 
 type AuthGuardProps = { children: ReactNode; role?: AccountResponse["role"] };
 
@@ -15,7 +16,7 @@ export function AuthGuard({ children, role }: AuthGuardProps) {
   useEffect(() => {
     if (isLoading || error) return;
     if (!account) {
-      router.replace("/login");
+      router.replace("/login", { transitionTypes: AUTH_OUT_TYPES });
     } else if (role && account.role !== role) {
       router.replace("/forbidden");
     }

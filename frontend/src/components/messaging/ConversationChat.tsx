@@ -47,11 +47,6 @@ export function ConversationChat({
           <h3 className="font-bold text-lg text-neutral-900">
             {conversation.otherParticipant.displayName}
           </h3>
-          <div className="text-sm text-neutral-700 mt-0.5 flex items-center gap-2">
-            <span>Mã yêu cầu: #{conversation.hireRequestId.slice(0, 8)}</span>
-            <span>•</span>
-            <span>Trạng thái: {conversation.requestStatus}</span>
-          </div>
         </div>
         <Link
           href={

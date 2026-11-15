@@ -24,6 +24,7 @@ import {
   PROGRAM_LEVELS,
 } from "@/data";
 import section1Img from "@assets/imgs/section-1.webp";
+import { AUTH_OPEN_TYPES } from "@/lib/navigation/transition-types";
 
 export default function LandingView() {
   const [marqueePaused, setMarqueePaused] = useState(false);
@@ -817,6 +818,7 @@ export default function LandingView() {
                 <div>
                   <Link
                     href="/register"
+                    transitionTypes={AUTH_OPEN_TYPES}
                     className="inline-flex items-center gap-2 rounded-full bg-gray-900/8 hover:bg-gray-900/14 text-brand-950 font-bold text-sm px-6 py-3 transition-colors"
                   >
                     <span>Tạo tài khoản Học viên</span>
@@ -859,6 +861,7 @@ export default function LandingView() {
             <div className="flex flex-wrap items-center justify-center gap-4 pt-2">
               <Link
                 href="/register"
+                transitionTypes={AUTH_OPEN_TYPES}
                 className="inline-flex items-center gap-3 rounded-full bg-white text-brand-950 hover:bg-gray-100 pl-6 pr-2 py-2 text-sm font-bold shadow-lg transition-all"
               >
                 <span>Đăng ký ngay</span>

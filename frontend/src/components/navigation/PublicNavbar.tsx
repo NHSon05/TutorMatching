@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useState } from "react";
 import Logo from "@assets/logo/Logo";
 import { Button } from "../ui";
+import { AUTH_OPEN_TYPES } from "@/lib/navigation/transition-types";
 
 export default function PublicNavbar() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -109,6 +110,7 @@ export default function PublicNavbar() {
           </Link>
           <Link
             href="/login"
+            transitionTypes={AUTH_OPEN_TYPES}
             className="hidden md:inline-flex text-base font-semibold text-brand hover:bg-gray-900/5 rounded-full px-4 py-2 transition-colors"
           >
             Đăng nhập
@@ -153,6 +155,7 @@ export default function PublicNavbar() {
           <div className="pt-3 border-t border-border-default flex items-center gap-3">
             <Link
               href="/login"
+              transitionTypes={AUTH_OPEN_TYPES}
               onClick={() => setMobileMenuOpen(false)}
               className="flex-1 text-center py-2.5 text-xs font-bold text-brand-950 border border-border-default rounded-full"
             >
@@ -160,6 +163,7 @@ export default function PublicNavbar() {
             </Link>
             <Link
               href="/register"
+              transitionTypes={AUTH_OPEN_TYPES}
               onClick={() => setMobileMenuOpen(false)}
               className="flex-1 text-center py-2.5 text-xs font-bold text-white bg-brand-950 rounded-full"
             >

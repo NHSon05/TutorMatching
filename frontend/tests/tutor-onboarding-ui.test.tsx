@@ -1,7 +1,8 @@
-import { render, screen, waitFor } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { TutorGuard } from "@/components/tutor/TutorGuard";
 import { TutorLayoutShell } from "@/components/layouts/TutorLayoutShell";
+import { useUIStore } from "@/stores/use-ui-store";
 
 const mockState = vi.hoisted(() => ({
   path: "/onboarding",
@@ -9,6 +10,11 @@ const mockState = vi.hoisted(() => ({
   status: "DRAFT" as "DRAFT" | "PENDING_REVIEW" | "APPROVED" | "REJECTED",
   replace: vi.fn(),
   push: vi.fn(),
+}));
+
+// The live bell needs a QueryClient and session; it is covered by NotificationBell.test.tsx.
+vi.mock("@/components/notifications/NotificationBell", () => ({
+  NotificationBell: () => null,
 }));
 
 vi.mock("next/navigation", () => ({
@@ -19,6 +25,10 @@ vi.mock("next/navigation", () => ({
   }),
 }));
 
+vi.mock("@/hooks/use-messenger-badge", () => ({
+  useMessengerBadge: () => 0,
+  formatBadgeCount: (count: number) => String(count),
+}));
 vi.mock("@/hooks/use-session", () => ({
   useSession: () => ({
     data: {
@@ -147,7 +157,9 @@ describe("Tutor Onboarding & Sidebar Visibility Guards", () => {
       expect(
         screen.queryByLabelText("Tutor Navigation Sidebar")
       ).not.toBeInTheDocument();
-      expect(screen.queryByLabelText("Mở menu điều hướng")).not.toBeInTheDocument();
+      expect(
+        screen.queryByLabelText("Mở menu điều hướng")
+      ).not.toBeInTheDocument();
     });
 
     it("renders TutorSidebar when tutor status is APPROVED on workspace pages", () => {
@@ -165,6 +177,76 @@ describe("Tutor Onboarding & Sidebar Visibility Guards", () => {
       expect(
         screen.getAllByLabelText("Tutor Navigation Sidebar").length
       ).toBeGreaterThanOrEqual(1);
+    });
+
+    it("uses the learner-style top bar with the tutor role and initials", () => {
+      mockState.status = "APPROVED";
+      mockState.path = "/";
+      useUIStore.getState().setMode("expanded");
+
+      render(
+        <TutorLayoutShell>
+          <div>Dashboard Page</div>
+        </TutorLayoutShell>
+      );
+
+      // Same controls as the learner bar: toggle, search, role pill, theme, avatar, logout.
+      expect(
+        screen.getByRole("button", { name: "Thu gọn thanh điều hướng" })
+      ).toBeInTheDocument();
+      expect(
+        screen.getByPlaceholderText("Search projects")
+      ).toBeInTheDocument();
+      // Scope to the top bar: the sidebar card now shows the same user and role on purpose.
+      const topBar = screen.getByRole("main");
+      expect(within(topBar).getByText("Gia sư")).toBeInTheDocument();
+      expect(screen.queryByText("Thành viên")).not.toBeInTheDocument();
+      expect(
+        screen.getByRole("button", { name: "Chuyển chế độ sáng/tối" })
+      ).toBeInTheDocument();
+      // No stock photo for a tutor without an avatar: initials of the last two name parts.
+      expect(within(topBar).getByText("GS")).toBeInTheDocument();
+      // The sidebar shows the very same initials (name/avatar are in sync).
+      expect(within(screen.getByTestId("tutor-sidebar-avatar")).getByText("GS")).toBeInTheDocument();
+      // Top-bar logout, in addition to the sidebar's own.
+      expect(screen.getAllByRole("button", { name: "Đăng xuất" })).toHaveLength(
+        2
+      );
+    });
+
+    it("collapses and expands the desktop sidebar from the top bar toggle", () => {
+      mockState.status = "APPROVED";
+      mockState.path = "/";
+      useUIStore.getState().setMode("expanded");
+      const matchMedia = window.matchMedia;
+      window.matchMedia = ((query: string) =>
+        ({
+          matches: true,
+          media: query,
+        }) as MediaQueryList) as typeof window.matchMedia;
+      try {
+        render(
+          <TutorLayoutShell>
+            <div>Dashboard Page</div>
+          </TutorLayoutShell>
+        );
+        const sidebar = () =>
+          screen.getByLabelText("Tutor Navigation Sidebar").parentElement!;
+        expect(sidebar()).toHaveClass("md:flex");
+
+        fireEvent.click(
+          screen.getByRole("button", { name: "Thu gọn thanh điều hướng" })
+        );
+        expect(sidebar()).not.toHaveClass("md:flex");
+
+        fireEvent.click(
+          screen.getByRole("button", { name: "Mở rộng thanh điều hướng" })
+        );
+        expect(sidebar()).toHaveClass("md:flex");
+      } finally {
+        window.matchMedia = matchMedia;
+        useUIStore.getState().setMode("expanded");
+      }
     });
   });
 });

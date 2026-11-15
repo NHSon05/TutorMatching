@@ -5,6 +5,9 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import Logo from "@assets/logo/Logo";
 import { LogoutButton } from "@/components/LogoutButton";
+import { Avatar } from "@/components/ui/avatar";
+import { useSession } from "@/hooks/use-session";
+import { toUserDisplay } from "@/lib/auth/user-display";
 import {
   BookOpenIcon,
   DashboardIcon,
@@ -19,6 +22,8 @@ export interface AdminSidebarProps {
 
 export default function AdminSidebar({ onCloseMobile }: AdminSidebarProps) {
   const pathname = usePathname();
+  const { data: account } = useSession();
+  const user = toUserDisplay(account, "Quản trị viên");
 
   const mainNavItems = [
     {
@@ -139,12 +144,15 @@ export default function AdminSidebar({ onCloseMobile }: AdminSidebarProps) {
           {/* Admin User Profile Card & Logout */}
           <div className="p-2.5 rounded-xl bg-gray-50 dark:bg-gray-800/60 border border-gray-200/60 dark:border-gray-700/60 flex items-center justify-between gap-2">
             <div className="flex items-center gap-2.5 min-w-0">
-              <div className="w-9 h-9 rounded-full bg-red-100 dark:bg-red-950/80 text-status-error font-bold flex items-center justify-center text-xs shrink-0 select-none border border-red-200 dark:border-red-900">
-                AD
-              </div>
+              <Avatar
+                src={user.avatarSrc}
+                alt={user.name}
+                fallbackText={user.initials}
+                data-testid="admin-sidebar-avatar"
+              />
               <div className="flex flex-col min-w-0">
-                <span className="text-xs font-semibold text-gray-900 dark:text-gray-100 truncate">
-                  Quản trị viên
+                <span className="text-xs font-semibold text-gray-900 dark:text-gray-100 truncate" title={user.name}>
+                  {user.name}
                 </span>
                 <span className="text-[10px] text-green-600 font-medium flex items-center gap-1">
                   <span className="w-1.5 h-1.5 rounded-full bg-green-500 inline-block animate-pulse" />

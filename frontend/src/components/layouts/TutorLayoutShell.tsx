@@ -8,18 +8,31 @@ import { useAuthStore } from "@/stores/use-auth-store";
 import { TutorSidebar } from "@/components/navigation/TutorSidebar";
 import Logo from "@assets/logo/Logo";
 import { LogoutButton } from "@/components/LogoutButton";
-import { CloseIcon, MenuIcon } from "../icons";
+import { NotificationBell } from "@/components/notifications/NotificationBell";
+import { DashboardTopBar } from "@/components/learner/DashboardTopBar";
+import { useUIStore } from "@/stores/use-ui-store";
+import { CloseIcon } from "../icons";
+import { Avatar } from "@/components/ui/avatar";
+import { toUserDisplay } from "@/lib/auth/user-display";
 
 export function TutorLayoutShell({ children }: { children: React.ReactNode }) {
   const [mobileOpen, setMobileOpen] = React.useState(false);
   const pathname = usePathname();
   const { data: account } = useSession();
   const authUser = useAuthStore((s) => s.user);
+  const user = toUserDisplay(account, "Gia sư");
 
   const tutorProfileStatus =
     account?.tutorProfileStatus ?? authUser?.tutorProfileStatus;
   const isApproved = tutorProfileStatus === "APPROVED";
   const isOnboarding = pathname === "/onboarding";
+  const sidebarCollapsed = useUIStore((s) => s.mode === "collapsed");
+  const toggleMode = useUIStore((s) => s.toggleMode);
+  // Desktop: collapse/expand the sidebar. Mobile: the sidebar lives in a drawer.
+  const toggleSidebar = () => {
+    if (window.matchMedia("(min-width: 768px)").matches) toggleMode();
+    else setMobileOpen(true);
+  };
   const showSidebar = isApproved && !isOnboarding;
 
   // Khi đang ở trạng thái DRAFT / PENDING đang đăng ký hoặc đang ở onboarding:
@@ -43,11 +56,21 @@ export function TutorLayoutShell({ children }: { children: React.ReactNode }) {
             </div>
           </Link>
           <div className="flex items-center gap-3">
-            {account?.fullName && (
-              <span className="hidden sm:inline text-xs font-medium text-content-secondary">
-                {account.fullName}
+            {account && (
+              <span className="flex items-center gap-2">
+                <Avatar
+                  src={user.avatarSrc}
+                  alt={user.name}
+                  fallbackText={user.initials}
+                  size="small"
+                  data-testid="tutor-header-avatar"
+                />
+                <span className="hidden sm:inline text-xs font-medium text-content-secondary" title={user.name}>
+                  {user.name}
+                </span>
               </span>
             )}
+            <NotificationBell />
             <LogoutButton />
           </div>
         </header>
@@ -61,9 +84,11 @@ export function TutorLayoutShell({ children }: { children: React.ReactNode }) {
 
   // Khi gia sư đã được phê duyệt (APPROVED): hiển thị sidebar đầy đủ
   return (
-    <div className="min-h-screen flex bg-surface-base text-content-primary">
-      {/* Desktop Sidebar */}
-      <div className="hidden md:flex h-screen sticky top-0 shrink-0">
+    <div className="min-h-screen flex bg-gray-50 text-content-primary">
+      {/* Desktop Sidebar (collapsible from the top bar toggle) */}
+      <div
+        className={`${sidebarCollapsed ? "hidden" : "hidden md:flex"} h-screen sticky top-0 shrink-0`}
+      >
         <TutorSidebar />
       </div>
 
@@ -93,26 +118,18 @@ export function TutorLayoutShell({ children }: { children: React.ReactNode }) {
 
       {/* Main Content Area */}
       <div className="flex-1 flex flex-col min-w-0">
-        {/* Mobile Top Header */}
-        <header className="md:hidden h-16 border-b border-border-default px-4 flex items-center justify-between bg-surface-base sticky top-0 z-30">
-          <Link href="/" className="flex items-center gap-2">
-            <Logo size={28} />
-            <span className="font-bold text-lg text-content-primary">
-              TutorMatching
-            </span>
-          </Link>
-          <button
-            type="button"
-            onClick={() => setMobileOpen(true)}
-            className="p-2 rounded-xl border border-border-default text-content-secondary hover:text-content-primary hover:bg-gray-50 dark:hover:bg-gray-800"
-            aria-label="Mở menu điều hướng"
-          >
-            <MenuIcon className="w-5 h-5" />
-          </button>
-        </header>
-
-        {/* Content Body */}
-        <main className="flex-1 w-full max-w-7xl mx-auto p-6 overflow-y-auto">
+        <main className="bg-gray-50 flex-1 w-full max-w-7xl mx-auto px-4 sm:px-6 py-4 overflow-y-auto">
+          <DashboardTopBar
+            user={{
+              name: user.name,
+              avatar: account?.avatarUrl ?? null,
+              role: "Gia sư",
+            }}
+            roleLabel="Gia sư"
+            mobileLink={{ href: "/request", label: "Yêu cầu thuê" }}
+            sidebarCollapsed={sidebarCollapsed}
+            onToggleSidebar={toggleSidebar}
+          />
           {children}
         </main>
       </div>

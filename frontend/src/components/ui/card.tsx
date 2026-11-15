@@ -83,7 +83,10 @@ export function CardContent({
   ...props
 }: React.HTMLAttributes<HTMLDivElement>) {
   return (
-    <div className={`text-sm text-gray-700 dark:text-gray-300 ${className}`} {...props}>
+    <div
+      className={`text-base text-gray-900 dark:text-gray-300 ${className}`}
+      {...props}
+    >
       {children}
     </div>
   );

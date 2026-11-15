@@ -47,6 +47,60 @@ export async function login(email: string, password: string): Promise<AccountRes
   return data;
 }
 
+/** Role accepted by the Google registration step; PARENT/STUDENT map to LEARNER in the UI. */
+export type GoogleRegistrationRole = "LEARNER" | "TUTOR";
+
+export interface GoogleRoleRequired {
+  kind: "role-required";
+  pendingToken: string;
+  email: string;
+  fullName: string;
+  avatarUrl: string | null;
+}
+
+export type GoogleSignInOutcome = { kind: "signed-in"; account: AccountResponse } | GoogleRoleRequired;
+
+interface GoogleRegistrationRequiredResponse {
+  status: "role_required";
+  pendingToken: string;
+  email: string;
+  fullName: string;
+  avatarUrl?: string | null;
+}
+
+/**
+ * Exchanges a Google Identity Services ID token for a session (200), or, for a verified Google
+ * identity without an account, returns the pending registration that needs a role (202).
+ */
+export async function googleSignIn(credential: string): Promise<GoogleSignInOutcome> {
+  const response = await http.post<AccountResponse | GoogleRegistrationRequiredResponse>("/auth/google", {
+    credential,
+  });
+  if (response.status === 202) {
+    const pending = response.data as GoogleRegistrationRequiredResponse;
+    return {
+      kind: "role-required",
+      pendingToken: pending.pendingToken,
+      email: pending.email,
+      fullName: pending.fullName,
+      avatarUrl: pending.avatarUrl ?? null,
+    };
+  }
+  const account = response.data as AccountResponse;
+  syncRoleCookie(account?.role ?? null);
+  return { kind: "signed-in", account };
+}
+
+/** Creates the account for a pending Google registration with the chosen role and signs in (201). */
+export async function completeGoogleRegistration(
+  pendingToken: string,
+  role: GoogleRegistrationRole,
+): Promise<AccountResponse> {
+  const { data } = await http.post<AccountResponse>("/auth/google/complete", { pendingToken, role });
+  syncRoleCookie(data?.role ?? null);
+  return data;
+}
+
 export async function getSession(signal?: AbortSignal): Promise<AccountResponse | null> {
   if (!hasSessionIndicator()) {
     syncRoleCookie(null);

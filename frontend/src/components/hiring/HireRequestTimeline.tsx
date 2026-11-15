@@ -41,12 +41,12 @@ export function HireRequestTimeline({ detail }: { detail: HireDetail }) {
                         : "Tạo yêu cầu"}{" "}
                       → <Badge variant={status.variant}>{status.label}</Badge>
                     </p>
-                    <p className="text-sm text-content-secondary">
+                    <p className="text-base text-content">
                       Người thực hiện: {actorName(event.actorId)}
                     </p>
                     <time
                       dateTime={event.createdAt}
-                      className="text-sm text-content-secondary"
+                      className="text-base text-content"
                     >
                       {formatVietnamDateTime(event.createdAt)}
                     </time>

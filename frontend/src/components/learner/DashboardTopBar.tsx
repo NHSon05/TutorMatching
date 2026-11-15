@@ -1,45 +1,55 @@
 "use client";
 
 import * as React from "react";
-import Image from "next/image";
 import Link from "next/link";
-import { TextField } from "../ui";
+import { Avatar, TextField } from "../ui";
 import type { DashboardTopBarProps, DashboardUser } from "./types";
 import { LogoutButton } from "../LogoutButton";
+import { NotificationBell } from "../notifications/NotificationBell";
 import { SidebarToggleIcon } from "../icons";
 import { useUIStore } from "@/stores/use-ui-store";
+import { toUserDisplay } from "@/lib/auth/user-display";
 
 export type * from "./types";
 
+/** Neutral placeholder; shells always pass the signed-in account. */
 const DEFAULT_USER: DashboardUser = {
-  name: "Esther",
-  avatar:
-    "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=256",
-  role: "Học viên",
-  unreadNotifications: 3,
+  name: "Người dùng",
+  avatar: null,
+  role: "Thành viên",
 };
 
-export function DashboardTopBar({ user = DEFAULT_USER }: DashboardTopBarProps) {
+export function DashboardTopBar({
+  user = DEFAULT_USER,
+  roleLabel = "Thành viên",
+  mobileLink = { href: "/learner/requests", label: "Yêu cầu thuê" },
+  onToggleSidebar,
+  sidebarCollapsed,
+}: DashboardTopBarProps) {
   const [searchValue, setSearchValue] = React.useState("");
+  const display = toUserDisplay({ fullName: user.name, avatarUrl: user.avatar }, user.name);
   const mode = useUIStore((state) => state.mode);
   const toggleMode = useUIStore((state) => state.toggleMode);
 
-  const isCollapsed = mode === "collapsed";
+  const isCollapsed = onToggleSidebar
+    ? Boolean(sidebarCollapsed)
+    : mode === "collapsed";
+  const handleToggle = onToggleSidebar ?? toggleMode;
 
   return (
     <div className="w-full flex flex-col  sm:flex-row sticky top-2 z-20 items-stretch sm:items-center justify-between gap-4 pb-6">
       <Link
-        href="/learner/requests"
+        href={mobileLink.href}
         className="md:hidden text-brand font-semibold"
       >
-        Yêu cầu thuê
+        {mobileLink.label}
       </Link>
       {/* Search Input Bar */}
       <div className="flex-1 max-w-md">
         <div className="flex gap-2">
           <button
             type="button"
-            onClick={toggleMode}
+            onClick={handleToggle}
             aria-label={
               isCollapsed
                 ? "Mở rộng thanh điều hướng"
@@ -75,7 +85,7 @@ export function DashboardTopBar({ user = DEFAULT_USER }: DashboardTopBarProps) {
           className="bg-brand hover:bg-brand text-white text-xs font-semibold px-3 py-2 rounded-full flex items-center gap-1.5 shadow-2xs transition-colors cursor-pointer select-none"
         >
           <span className="w-2 h-2 rounded-full bg-white animate-pulse" />
-          <span>Thành viên</span>
+          <span>{roleLabel}</span>
         </div>
 
         {/* Moon Icon (Dark Mode toggle button) */}
@@ -98,44 +108,18 @@ export function DashboardTopBar({ user = DEFAULT_USER }: DashboardTopBarProps) {
           </svg>
         </button>
 
-        {/* Notification Bell */}
-        <button
-          type="button"
-          aria-label="Thông báo"
-          className="relative w-10 h-10 rounded-full bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 flex items-center justify-center text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white transition-colors shadow-2xs cursor-pointer"
-        >
-          <svg
-            className="w-4 h-4"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            aria-hidden="true"
-          >
-            <path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9" />
-            <path d="M10.3 21a1.94 1.94 0 0 0 3.4 0" />
-          </svg>
-          {user.unreadNotifications > 0 && (
-            <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-red-500 ring-2 ring-white dark:ring-gray-900" />
-          )}
-        </button>
+        <NotificationBell />
 
-        {/* User Avatar */}
-        <div
-          role="button"
-          tabIndex={0}
-          title={user.name}
-          className="relative w-10 h-10 rounded-full overflow-hidden border-2 border-white dark:border-gray-800 shadow-xs cursor-pointer"
-        >
-          <Image
-            src={user.avatar}
-            alt={user.name}
-            fill
-            className="object-cover"
+        {/* User Avatar: same source (session) as the sidebar; falls back to initials. */}
+        <Link href="/profile" aria-label={`Hồ sơ của ${display.name}`} title={display.name} className="rounded-full">
+          <Avatar
+            src={display.avatarSrc}
+            alt={display.name}
+            fallbackText={display.initials}
+            data-testid="topbar-avatar"
+            className="border-2 border-white dark:border-gray-800 shadow-xs"
           />
-        </div>
+        </Link>
         <LogoutButton />
       </div>
     </div>

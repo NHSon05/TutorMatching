@@ -130,9 +130,10 @@ export interface RightSidebarWidgetsProps {
  */
 export interface DashboardUser {
   name: string;
-  avatar: string;
+  /** Photo URL; when empty the top bar shows the user's initials instead. */
+  avatar?: string | null;
   role: string;
-  unreadNotifications: number;
+  unreadNotifications?: number;
 }
 
 /**
@@ -142,4 +143,15 @@ export interface DashboardTopBarProps {
   user?: DashboardUser;
   onSearch?: (query: string) => void;
   className?: string;
+  /** Text of the role pill. Defaults to "Thành viên" (learner). */
+  roleLabel?: string;
+  /** Shortcut shown on small screens. Defaults to the learner's hire requests. */
+  mobileLink?: { href: string; label: string };
+  /**
+   * Custom sidebar toggle (e.g. the tutor sidebar). When omitted the bar
+   * toggles the learner navigation rail through the shared UI store.
+   */
+  onToggleSidebar?: () => void;
+  /** Collapsed state shown by the toggle icon when `onToggleSidebar` is used. */
+  sidebarCollapsed?: boolean;
 }

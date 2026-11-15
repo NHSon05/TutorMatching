@@ -3,7 +3,6 @@
 import * as React from "react";
 import { LearnerNavigationRail } from "@/components/navigation/LearnerNavigationRail";
 import { DashboardTopBar } from "@/components/learner/DashboardTopBar";
-import { mockLearnerDashboardData } from "@/data/mockLearnerDashboard";
 import type { AccountResponse } from "@/lib/api/auth";
 import { AuthenticatedAccountContext } from "@/hooks/use-authenticated-account";
 
@@ -14,9 +13,11 @@ export function LearnerShell({
   account: AccountResponse;
   children: React.ReactNode;
 }) {
+  // Top bar and sidebar both read the same session account, so name/avatar never diverge.
   const user = {
-    ...mockLearnerDashboardData.user,
-    name: account.fullName || mockLearnerDashboardData.user.name,
+    name: account.fullName || "Học viên",
+    avatar: account.avatarUrl ?? null,
+    role: "Học viên",
   };
 
   return (

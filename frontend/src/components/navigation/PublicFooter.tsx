@@ -1,5 +1,6 @@
 import Link from "next/link";
 import Logo from "@assets/logo/Logo";
+import { AUTH_OPEN_TYPES } from "@/lib/navigation/transition-types";
 
 const FOOTER_COLUMNS = [
   {
@@ -115,6 +116,11 @@ export default function PublicFooter() {
                   <li key={item.label}>
                     <Link
                       href={item.href}
+                      transitionTypes={
+                        item.href === "/login" || item.href === "/register"
+                          ? AUTH_OPEN_TYPES
+                          : undefined
+                      }
                       className="hover:text-brand font-medium transition-colors"
                     >
                       {item.label}
@@ -147,18 +153,21 @@ export default function PublicFooter() {
             </span>
             <Link
               href="/login"
+              transitionTypes={AUTH_OPEN_TYPES}
               className="hover:text-brand-950 transition-colors"
             >
               Chính sách bảo mật
             </Link>
             <Link
               href="/login"
+              transitionTypes={AUTH_OPEN_TYPES}
               className="hover:text-brand-950 transition-colors"
             >
               Điều khoản sử dụng
             </Link>
             <Link
               href="/login"
+              transitionTypes={AUTH_OPEN_TYPES}
               className="hover:text-brand-950 transition-colors"
             >
               Quy chuẩn cộng đồng Gia sư

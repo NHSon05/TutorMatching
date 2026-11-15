@@ -1,10 +1,22 @@
-import { fireEvent, render, screen } from "@testing-library/react";
+import {
+  fireEvent,
+  render,
+  screen,
+  waitFor,
+  within,
+} from "@testing-library/react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { beforeEach, expect, it, vi } from "vitest";
 import TutorDetailClient from "@/components/tutors/TutorDetailClient";
 import { getTutorById, type PublicTutorDetail } from "@/lib/api/tutors";
 import { ApiError } from "@/lib/api/http";
 import { useAuthStore } from "@/stores/use-auth-store";
+import { getSavedTutors, saveTutor, unsaveTutor } from "@/lib/api/saved-tutors";
+vi.mock("@/lib/api/saved-tutors", () => ({
+  getSavedTutors: vi.fn(),
+  saveTutor: vi.fn(),
+  unsaveTutor: vi.fn(),
+}));
 vi.mock("@/lib/api/tutors", async (original) => ({
   ...(await original<typeof import("@/lib/api/tutors")>()),
   getTutorById: vi.fn(),
@@ -73,7 +85,10 @@ it("renders public professional fields, per-subject levels, weekly availability 
   expect(
     screen.getByRole("heading", { name: "Ôn thi Toán" })
   ).toBeInTheDocument();
-  expect(screen.getByText("0 năm")).toBeInTheDocument();
+  const panel = screen.getByRole("complementary", {
+    name: "Học phí và thuê gia sư",
+  });
+  expect(within(panel).getByText("0 năm")).toBeInTheDocument();
   expect(screen.queryByText(/Đã xác thực|4.9/)).not.toBeInTheDocument();
 });
 it("reports unavailable when eligibility is lost after opening the detail", async () => {
@@ -137,4 +152,117 @@ it("shows login required alert when clicking Thuê gia sư while unauthenticated
     "href",
     "/login"
   );
+});
+
+function signInAs(role: "LEARNER" | "TUTOR") {
+  useAuthStore.getState().setUser({
+    id: "viewer-1",
+    email: "viewer@example.test",
+    fullName: "Người xem",
+    role,
+    status: "ACTIVE",
+  } as Parameters<ReturnType<typeof useAuthStore.getState>["setUser"]>[0]);
+}
+
+it("shows price, rating and experience next to the hire button", async () => {
+  vi.mocked(getTutorById).mockResolvedValue({
+    ...profile,
+    averageRating: 4.86,
+    reviewCount: 27,
+    experienceYears: 5,
+  } as PublicTutorDetail);
+  view();
+  const panel = await screen.findByRole("complementary", {
+    name: "Học phí và thuê gia sư",
+  });
+  expect(within(panel).getByText("150.000đ")).toBeInTheDocument();
+  expect(within(panel).getByText("4.9")).toBeInTheDocument();
+  expect(within(panel).getByText("27 đánh giá")).toBeInTheDocument();
+  expect(within(panel).getByText("5 năm")).toBeInTheDocument();
+  expect(
+    within(panel).getByRole("button", { name: "Thuê gia sư" })
+  ).toBeInTheDocument();
+  expect(
+    within(panel).getByRole("button", { name: "Chia sẻ hồ sơ" })
+  ).toBeInTheDocument();
+});
+
+it("asks a visitor to sign in before saving a tutor", async () => {
+  view();
+  // The cover bookmark and the side-panel heart are the same action.
+  const [coverSave] = await screen.findAllByRole("button", {
+    name: "Lưu gia sư",
+  });
+  fireEvent.click(coverSave);
+  expect(
+    screen.getByRole("link", { name: "Đăng nhập ngay" })
+  ).toBeInTheDocument();
+  expect(saveTutor).not.toHaveBeenCalled();
+});
+
+it("lets a learner save and unsave the tutor from the cover or the side panel", async () => {
+  signInAs("LEARNER");
+  const savedRow = {
+    tutorProfileId: "profile-1",
+    savedAt: "2026-11-14T00:00:00Z",
+  };
+  // Server state: empty first, then saved after the PUT.
+  vi.mocked(getSavedTutors)
+    .mockResolvedValueOnce([])
+    .mockResolvedValue([savedRow]);
+  vi.mocked(saveTutor).mockResolvedValue();
+  vi.mocked(unsaveTutor).mockResolvedValue();
+  view();
+  const panel = await screen.findByRole("complementary", {
+    name: "Học phí và thuê gia sư",
+  });
+  const [coverSave] = screen.getAllByRole("button", { name: "Lưu gia sư" });
+  await waitFor(() => expect(coverSave).toBeEnabled());
+  fireEvent.click(coverSave);
+  await waitFor(() => expect(saveTutor).toHaveBeenCalledWith("profile-1"));
+  // Both controls reflect the shared saved state.
+  await waitFor(() =>
+    expect(
+      screen.getAllByRole("button", { name: "Bỏ lưu gia sư" })
+    ).toHaveLength(2)
+  );
+  const panelUnsave = within(panel).getByRole("button", {
+    name: "Bỏ lưu gia sư",
+  });
+  expect(panelUnsave).toHaveAttribute("aria-pressed", "true");
+  await waitFor(() => expect(panelUnsave).toBeEnabled());
+  vi.mocked(getSavedTutors).mockResolvedValue([]);
+  fireEvent.click(panelUnsave);
+  await waitFor(() => expect(unsaveTutor).toHaveBeenCalledWith("profile-1"));
+  await waitFor(() =>
+    expect(screen.getAllByRole("button", { name: "Lưu gia sư" })).toHaveLength(
+      2
+    )
+  );
+});
+
+it("hides the save button from tutors", async () => {
+  signInAs("TUTOR");
+  view();
+  await screen.findByRole("button", { name: "Thuê gia sư" });
+  expect(screen.queryByRole("button", { name: /Lưu gia sư/ })).toBeNull();
+  expect(getSavedTutors).not.toHaveBeenCalled();
+});
+
+it("shows the cover header with qualification and a subjects chip", async () => {
+  vi.mocked(getTutorById).mockResolvedValue({
+    ...profile,
+    schoolName: "ĐH Sư phạm",
+    subjects: [
+      ...profile.subjects,
+      { subjectId: "phy", name: "Vật lý", levelCodes: [], levelNames: [] },
+      { subjectId: "chem", name: "Hóa học", levelCodes: [], levelNames: [] },
+    ],
+  } as PublicTutorDetail);
+  view();
+  expect(
+    await screen.findByRole("heading", { level: 1, name: "Gia sư An" })
+  ).toBeInTheDocument();
+  expect(screen.getByText("Cử nhân · ĐH Sư phạm")).toBeInTheDocument();
+  expect(screen.getByText(/Toán · Vật lý\s*\+1/)).toBeInTheDocument();
 });
