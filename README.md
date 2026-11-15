@@ -1,146 +1,316 @@
-# TutorMatching
+# 🎓 TutorMatching
 
-TutorMatching gồm frontend Next.js, backend ASP.NET Core và PostgreSQL. Môi trường local dùng Docker
-Compose để mỗi thành viên có thể tạo lại PostgreSQL và SMTP sandbox theo cùng một cấu hình.
+[![.NET](https://img.shields.io/badge/.NET-10.0-512BD4?logo=dotnet&logoColor=white)](https://dotnet.microsoft.com/)
+[![Next.js](https://img.shields.io/badge/Next.js-16.3-black?logo=next.js&logoColor=white)](https://nextjs.org/)
+[![React](https://img.shields.io/badge/React-19.2-61DAFB?logo=react&logoColor=black)](https://react.dev/)
+[![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-4.0-38B2AC?logo=tailwind-css&logoColor=white)](https://tailwindcss.com/)
+[![PostgreSQL](https://img.shields.io/badge/PostgreSQL-17.6-336791?logo=postgresql&logoColor=white)](https://www.postgresql.org/)
+[![Redis](https://img.shields.io/badge/Redis-7.2-DC382D?logo=redis&logoColor=white)](https://redis.io/)
+[![SignalR](https://img.shields.io/badge/SignalR-Real--time-512BD4?logo=dotnet&logoColor=white)](https://dotnet.microsoft.com/apps/aspnet/signalr)
+[![Docker Compose](https://img.shields.io/badge/Docker-Compose_v2-2496ED?logo=docker&logoColor=white)](https://www.docker.com/)
 
-## Yêu cầu local
+A modern web platform connecting learners and parents with qualified tutors. Features multi-criteria search, versioned hire negotiation, real-time messaging and notifications with SignalR, Redis caching, and multi-tier security.
 
-- .NET SDK 10
-- Node.js và npm
-- Docker Desktop hoặc Docker Engine có Docker Compose v2
+---
 
-Không cần cài PostgreSQL trực tiếp trên máy. Mailpit được dùng làm SMTP sandbox: email phát triển
-không được gửi ra Internet và có thể xem tại `http://localhost:8025`.
+## 📑 Table of Contents
 
-## Khởi động PostgreSQL và Mailpit
+- [Features](#-features)
+- [Architecture & Tech Stack](#-architecture--tech-stack)
+- [Project Structure](#-project-structure)
+- [Prerequisites](#-prerequisites)
+- [Quick Start](#-quick-start)
+- [Demo Accounts](#-demo-accounts)
+- [Environment Variables](#-environment-variables)
+- [Testing](#-testing)
+- [Database Operations](#-database-operations)
+- [Production & Troubleshooting](#-production--troubleshooting)
+- [Documentation](#-documentation)
 
-1. Tạo cấu hình backend local từ file mẫu:
+---
 
-   ```bash
-   cp backend/.env.example backend/.env
-   ```
+## 🚀 Features
 
-2. Đổi `POSTGRES_PASSWORD` và phần `Password=...` trong
-   `ConnectionStrings__DefaultConnection` sang cùng một mật khẩu local.
-3. Khởi động dịch vụ và kiểm tra trạng thái:
+- **Tutor Discovery**: Search and filter tutors by subject, teaching level, mode (`ONLINE`, `OFFLINE`, `HYBRID`), location (province/district), and pricing.
+- **Hire & Versioned Negotiation**:
+  - Structured request lifecycle: `PENDING` ↔ `NEGOTIATING` → `ACCEPTED` → `COMPLETED` (or terminal `REJECTED` / `CANCELLED`).
+  - Multi-round negotiation for price and schedule slots with immutable proposal snapshots and concurrency versioning (`version` token).
+- **Real-time Communication**: SignalR hub (`/api/v1/hubs/events`) for instant hire updates, proposals, and in-app notifications.
+- **Security & Session Management**:
+  - Dual HttpOnly cookies: 5-minute JWT Access Token (`tutormatch_session`) + rotating Opaque Refresh Token (`tutormatch_session_refresh`).
+  - Anti-CSRF protection on all state-mutating requests (`POST`, `PUT`, `PATCH`, `DELETE`).
+  - Client-side concurrency handling with Web Locks API (`navigator.locks`).
+  - Optional Google Sign-In via Google Identity Services ID-token flow.
+- **Admin & Quality Control**: Tutor profile review queue with mandatory rejection reasons, subject/level catalog management, and audit logging.
 
-   ```bash
-   docker compose --env-file backend/.env -f backend/compose.yaml up -d --wait
-   docker compose --env-file backend/.env -f backend/compose.yaml ps
-   ```
+---
 
-4. Dừng container mà vẫn giữ dữ liệu:
+## 🏗️ Architecture & Tech Stack
 
-   ```bash
-   docker compose --env-file backend/.env -f backend/compose.yaml down
-   ```
+```
+┌────────────────────────────────────────────────────────────────────────┐
+│                        FRONTEND (Next.js 16)                           │
+│       App Router • React 19 • TanStack Query v5 • Tailwind CSS 4       │
+│                  Web Locks API • Axios (Anti-CSRF)                     │
+└───────────────────────────────────┬────────────────────────────────────┘
+                                    │ HTTPS + HttpOnly Cookies + CSRF Header
+                                    ▼
+┌────────────────────────────────────────────────────────────────────────┐
+│                       BACKEND (ASP.NET Core 10)                        │
+│   ┌────────────────────────────────────────────────────────────────┐   │
+│   │ Api: Controllers, Anti-CSRF, SignalR Hub, OpenAPI 3.1, Auth    │   │
+│   └───────────────────────────────┬────────────────────────────────┘   │
+│                                   ▼                                    │
+│   ┌────────────────────────────────────────────────────────────────┐   │
+│   │ Application: Use Cases, Ports, DTOs, Business Invariants       │   │
+│   └───────────────────────────────┬────────────────────────────────┘   │
+│                                   ▼                                    │
+│   ┌────────────────────────────────────────────────────────────────┐   │
+│   │ Domain: Entities, Value Objects, State Machine (Zero external) │   │
+│   └───────────────────────────────▲────────────────────────────────┘   │
+│                                   │                                    │
+│   ┌───────────────────────────────┴────────────────────────────────┐   │
+│   │ Infrastructure: EF Core 10, Npgsql, Redis, MailKit, Identity   │   │
+│   └────────────────────────────────────────────────────────────────┘   │
+└───────────────────────────────────┬────────────────────────────────────┘
+                                    │
+                                    ▼
+┌────────────────────────────────────────────────────────────────────────┐
+│                     INFRASTRUCTURE (Docker Compose)                    │
+│   • PostgreSQL 17: Schema with snake_case naming & UUID v4 keys        │
+│   • Redis 7.2: Session storage, caching, and pub/sub messaging         │
+│   • Mailpit: SMTP sandbox with web UI at http://localhost:8025         │
+└────────────────────────────────────────────────────────────────────────┘
+```
 
-Named volume `tutormatching_postgres-data` giữ dữ liệu qua các lần tạo lại container. Lệnh
-`docker compose --env-file backend/.env -f backend/compose.yaml down --volumes` sẽ xóa volume và
-toàn bộ dữ liệu local, vì vậy chỉ dùng khi chủ ý reset database.
+### Technology Breakdown
 
-Backend đọc cấu hình phân cấp từ biến môi trường với dấu `__`. ASP.NET Core không tự đọc file
-`.env`, vì vậy trên macOS/Linux cần nạp `backend/.env` vào terminal hiện tại trước khi chạy:
+| Layer                   | Technologies                                                            |
+| :---------------------- | :---------------------------------------------------------------------- |
+| **Backend**             | .NET 10, ASP.NET Core Web API, Entity Framework Core 10, Npgsql         |
+| **Real-time & Caching** | SignalR, Redis 7.2                                                      |
+| **Security**            | ASP.NET Core Identity (custom `IUserRoleStore`), JWT, Anti-CSRF         |
+| **Frontend**            | Next.js 16.3.6 (App Router), React 19.2.8, TypeScript, Tailwind CSS 4   |
+| **Client State**        | TanStack Query v5, Zustand, Axios, Web Locks API                        |
+| **Database**            | PostgreSQL 17.6 (strict `snake_case`, UUID primary keys)                |
+| **Email Sandbox**       | Mailpit (SMTP on port 1025, Web UI on port 8025)                        |
+| **Testing**             | xUnit, Testcontainers (.NET), WebApplicationFactory, Vitest, Playwright |
+
+---
+
+## 📂 Project Structure
+
+```text
+TutorMatching/
+├── backend/
+│   ├── compose.yaml                    # Docker Compose: PostgreSQL, Redis, Mailpit
+│   ├── TutorMatching.slnx              # .NET 10 solution file
+│   ├── src/
+│   │   ├── TutorMatching.Domain/       # Core business logic: Hiring, Tutors, Users, Catalog
+│   │   ├── TutorMatching.Application/  # Use cases, ports, DTOs, business invariants
+│   │   ├── TutorMatching.Infrastructure/ # EF Core, Redis, Identity, TokenSessions, MailKit
+│   │   └── TutorMatching.Api/          # Controllers, SignalR Hubs, CSRF, OpenAPI 3.1
+│   ├── tests/                          # Domain unit, Application unit, and API integration tests
+│   └── tools/
+│       └── TutorMatching.DatabaseMigrator/ # Independent database migration runner
+│
+├── frontend/
+│   ├── src/
+│   │   ├── app/                        # Next.js App Router: (public), (tutor), admin
+│   │   ├── components/                 # UI primitives, hiring timeline, negotiation modals
+│   │   ├── hooks/                      # TanStack Query hooks (auth, session, hire requests)
+│   │   └── lib/api/                    # Axios clients with CSRF and auto session-renewal
+│   └── tests/                          # Vitest component tests & Playwright E2E tests
+│
+├── docs/                               # Project maps, database schema, SRS specifications
+└── specs/                              # Feature specifications & execution plans (Spec Kit)
+```
+
+---
+
+## 💻 Prerequisites
+
+- **.NET SDK 10**: [.NET 10 Download](https://dotnet.microsoft.com/download/dotnet/10.0)
+- **Node.js**: v20+ and **npm**
+- **Docker & Docker Compose v2**: Docker Desktop or Docker Engine
+
+---
+
+## ⚡ Quick Start
+
+### 1. Start Local Infrastructure (PostgreSQL, Redis, Mailpit)
 
 ```bash
-set -a
-source backend/.env
-set +a
+# Create local backend configuration
+cp backend/.env.example backend/.env
+
+# Generate a secure JWT signing key (32+ random bytes base64)
+openssl rand -base64 32
+# Paste the generated key into Jwt__SigningKey in backend/.env
+
+# Start Docker Compose services
+docker compose --env-file backend/.env -f backend/compose.yaml up -d --wait
+```
+
+Ports exposed:
+
+- **PostgreSQL**: `localhost:5432`
+- **Redis**: `localhost:6379`
+- **Mailpit Web UI**: `http://localhost:8025` (SMTP: `1025`)
+
+### 2. Apply Database Migrations
+
+Run the database migrator tool to apply all schema migrations:
+
+```bash
+dotnet run --project backend/tools/TutorMatching.DatabaseMigrator
+```
+
+### 3. Run Backend API
+
+```bash
 dotnet run --project backend/src/TutorMatching.Api
 ```
 
-Khởi động frontend ở terminal khác:
+- API Base URL: `http://localhost:5014/api/v1`
+- Swagger UI: `http://localhost:5014/swagger`
+- OpenAPI Specification: `http://localhost:5014/openapi/v1.json`
+- SignalR Hub: `http://localhost:5014/api/v1/hubs/events`
+
+_(In `Development` mode, backend automatically loads `backend/.env` via `DotEnvLoader` and seeds initial demo data)._
+
+### 4. Run Frontend
+
+In a separate terminal:
 
 ```bash
 cp frontend/.env.example frontend/.env.local
+npm --prefix frontend install
 npm --prefix frontend run dev
 ```
 
-Backend và frontend có env riêng: `backend/.env` chứa database, cookie và SMTP; còn
-`frontend/.env.local` chỉ chứa cấu hình public cần cho Next.js. Các file env thật bị Git bỏ qua.
-Không commit mật khẩu, connection string thật hoặc khóa dịch vụ. `appsettings.Development.json` chỉ
-chứa giá trị mẫu để mô tả cấu trúc cấu hình.
+Open `http://localhost:3000` in your browser.
 
-## Dùng trên máy tính khác
+---
 
-### Khuyến nghị: mỗi máy có database local riêng
+## 👥 Demo Accounts
 
-Trên máy mới, clone repository, copy `backend/.env.example` thành `backend/.env`, đặt mật khẩu local
-rồi chạy `docker compose --env-file backend/.env -f backend/compose.yaml up -d --wait`. Schema phải
-được tái tạo bằng EF Core migrations và dữ liệu demo bằng seed (được bổ sung ở T009), thay vì sao
-chép thư mục volume Docker. Đây là luồng dễ tái lập và ít lỗi khác hệ điều hành nhất.
+The development seeder provides test accounts:
 
-Nếu cần chuyển một snapshot dữ liệu phát triển, xuất file backup trên máy nguồn:
+| Role                 | Email                         | Password                    | Details                                |
+| :------------------- | :---------------------------- | :-------------------------- | :------------------------------------- |
+| **Admin**            | `admin@tutormatching.local`   | Set in `SeedAdmin:Password` | Enabled when `SeedAdmin__Enabled=true` |
+| **Tutor** (Approved) | `tutor.hn.hust@tutormatch.vn` | `Password123!`              | Demo profile: Math, CS, Physics        |
+| **Learner**          | Register at `/register`       | User defined                | Create a learner account via UI        |
+
+---
+
+## ⚙️ Environment Variables
+
+### Backend (`backend/.env`)
+
+| Variable                               | Default / Example               | Purpose                            |
+| :------------------------------------- | :------------------------------ | :--------------------------------- |
+| `POSTGRES_DB`                          | `tutormatching`                 | Database name                      |
+| `POSTGRES_USER`                        | `tutormatching`                 | Database username                  |
+| `POSTGRES_PASSWORD`                    | `replace-with-a-local-password` | Database password                  |
+| `POSTGRES_PORT`                        | `5432`                          | Host port for PostgreSQL           |
+| `POSTGRES_BIND_ADDRESS`                | `127.0.0.1`                     | Loopback bind address              |
+| `ConnectionStrings__DefaultConnection` | `Host=localhost;Port=5432;...`  | EF Core database connection string |
+| `ConnectionStrings__Redis`             | `localhost:6379`                | Redis connection string            |
+| `Jwt__SigningKey`                      | _(Base64 string)_               | Cryptographic key for signing JWTs |
+| `Jwt__Issuer`                          | `tutormatching-api`             | JWT token issuer                   |
+| `Jwt__Audience`                        | `tutormatching-client`          | JWT token audience                 |
+| `Frontend__Origin`                     | `http://localhost:3000`         | Allowed CORS origin                |
+| `Smtp__Host`                           | `localhost`                     | Mailpit SMTP host                  |
+| `Smtp__Port`                           | `1025`                          | Mailpit SMTP port                  |
+| `Google__ClientId`                     | _(Optional)_                    | Google OAuth Web client ID         |
+| `SeedAdmin__Enabled`                   | `true`                          | Seed admin account on startup      |
+
+### Frontend (`frontend/.env.local`)
+
+| Variable                       | Default                        | Purpose                            |
+| :----------------------------- | :----------------------------- | :--------------------------------- |
+| `NEXT_PUBLIC_API_BASE_URL`     | `http://localhost:5014/api/v1` | Backend REST API endpoint          |
+| `NEXT_PUBLIC_GOOGLE_CLIENT_ID` | _(Optional)_                   | Matches backend `Google__ClientId` |
+
+---
+
+## 🧪 Testing
+
+### Backend (.NET)
+
+```bash
+# Build the complete solution
+dotnet build backend/TutorMatching.slnx
+
+# Run unit and integration tests (requires Docker for Testcontainers)
+dotnet test backend/TutorMatching.slnx
+```
+
+### Frontend (Next.js)
+
+```bash
+# Run linter
+npm --prefix frontend run lint
+
+# Run unit and component tests (Vitest)
+npm --prefix frontend run test
+
+# Run End-to-End tests (Playwright)
+npm --prefix frontend run test:e2e
+
+# Run production build check
+npm --prefix frontend run build
+```
+
+---
+
+## 💾 Database Operations
+
+### Backup
 
 ```bash
 docker compose --env-file backend/.env -f backend/compose.yaml exec -T postgres pg_dump \
-  -U tutormatching -d tutormatching -Fc > tutormatching-dev.dump
+  -U tutormatching -d tutormatching -Fc > tutormatching-backup.dump
 ```
 
-Chép file `.dump` qua kênh an toàn, khởi động database trên máy đích, rồi khôi phục. Lệnh sau thay
-thế dữ liệu hiện có trong database đích:
+### Restore
 
 ```bash
 docker compose --env-file backend/.env -f backend/compose.yaml exec -T postgres pg_restore \
-  -U tutormatching -d tutormatching --clean --if-exists < tutormatching-dev.dump
+  -U tutormatching -d tutormatching --clean --if-exists < tutormatching-backup.dump
 ```
 
-File backup có thể chứa dữ liệu riêng tư và đã được `.gitignore` loại trừ; không commit file này.
-
-### Nhiều máy kết nối vào một container
-
-Mặc định PostgreSQL chỉ bind vào `127.0.0.1`, nên máy khác không truy cập được. Nếu thực sự cần dùng
-chung trong một mạng tin cậy hoặc VPN:
-
-1. Trên máy host, đặt `POSTGRES_BIND_ADDRESS` trong `backend/.env` thành địa chỉ IP riêng của host,
-   ví dụ `192.168.1.20`, rồi chạy lại
-   `docker compose --env-file backend/.env -f backend/compose.yaml up -d`.
-2. Chỉ cho phép TCP 5432 từ IP của máy cộng tác trong firewall.
-3. Máy cộng tác dùng `Host=192.168.1.20;Port=5432;...` và mật khẩu được chuyển qua kênh bảo mật.
-
-Không bind database vào `0.0.0.0` rồi mở port 5432 ra Internet. Compose local này không cấu hình
-TLS, HA hay backup tự động. Nếu cần database dùng chung lâu dài, hãy dùng VPN hoặc dịch vụ PostgreSQL
-được quản lý.
-
-## Có thể dùng Supabase không?
-
-Có. Supabase cung cấp PostgreSQL đầy đủ nên backend có thể tiếp tục dùng Npgsql và EF Core. Trong
-kiến trúc hiện tại, chỉ dùng Supabase làm nơi lưu PostgreSQL; không trộn Supabase Auth với ASP.NET
-Core Identity của Sprint 1.
-
-Đặt connection string lấy từ nút **Connect** của Supabase vào secret store hoặc biến môi trường:
-
-```text
-ConnectionStrings__DefaultConnection=Host=<host>;Port=5432;Database=postgres;Username=<user>;Password=<secret>;SSL Mode=Require
-```
-
-- Backend chạy lâu dài và có IPv6: ưu tiên direct connection.
-- Backend chỉ có IPv4: dùng shared pooler ở session mode.
-- EF migrations, `pg_dump` và restore: dùng direct connection.
-- Không đặt database password hoặc connection string trong biến `NEXT_PUBLIC_*` hay mã frontend.
-
-## Khuyến nghị môi trường
-
-Luồng phù hợp nhất cho dự án này là:
-
-- **Phát triển cá nhân và integration test:** PostgreSQL qua Docker Compose trên từng máy.
-- **Database dùng chung cho nhóm/staging:** một project Supabase riêng cho môi trường development hoặc
-  staging.
-- **Production:** project/database tách biệt, secrets do nền tảng triển khai quản lý, có backup và
-  chính sách truy cập phù hợp.
-- **Nguồn sự thật của schema:** EF Core migrations trong Git; seed chỉ chứa dữ liệu giả, không chứa
-  dữ liệu người dùng thật.
-
-Cách kết hợp này giữ local nhanh và tái lập được, đồng thời tránh biến laptop của một thành viên
-thành database server chung của cả nhóm.
-
-## Kiểm tra dự án
+### Reset Local Database
 
 ```bash
-dotnet build backend/TutorMatching.slnx
-dotnet test backend/TutorMatching.slnx
-npm --prefix frontend run lint
-npm --prefix frontend run build
-npm --prefix frontend run test
-npm --prefix frontend run test:e2e
+docker compose --env-file backend/.env -f backend/compose.yaml down -v
+docker compose --env-file backend/.env -f backend/compose.yaml up -d --wait
+dotnet run --project backend/tools/TutorMatching.DatabaseMigrator
+dotnet run --project backend/src/TutorMatching.Api
 ```
+
+---
+
+## 🛠️ Production & Troubleshooting
+
+- **Cross-Domain `400 Bad Request`**:
+  - When hosting frontend on a separate domain (e.g., Vercel):
+    1. Set `NEXT_PUBLIC_API_BASE_URL` to your production backend API domain in Vercel settings and redeploy.
+    2. Configure `Frontend__Origins__0=https://your-frontend.vercel.app` on the backend.
+    3. Ensure authentication and CSRF cookies use `SameSite=None` and `Secure=true` over HTTPS.
+- **Remote / Cloud Database Migration (e.g., Supabase)**:
+  - Add `--allow-remote` when migrating external databases:
+    ```bash
+    dotnet run --project backend/tools/TutorMatching.DatabaseMigrator -- --allow-remote
+    ```
+
+---
+
+## 📚 Documentation
+
+- [docs/PROJECT-MAP.md](docs/PROJECT-MAP.md): Full architecture, REST endpoint catalog, security flow, and component tree.
+- [docs/DatabaseSchema.md](docs/DatabaseSchema.md): Database schema entities and relational diagram.
+- [docs/Final_SRS_TutorMatch_PBL3.pdf](docs/Final_SRS_TutorMatch_PBL3.pdf): Software Requirements Specification (SRS).
+- [frontend/docs/design-system/](frontend/docs/design-system/): UI tokens, typography, and reusable components.
