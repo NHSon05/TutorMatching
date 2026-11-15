@@ -46,6 +46,12 @@ public sealed class OpenApiContractTests(PostgreSqlFixture fixture)
             expected["paths"]![path.Key[expectedPrefix.Length..]] = path.Value!.DeepClone();
         foreach (var schema in discovery["components"]!["schemas"]!.AsObject())
             expected["components"]!["schemas"]![schema.Key] = schema.Value!.DeepClone();
+        var googleAuth = JsonNode.Parse(await File.ReadAllTextAsync(Path.Combine(AppContext.BaseDirectory, "Contracts", "google-auth.json")))!;
+        foreach (var path in googleAuth["paths"]!.AsObject())
+            expected["paths"]![path.Key[expectedPrefix.Length..]] = path.Value!.DeepClone();
+        foreach (var schema in googleAuth["components"]!["schemas"]!.AsObject())
+            if (expected["components"]!["schemas"]![schema.Key] is null)
+                expected["components"]!["schemas"]![schema.Key] = schema.Value!.DeepClone();
         var hiring = JsonNode.Parse(await File.ReadAllTextAsync(Path.Combine(AppContext.BaseDirectory, "Contracts", "hiring.json")))!;
         var actualOps = Operations(actual);
         var expectedOps = Operations(expected);
@@ -91,6 +97,16 @@ public sealed class OpenApiContractTests(PostgreSqlFixture fixture)
                     "POST /api/v1/hire-requests/{id}/review" or "POST /api/v1/hire-requests/{id}/review/reply" ||
                 key is "GET /api/v1/conversations" or "GET /api/v1/conversations/{id}" or "GET /api/v1/conversations/{id}/messages" or
                     "POST /api/v1/conversations/{id}/messages" or "POST /api/v1/conversations/{id}/read" ||
+                // Notifications are verified against the Sprint 4 contract in NotificationContractTests.
+                key.StartsWith("GET /api/v1/notifications", StringComparison.Ordinal) ||
+                key.StartsWith("POST /api/v1/notifications/", StringComparison.Ordinal) ||
+                // US3 account administration is verified against the Sprint 4 contract in AdminUsersContractTests.
+                key is "GET /api/v1/admin/users/{id}" or "POST /api/v1/admin/users/{id}/status" or
+                    "GET /api/v1/admin/dashboard" ||
+                // Learner bookmarks are verified in Tutors/SavedTutorsEndpointTests.
+                key.StartsWith("GET /api/v1/saved-tutors", StringComparison.Ordinal) ||
+                key.StartsWith("PUT /api/v1/saved-tutors/", StringComparison.Ordinal) ||
+                key.StartsWith("DELETE /api/v1/saved-tutors/", StringComparison.Ordinal) ||
                 PendingOperations.Any(p => key.Contains(p))) continue;
             Assert.True(expectedOps.TryGetValue(key, out var contract), $"Undocumented operation: {key}");
             Assert.True(contract!["operationId"] is JsonValue, $"Missing contract operationId: {key}");

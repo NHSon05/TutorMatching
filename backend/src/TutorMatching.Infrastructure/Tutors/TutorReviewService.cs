@@ -10,7 +10,8 @@ using TutorMatching.Infrastructure.Persistence;
 
 namespace TutorMatching.Infrastructure.Tutors;
 
-public sealed class TutorReviewService(ApplicationDbContext db, ITutorOnboardingService onboarding, IClock clock) : ITutorReviewService
+public sealed class TutorReviewService(ApplicationDbContext db, ITutorOnboardingService onboarding, IClock clock,
+    IEventPublisher? events = null) : ITutorReviewService
 {
     public async Task<ReviewQueuePage> QueueAsync(int page, int pageSize, CancellationToken ct)
     {
@@ -71,12 +72,13 @@ public sealed class TutorReviewService(ApplicationDbContext db, ITutorOnboarding
         .Where(r => r.TutorProfileId == profileId).OrderByDescending(r => r.ReviewedAt).ThenByDescending(r => r.Id)
         .Select(r => new ReviewHistory(r.Id, r.ReviewerUserId, r.Action, r.ReviewedVersion, r.FromStatusCode, r.ToStatusCode, r.Note, r.ReviewedAt));
 
-    public Task<ReviewDecisionResult> DecideAsync(Guid profileId, Guid actorId, Guid expectedVersion, string action, string? note, CancellationToken ct)
+    public async Task<ReviewDecisionResult> DecideAsync(Guid profileId, Guid actorId, Guid expectedVersion, string action, string? note, CancellationToken ct)
     {
         if (action is not ("APPROVE" or "REQUEST_CHANGES" or "REJECT") || note?.Length > 4000 ||
             (action != "APPROVE" && string.IsNullOrWhiteSpace(note)))
-            return Task.FromResult(new ReviewDecisionResult(null, null, ReviewFailure.Invalid));
-        return db.Database.CreateExecutionStrategy().ExecuteAsync(async () =>
+            return new ReviewDecisionResult(null, null, ReviewFailure.Invalid);
+        Guid? notifiedUserId = null;
+        var result = await db.Database.CreateExecutionStrategy().ExecuteAsync(async () =>
         {
             await using var tx = await db.Database.BeginTransactionAsync(ct);
             var profile = await db.TutorProfiles.FromSqlInterpolated($"SELECT * FROM tutor_profiles WHERE id={profileId} FOR UPDATE").SingleOrDefaultAsync(ct);
@@ -127,7 +129,15 @@ public sealed class TutorReviewService(ApplicationDbContext db, ITutorOnboarding
             });
             await db.SaveChangesAsync(ct);
             await tx.CommitAsync(ct);
+            notifiedUserId = profile.UserId;
             return new ReviewDecisionResult(target.ToString(), profile.Version);
         });
+        // Post-commit hint only; a push failure never undoes the recorded decision.
+        if (notifiedUserId is { } owner && events is not null)
+        {
+            try { await events.PublishNotificationsChangedAsync(owner, CancellationToken.None); }
+            catch (Exception) { /* Recovered through REST on reconnect/focus. */ }
+        }
+        return result;
     }
 }

@@ -2,6 +2,8 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using TutorMatching.Api.Contracts.Auth;
 using TutorMatching.Api.Errors;
+using TutorMatching.Application.Abstractions;
+using TutorMatching.Application.Authentication.Google;
 using TutorMatching.Application.Authentication.Register;
 
 namespace TutorMatching.Api.Controllers;
@@ -11,8 +13,76 @@ namespace TutorMatching.Api.Controllers;
 public sealed class AuthController(RegisterAccountHandler registerHandler,
     TutorMatching.Application.Authentication.Sessions.SessionHandler sessions,
     TutorMatching.Application.Abstractions.ITokenSessionService tokens,
-    TutorMatching.Api.Security.JwtCookieTokens cookies) : ControllerBase
+    TutorMatching.Api.Security.JwtCookieTokens cookies,
+    GoogleSignInHandler googleSignIn,
+    CompleteGoogleRegistrationHandler completeGoogleRegistration) : ControllerBase
 {
+    private const string GoogleSignInFailedTitle = "Google sign-in failed.";
+
+    /// <summary>Signs in with a Google ID token, auto-linking a same-email account, or asks for a role (202).</summary>
+    [HttpPost("google", Name = "googleSignIn")]
+    [AllowAnonymous]
+    [Consumes("application/json")]
+    [ProducesResponseType(typeof(LoginResponse), StatusCodes.Status200OK, "application/json")]
+    [ProducesResponseType(typeof(GoogleRegistrationRequired), StatusCodes.Status202Accepted, "application/json")]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest, "application/problem+json")]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status401Unauthorized, "application/problem+json")]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status429TooManyRequests, "application/problem+json")]
+    public async Task<IActionResult> GoogleSignIn(GoogleSignInRequest request, CancellationToken cancellationToken)
+    {
+        Response.Headers.CacheControl = "no-store";
+        var result = await googleSignIn.HandleAsync(request.Credential, cancellationToken);
+        return result.Outcome switch
+        {
+            GoogleSignInOutcome.SignedIn => await IssueSessionAsync(result.Account!, StatusCodes.Status200OK, cancellationToken),
+            GoogleSignInOutcome.RoleRequired => StatusCode(StatusCodes.Status202Accepted, new GoogleRegistrationRequired(
+                GoogleRegistrationRequired.RoleRequiredStatus,
+                result.PendingToken!,
+                result.Identity!.Email,
+                CompleteGoogleRegistrationHandler.NormalizeFullName(result.Identity.FullName, result.Identity.Email),
+                result.Identity.PictureUrl)),
+            GoogleSignInOutcome.InvalidInput => Problem(statusCode: StatusCodes.Status400BadRequest, title: "Invalid request."),
+            _ => GoogleSignInFailed()
+        };
+    }
+
+    /// <summary>Creates the account for a pending Google registration with role LEARNER or TUTOR and signs in.</summary>
+    [HttpPost("google/complete", Name = "completeGoogleRegistration")]
+    [AllowAnonymous]
+    [Consumes("application/json")]
+    [ProducesResponseType(typeof(LoginResponse), StatusCodes.Status201Created, "application/json")]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest, "application/problem+json")]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status401Unauthorized, "application/problem+json")]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status429TooManyRequests, "application/problem+json")]
+    public async Task<IActionResult> CompleteGoogleRegistration(CompleteGoogleRegistrationRequest request,
+        CancellationToken cancellationToken)
+    {
+        Response.Headers.CacheControl = "no-store";
+        var result = await completeGoogleRegistration.HandleAsync(request.PendingToken, request.Role, cancellationToken);
+        return result.Outcome switch
+        {
+            GoogleSignInOutcome.SignedIn => await IssueSessionAsync(result.Account!, StatusCodes.Status201Created, cancellationToken),
+            GoogleSignInOutcome.InvalidInput => Problem(statusCode: StatusCodes.Status400BadRequest, title: "Invalid request."),
+            _ => GoogleSignInFailed()
+        };
+    }
+
+    private async Task<IActionResult> IssueSessionAsync(AccountProfile account, int statusCode,
+        CancellationToken cancellationToken)
+    {
+        var grant = await tokens.CreateAsync(account.Id, cancellationToken);
+        if (grant is null) return GoogleSignInFailed();
+        var accessToken = cookies.Issue(HttpContext, grant);
+        return StatusCode(statusCode, new LoginResponse(account.Id, account.Email, account.FullName, account.Role,
+            account.Status, accessToken, grant.RefreshToken, account.AvatarUrl, account.TutorProfileStatus));
+    }
+
+    private IActionResult GoogleSignInFailed()
+    {
+        cookies.Clear(HttpContext);
+        return Problem(statusCode: StatusCodes.Status401Unauthorized, title: GoogleSignInFailedTitle);
+    }
+
     [HttpPost("login", Name = "login")]
     [AllowAnonymous]
     [Consumes("application/json")]

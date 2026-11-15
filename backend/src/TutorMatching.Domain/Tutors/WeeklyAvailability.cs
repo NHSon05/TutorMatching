@@ -4,6 +4,25 @@ public static class WeeklyAvailability
 {
     public static bool Valid(WeeklyWindow window) => window.DayOfWeek is >= 1 and <= 7 && window.StartTime < window.EndTime;
     public static bool Overlaps(WeeklyWindow first, WeeklyWindow second) => first.DayOfWeek == second.DayOfWeek && first.StartTime < second.EndTime && second.StartTime < first.EndTime;
+
+    /// <summary>True when any requested window shares time with a busy (already booked) window. Touching edges are free.</summary>
+    public static bool OverlapsAny(IEnumerable<WeeklyWindow> requested, IReadOnlyCollection<WeeklyWindow> busy) =>
+        busy.Count != 0 && requested.Any(r => busy.Any(b => Overlaps(r, b)));
+
+    /// <summary>Sorted, per-day union of windows; overlapping or touching windows are joined.</summary>
+    public static IReadOnlyList<WeeklyWindow> Merge(IEnumerable<WeeklyWindow> windows)
+    {
+        var merged = new List<WeeklyWindow>();
+        foreach (var window in windows.Where(Valid).OrderBy(w => w.DayOfWeek).ThenBy(w => w.StartTime))
+        {
+            if (merged.Count > 0 && merged[^1] is var last && last.DayOfWeek == window.DayOfWeek && window.StartTime <= last.EndTime)
+            {
+                if (window.EndTime > last.EndTime) merged[^1] = last with { EndTime = window.EndTime };
+            }
+            else merged.Add(window);
+        }
+        return merged;
+    }
     public static int Capacity(IEnumerable<WeeklyWindow> availability, IEnumerable<WeeklyWindow> requested, int durationMinutes)
     {
         if (durationMinutes is < 30 or > 240) throw new ArgumentOutOfRangeException(nameof(durationMinutes));

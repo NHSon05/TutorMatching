@@ -33,6 +33,7 @@ public sealed class NegotiateHireRequest(IHireRequestStore store, ICurrentUser u
             if (errors.Count != 0) throw new HireValidationException(errors);
             if (effective.Validate(now, session.Offering.Availability, session.Offering.Modes, session.Offering.ValidLocation).Count != 0)
                 throw new HireStoreException("availability_changed");
+            if (session.Offering.IsBusy(effective.Schedules)) throw new HireStoreException("schedule_busy");
             try
             {
                 var (proposal, history) = request.Propose(actor, session.Offering.TutorUserId, command.PriceVnd, schedules, command.Note, now);

@@ -16,7 +16,11 @@ public enum AccountAuditAction
     ProfileUpdated,
     PasswordResetRequested,
     PasswordResetSucceeded,
-    PasswordResetFailed
+    PasswordResetFailed,
+    ExternalSignInSucceeded,
+    ExternalSignInFailed,
+    ExternalLoginLinked,
+    ExternalAccountRegistered
 }
 
 public sealed record AccountAuditEntry(

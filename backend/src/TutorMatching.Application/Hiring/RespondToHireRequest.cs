@@ -29,8 +29,11 @@ public sealed class RespondToHireRequest(IHireRequestStore store, ICurrentUser u
                     ? !request.CanAcceptProposal(actor, session.Offering.TutorUserId, sequence)
                     : !request.CanAcceptInitial(actor, session.Offering.TutorUserId))
                     throw new HireStoreException("state_conflict");
-                var errors = (proposalSequence is null ? request.InitialTerms : request.CurrentTerms).Validate(now, session.Offering.Availability, session.Offering.Modes, session.Offering.ValidLocation);
+                var terms = proposalSequence is null ? request.InitialTerms : request.CurrentTerms;
+                var errors = terms.Validate(now, session.Offering.Availability, session.Offering.Modes, session.Offering.ValidLocation);
                 if (errors.Count != 0) throw new HireStoreException("availability_changed");
+                // Another request may have been accepted for this time since this one was sent.
+                if (session.Offering.IsBusy(terms.Schedules)) throw new HireStoreException("schedule_busy");
             }
             try
             {

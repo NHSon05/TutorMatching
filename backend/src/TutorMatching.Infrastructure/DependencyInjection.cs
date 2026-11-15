@@ -81,6 +81,10 @@ public static class DependencyInjection
         services.AddScoped<IAuditWriter, AuditWriter>();
         services.AddScoped<IAccountService, IdentityAccountService>();
         services.AddScoped<ITokenSessionService, TokenSessionService>();
+        services.AddOptions<GoogleOptions>().Bind(configuration.GetSection(GoogleOptions.SectionName));
+        services.TryAddSingleton<IGoogleIdTokenVerifier, GoogleIdTokenVerifier>();
+        services.AddSingleton<IPendingGoogleRegistrationProtector, DataProtectionPendingGoogleRegistrationProtector>();
+        services.AddScoped<IExternalAccountService, IdentityExternalAccountService>();
         services.AddScoped<IFileStorageService, Storage.LocalFileStorageService>();
         services.AddScoped<Application.Tutors.ITutorOnboardingService, Tutors.TutorOnboardingService>();
         services.AddHttpContextAccessor();
@@ -92,7 +96,12 @@ public static class DependencyInjection
         services.AddScoped<Application.Hiring.IHireRequestStore, Hiring.HireRequestStore>();
         services.AddScoped<Application.Hiring.IHireRequestQueries, Hiring.HireRequestQueries>();
         services.AddScoped<Application.Administration.IAdminService, Administration.AdminService>();
+        services.AddScoped<Application.Tutors.ISavedTutorService, Tutors.SavedTutorService>();
+        services.AddScoped<Application.Administration.Users.IAdminUserStore, Administration.AdminUserStore>();
+        services.AddScoped<Application.Administration.Users.AdminUsersService>();
+        services.AddScoped<Application.Administration.Dashboard.IAdminDashboardQuery, Administration.AdminDashboardQuery>();
         services.AddScoped<Application.Messaging.IMessagingService, Messaging.MessagingService>();
+        services.AddScoped<Application.Notifications.INotificationService, Notifications.NotificationService>();
         services.AddSingleton<IRedisDeduplicationService, RedisDeduplicationService>();
         services.AddScoped<IPublicDemandIngestionService, PublicDemandIngestionService>();
         services.AddSingleton<RegexEntityExtractor>();

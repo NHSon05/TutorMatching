@@ -3,6 +3,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using TutorMatching.Application.Abstractions;
+using TutorMatching.Application.Notifications;
 using TutorMatching.Domain.Notifications;
 using TutorMatching.Infrastructure.Persistence;
 
@@ -69,7 +70,7 @@ public sealed class MessageNotificationOutboxWorker : BackgroundService
                     {
                         Id = Guid.NewGuid(),
                         UserId = item.RecipientUserId,
-                        TypeCode = "NEW_MESSAGE",
+                        TypeCode = NotificationTypes.MessageCreated,
                         Title = "Bạn có tin nhắn mới",
                         MessageId = item.MessageId,
                         IsRead = false,

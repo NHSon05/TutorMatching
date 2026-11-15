@@ -42,6 +42,7 @@ public sealed class ApplicationDbContext(
     public DbSet<Message> Messages => Set<Message>();
     public DbSet<MessageNotificationOutbox> MessageNotificationOutboxes => Set<MessageNotificationOutbox>();
     public DbSet<Notification> Notifications => Set<Notification>();
+    public DbSet<SavedTutor> SavedTutors => Set<SavedTutor>();
     public DbSet<Article> Articles => Set<Article>();
     public DbSet<PasswordResetToken> PasswordResetTokens => Set<PasswordResetToken>();
     public DbSet<DemandPost> DemandPosts => Set<DemandPost>();
@@ -67,6 +68,7 @@ public sealed class ApplicationDbContext(
         builder.ApplyConfiguration(new HireRequestConfiguration());
         builder.ApplyConfiguration(new HirePaymentConfiguration());
         builder.ApplyConfiguration(new HireReviewConfiguration());
+        builder.ApplyConfiguration(new SavedTutorConfiguration());
         builder.ApplyConfiguration(new HireCreateOperationConfiguration());
         builder.ApplyConfiguration(new RequestScheduleConfiguration());
         builder.ApplyConfiguration(new NegotiationConfiguration());
@@ -113,6 +115,11 @@ public sealed class ApplicationDbContext(
             e.HasOne<TutorSubject>().WithMany().HasForeignKey(x => new { x.TutorProfileId, x.SubjectId }).HasConstraintName("fk_tutor_subject_levels_tutor_subjects").OnDelete(DeleteBehavior.Cascade);
             e.HasOne<TeachingLevel>().WithMany().HasForeignKey(x => x.LevelCode).OnDelete(DeleteBehavior.Restrict);
         });
+        // At most one link per external provider per account (e.g. one Google identity per user).
+        builder.Entity<IdentityUserLogin<Guid>>()
+            .HasIndex(x => new { x.UserId, x.LoginProvider })
+            .IsUnique()
+            .HasDatabaseName("ux_asp_net_user_logins_user_id_login_provider");
         builder.Entity<TutorProfile>().Property(x => x.Version).IsConcurrencyToken();
         builder.Entity<TutorProfile>().Property(x => x.NormalizedDisplayName).HasMaxLength(100);
         SnakeCaseNaming.Apply(builder);

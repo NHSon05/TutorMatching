@@ -1,5 +1,7 @@
 using System.Collections.Immutable;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
+using TutorMatching.Application.Abstractions;
 using Npgsql;
 using TutorMatching.Application.Hiring;
 using TutorMatching.Domain.Hiring;
@@ -11,7 +13,8 @@ using TutorMatching.Infrastructure.Persistence;
 
 namespace TutorMatching.Infrastructure.Hiring;
 
-public sealed class HireRequestStore(ApplicationDbContext db) : IHireRequestStore
+public sealed class HireRequestStore(ApplicationDbContext db, IEventPublisher? events = null,
+    ILogger<HireRequestStore>? logger = null) : IHireRequestStore
 {
     public async Task<HireCreationOutcome> CreateAsync(HireWriteTarget target, Guid key, string fingerprint,
         Func<IHireWriteSession, CancellationToken, Task<HireCreationOutcome>> action, CancellationToken cancellationToken = default)
@@ -134,13 +137,16 @@ public sealed class HireRequestStore(ApplicationDbContext db) : IHireRequestStor
                     throw new HireStoreException("version_conflict");
                 await db.Entry(request).Collection(r => r.Negotiations).LoadAsync(cancellationToken);
             }
+            // The tutor profile row is locked FOR UPDATE above, so two writers cannot both claim the same window.
+            var busy = await TutorBusySchedule.LoadAsync(db, profile.Id, request?.Id, cancellationToken);
             var offering = new HireOffering(profile.UserId, price, profile.TeachingModes.ToImmutableArray(), windows.ToImmutableArray(),
                 (provinceCode is null && districtCode is null) || (province?.IsActive == true && district?.IsActive == true && district.ProvinceCode == provinceCode),
-                province?.ProvinceName, district?.DistrictName, course?.SessionCount);
+                province?.ProvinceName, district?.DistrictName, course?.SessionCount, busy);
             var session = new WriteSession(db, target with { TutorProfileId = profileId, SubjectId = subjectId, CourseId = courseId }, request, offering);
             await action(session, cancellationToken);
             await db.SaveChangesAsync(cancellationToken);
             await tx.CommitAsync(cancellationToken);
+            await PublishNotificationsChangedAsync(session.NotifiedUserIds);
         }
         catch (DbUpdateConcurrencyException)
         {
@@ -156,10 +162,29 @@ public sealed class HireRequestStore(ApplicationDbContext db) : IHireRequestStor
         }
     }
 
+    // Runs only after commit, so a rolled-back write never emits a hint. Push failure must not
+    // surface as a failed business operation; clients recover through REST.
+    private async Task PublishNotificationsChangedAsync(IEnumerable<Guid> userIds)
+    {
+        if (events is null) return;
+        foreach (var userId in userIds)
+        {
+            try
+            {
+                await events.PublishNotificationsChangedAsync(userId, CancellationToken.None);
+            }
+            catch (Exception ex)
+            {
+                logger?.LogWarning(ex, "Failed to publish NotificationsChanged hint after hire write");
+            }
+        }
+    }
+
     private sealed class WriteSession(ApplicationDbContext db, HireWriteTarget target, HireRequest? request, HireOffering offering) : IHireWriteSession
     {
         public HireRequest? Request { get; private set; } = request;
         public HireOffering Offering { get; } = offering;
+        public HashSet<Guid> NotifiedUserIds { get; } = [];
         private HireRequest RequiredRequest => Request ?? throw new InvalidOperationException("Create a request first.");
         public Task<HireCreateOperation?> FindCreateOperationAsync(Guid key, CancellationToken ct) =>
             db.HireCreateOperations.AsNoTracking().SingleOrDefaultAsync(x => x.LearnerId == target.ActorId && x.IdempotencyKey == key, ct);
@@ -232,15 +257,20 @@ public sealed class HireRequestStore(ApplicationDbContext db) : IHireRequestStor
             db.Conversations.Add(conversation);
             return conversation.Id;
         }
-        public void NotifyOtherParticipant(string type, string title, DateTimeOffset now) => db.Notifications.Add(new Notification
+        public void NotifyOtherParticipant(string type, string title, DateTimeOffset now)
         {
-            Id = Guid.NewGuid(),
-            HireRequestId = RequiredRequest.Id,
-            UserId = target.ActorId == RequiredRequest.RequesterUserId ? Offering.TutorUserId : RequiredRequest.RequesterUserId,
-            TypeCode = type,
-            Title = title,
-            CreatedAt = now.ToUniversalTime()
-        });
+            var recipient = target.ActorId == RequiredRequest.RequesterUserId ? Offering.TutorUserId : RequiredRequest.RequesterUserId;
+            db.Notifications.Add(new Notification
+            {
+                Id = Guid.NewGuid(),
+                HireRequestId = RequiredRequest.Id,
+                UserId = recipient,
+                TypeCode = type,
+                Title = title,
+                CreatedAt = now.ToUniversalTime()
+            });
+            NotifiedUserIds.Add(recipient);
+        }
         public void AddCreateOperation(HireCreateOperation operation)
         {
             if (operation.LearnerId != target.ActorId || operation.RequestId != RequiredRequest.Id || operation.IdempotencyKey == Guid.Empty)

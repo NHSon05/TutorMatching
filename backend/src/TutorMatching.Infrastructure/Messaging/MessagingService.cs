@@ -450,10 +450,23 @@ public sealed class MessagingService : IMessagingService
                 m.ReadAt = now;
             }
 
+            // Reading the messages also settles their message notifications for this reader.
+            var readIds = unreadMessages.Select(m => m.Id).ToList();
+            var notifications = await _db.Notifications
+                .Where(n => n.UserId == actorId && !n.IsRead && n.MessageId != null && readIds.Contains(n.MessageId.Value))
+                .ToListAsync(ct);
+            foreach (var n in notifications)
+            {
+                n.IsRead = true;
+                n.ReadAt ??= now;
+            }
+
             await _db.SaveChangesAsync(ct);
 
             var otherId = isRequester ? conv.HireRequest.TutorProfile!.UserId : conv.HireRequest.RequesterUserId;
             await _eventPublisher.PublishMessagesReadAsync(conversationId, [otherId], ct);
+            // The reader's own Messenger badge (and any bell list) must refresh on their other tabs too.
+            await _eventPublisher.PublishNotificationsChangedAsync(actorId, ct);
         }
 
         return new MarkReadResultDto(now, unreadMessages.Count);

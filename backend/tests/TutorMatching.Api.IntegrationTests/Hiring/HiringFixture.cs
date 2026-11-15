@@ -16,7 +16,7 @@ namespace TutorMatching.Api.IntegrationTests.Hiring;
 /// <summary>One isolated, migrated Testcontainers database per hiring scenario; never uses .env.</summary>
 internal sealed class HiringFixture : IAsyncDisposable
 {
-    private const string Password = "Synthetic-hiring-123!";
+    internal const string Password = "Synthetic-hiring-123!";
     private int notificationFailureActive;
     public ApiWebApplicationFactory Factory { get; }
     public HiringActor Learner { get; private set; } = null!;

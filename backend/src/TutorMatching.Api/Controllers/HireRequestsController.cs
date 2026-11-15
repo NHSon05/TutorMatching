@@ -163,7 +163,9 @@ public sealed class HireRequestsController(
     }
     private IActionResult Failure(int status, string code, IReadOnlyDictionary<string, string[]>? errors = null)
     {
-        var problem = ApiProblems.Create(HttpContext, status, status == 409
+        var problem = ApiProblems.Create(HttpContext, status, code == "schedule_busy"
+            ? "Gia sư đã có lịch dạy vào khung giờ này. Vui lòng chọn khung giờ khác."
+            : status == 409
             ? "Yêu cầu, giá hoặc lịch đã thay đổi, hoặc mã gửi đã được dùng. Vui lòng tải lại và kiểm tra trước khi tiếp tục."
             : "Không thể thực hiện thao tác. Vui lòng kiểm tra dữ liệu và quyền truy cập.");
         problem.Extensions["code"] = code;
