@@ -94,7 +94,9 @@ A modern web platform connecting learners and parents with qualified tutors. Fea
 | **Client State**        | TanStack Query v5, Zustand, Axios, Web Locks API                        |
 | **Database**            | PostgreSQL 17.6 (strict `snake_case`, UUID primary keys)                |
 | **Email Sandbox**       | Mailpit (SMTP on port 1025, Web UI on port 8025)                        |
-| **Testing**             | xUnit, Testcontainers (.NET), WebApplicationFactory, Vitest, Playwright |
+| **Backend Testing**     | xUnit, Testcontainers (.NET), WebApplicationFactory                     |
+| **Frontend Unit Tests** | Vitest 4, jsdom, React Testing Library, user-event, jest-dom            |
+| **End-to-End Tests**    | Playwright 1.63 (Chrome channel)                                        |
 
 ---
 
@@ -254,14 +256,58 @@ dotnet test backend/TutorMatching.slnx
 # Run linter
 npm --prefix frontend run lint
 
-# Run unit and component tests (Vitest)
-npm --prefix frontend run test
-
-# Run End-to-End tests (Playwright)
-npm --prefix frontend run test:e2e
-
 # Run production build check
 npm --prefix frontend run build
+```
+
+### Unit & Component Tests (Vitest)
+
+Vitest runs component, hook, and library tests in a simulated browser (`jsdom`) with React Testing Library.
+
+| Item        | Value                                                                        |
+| :---------- | :--------------------------------------------------------------------------- |
+| Config      | `frontend/vitest.config.mts` (React plugin, `@/` and `@assets/` aliases)     |
+| Setup file  | `frontend/tests/setup.ts` (jest-dom matchers)                                |
+| Test files  | `frontend/tests/**/*.test.ts(x)` (`tests/e2e/` is excluded)                  |
+| Libraries   | `vitest`, `jsdom`, `@testing-library/react`, `user-event`, `jest-dom`        |
+
+```bash
+# Run all tests once
+npm --prefix frontend run test
+
+# Watch mode while developing
+npm --prefix frontend run test:watch
+
+# Run one file or name pattern
+npm --prefix frontend run test -- GoogleSignIn
+```
+
+### End-to-End Tests (Playwright)
+
+Playwright drives a real browser through full user journeys such as registration, sessions, tutor discovery, and the hiring flow.
+
+| Item        | Value                                                                           |
+| :---------- | :------------------------------------------------------------------------------ |
+| Config      | `frontend/playwright.config.ts` (1 worker, Chrome channel)                      |
+| Test files  | `frontend/tests/e2e/*.spec.ts`                                                  |
+| Base URL    | `PLAYWRIGHT_BASE_URL` (default `http://localhost:3000`)                         |
+| Browser     | `PLAYWRIGHT_CHANNEL` (default `chrome`; requires Google Chrome to be installed) |
+
+The config does not start any servers, so start the infrastructure, the API, and the frontend first (see [Quick Start](#-quick-start)). Use a separate test database, because the tests create accounts and data.
+
+```bash
+# One-time: install Playwright browsers (needed when not using the installed Chrome)
+npx --prefix frontend playwright install chromium
+
+# Run all journeys
+npm --prefix frontend run test:e2e
+
+# Run one spec, or debug with the UI runner
+npm --prefix frontend run test:e2e -- session.spec.ts
+npm --prefix frontend run test:e2e -- --ui
+
+# Use the bundled Chromium instead of Chrome
+PLAYWRIGHT_CHANNEL=chromium npm --prefix frontend run test:e2e
 ```
 
 ---
