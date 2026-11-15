@@ -74,8 +74,9 @@ namespace TutorMatching.Infrastructure.Persistence.Migrations
                     b.HasKey("LoginProvider", "ProviderKey")
                         .HasName("pk_asp_net_user_logins");
 
-                    b.HasIndex("UserId")
-                        .HasDatabaseName("ix_asp_net_user_logins_user_id");
+                    b.HasIndex("UserId", "LoginProvider")
+                        .IsUnique()
+                        .HasDatabaseName("ux_asp_net_user_logins_user_id_login_provider");
 
                     b.ToTable("asp_net_user_logins", (string)null);
                 });
@@ -1564,6 +1565,32 @@ namespace TutorMatching.Infrastructure.Persistence.Migrations
                     b.ToTable("availability_slots", (string)null);
                 });
 
+            modelBuilder.Entity("TutorMatching.Domain.Tutors.SavedTutor", b =>
+                {
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("user_id");
+
+                    b.Property<Guid>("TutorProfileId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("tutor_profile_id");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.HasKey("UserId", "TutorProfileId")
+                        .HasName("pk_saved_tutors");
+
+                    b.HasIndex("TutorProfileId")
+                        .HasDatabaseName("ix_saved_tutors_tutor_profile_id");
+
+                    b.HasIndex("UserId", "CreatedAt")
+                        .HasDatabaseName("ix_saved_tutors_user_id_created_at");
+
+                    b.ToTable("saved_tutors", (string)null);
+                });
+
             modelBuilder.Entity("TutorMatching.Domain.Tutors.TutorMatchingProfile", b =>
                 {
                     b.Property<Guid>("Id")
@@ -2686,6 +2713,23 @@ namespace TutorMatching.Infrastructure.Persistence.Migrations
                         .HasConstraintName("fk_availability_slots_tutor_profiles_tutor_profile_id");
 
                     b.Navigation("TutorProfile");
+                });
+
+            modelBuilder.Entity("TutorMatching.Domain.Tutors.SavedTutor", b =>
+                {
+                    b.HasOne("TutorMatching.Domain.Tutors.TutorProfile", null)
+                        .WithMany()
+                        .HasForeignKey("TutorProfileId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_saved_tutors_tutor_profiles_tutor_profile_id");
+
+                    b.HasOne("TutorMatching.Infrastructure.Persistence.ApplicationUser", null)
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_saved_tutors_user_accounts_user_id");
                 });
 
             modelBuilder.Entity("TutorMatching.Domain.Tutors.TutorMatchingProfile", b =>

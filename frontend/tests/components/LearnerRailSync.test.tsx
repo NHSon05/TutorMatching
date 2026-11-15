@@ -4,6 +4,15 @@ import { DashboardTopBar } from "@/components/learner/DashboardTopBar";
 import { LearnerNavigationRail } from "@/components/navigation/LearnerNavigationRail";
 import { useUIStore } from "@/stores/use-ui-store";
 
+// The live bell needs a QueryClient and session; it is covered by NotificationBell.test.tsx.
+vi.mock("@/hooks/use-messenger-badge", () => ({
+  useMessengerBadge: () => 0,
+  formatBadgeCount: (count: number) => String(count),
+}));
+vi.mock("@/components/notifications/NotificationBell", () => ({
+  NotificationBell: () => null,
+}));
+
 vi.mock("next/navigation", () => ({
   usePathname: () => "/",
   useRouter: () => ({ replace: vi.fn(), push: vi.fn() }),

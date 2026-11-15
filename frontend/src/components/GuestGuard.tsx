@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useSession } from "@/hooks/use-session";
 import { useAuthStore } from "@/stores/use-auth-store";
 import type { TutorProfileStatus, UserRole } from "@/types/user";
+import { AUTH_IN_TYPES } from "@/lib/navigation/transition-types";
 
 export function getHomeRouteForRole(
   role?: UserRole | "ADMIN" | "LEARNER" | "TUTOR" | string | null,
@@ -53,7 +54,9 @@ export function GuestGuard({ children, initialRole }: GuestGuardProps) {
 
   useEffect(() => {
     if (isAuthenticated) {
-      router.replace(getHomeRouteForRole(activeRole, activeTutorStatus));
+      router.replace(getHomeRouteForRole(activeRole, activeTutorStatus), {
+        transitionTypes: AUTH_IN_TYPES,
+      });
     }
   }, [
     activeRole,

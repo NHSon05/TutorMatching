@@ -85,7 +85,8 @@ public sealed class MessagingAdminOpenApiContractTests
         Assert.Equal(Enum.GetNames<AccountStatus>().Order(), Values(schemas["AccountStatus"]!["enum"]).Order());
         Assert.Equal(Enum.GetNames<TutorProfileStatus>().Order(), Values(schemas["TutorProfileStatus"]!["enum"]).Order());
         Assert.Equal(new[] { "PENDING", "NEGOTIATING", "ACCEPTED", "REJECTED", "CANCELLED", "COMPLETED" }, Values(schemas["HireRequestStatus"]!["enum"]));
-        Assert.Equal(new[] { "TUTOR_PROFILE_REVIEWED", "HIRE_REQUEST_CREATED", "HIRE_REQUEST_PROPOSED", "HIRE_REQUEST_ACCEPTED", "HIRE_REQUEST_REJECTED", "HIRE_REQUEST_CANCELLED", "HIRE_REQUEST_COMPLETED", "MESSAGE_CREATED" }, Values(schemas["NotificationType"]!["enum"]));
+        Assert.Equal(new[] { "TUTOR_PROFILE_REVIEWED", "HIRE_REQUEST_CREATED", "HIRE_REQUEST_PROPOSED", "HIRE_REQUEST_ACCEPTED", "HIRE_REQUEST_REJECTED", "HIRE_REQUEST_CANCELLED", "HIRE_REQUEST_COMPLETED", "HIRE_PAYMENT_COMPLETED", "TUTOR_REVIEW_RECEIVED", "TUTOR_REVIEW_REPLIED", "MESSAGE_CREATED" }, Values(schemas["NotificationType"]!["enum"]));
+        Assert.Equal(TutorMatching.Application.Notifications.NotificationTypes.All.Order(), Values(schemas["NotificationType"]!["enum"]).Order());
         Assert.Equal("accessToken", document["components"]!["securitySchemes"]!["cookieAuth"]!["name"]!.GetValue<string>());
         foreach (var section in new[] { "parameters", "responses", "security" })
             Assert.True(JsonNode.DeepEquals(document["paths"]!["/users"]!["get"]![section], document["paths"]!["/admin/users"]!["get"]![section]));

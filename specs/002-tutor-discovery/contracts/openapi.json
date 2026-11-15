@@ -2500,7 +2500,8 @@
           "subjects",
           "approvedAt",
           "availability",
-          "courses"
+          "courses",
+          "busyWindows"
         ],
         "type": "object",
         "properties": {
@@ -2640,6 +2641,12 @@
               "string"
             ],
             "format": "int32"
+          },
+          "busyWindows": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PublicBusyWindow"
+            }
           }
         },
         "additionalProperties": false
@@ -3525,6 +3532,32 @@
             }
           }
         }
+      },
+      "PublicBusyWindow": {
+        "required": [
+          "dayOfWeek",
+          "startTime",
+          "endTime"
+        ],
+        "type": "object",
+        "description": "Weekly window already committed to an ACCEPTED hire request; carries no learner or request data.",
+        "properties": {
+          "dayOfWeek": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "startTime": {
+            "type": "string"
+          },
+          "endTime": {
+            "type": "string"
+          }
+        },
+        "additionalProperties": false
       }
     }
   }

@@ -14,9 +14,17 @@ import {
   TutorsIcon,
 } from "../icons";
 import { useUIStore } from "@/stores/use-ui-store";
+import { useMessengerBadge } from "@/hooks/use-messenger-badge";
+import { AuthenticatedAccountContext } from "@/hooks/use-authenticated-account";
+import { Avatar } from "@/components/ui/avatar";
+import { toUserDisplay } from "@/lib/auth/user-display";
 
 export function LearnerNavigationRail() {
   const pathname = usePathname();
+  // Same account object the top bar receives from LearnerShell (session-backed).
+  const account = React.useContext(AuthenticatedAccountContext);
+  const user = toUserDisplay(account, "Học viên");
+  const unreadMessages = useMessengerBadge();
   const mode = useUIStore((state) => state.mode);
 
   const isCollapsed = mode === "collapsed";
@@ -63,23 +71,23 @@ export function LearnerNavigationRail() {
               </div>
             )}
             {isCollapsed ? (
-              <div
-                title="Học viên Nguyễn Hồng Sơn"
-                className="w-10 h-10 mx-auto rounded-full bg-brand-50 text-brand-700 font-bold flex items-center justify-center text-sm border border-brand/20 select-none cursor-pointer"
-              >
-                HS
-              </div>
+              <Link href="/profile" title={`Học viên ${user.name}`} aria-label={`Hồ sơ của ${user.name}`} className="block w-fit mx-auto rounded-full">
+                <Avatar src={user.avatarSrc} alt={user.name} fallbackText={user.initials} data-testid="rail-avatar" />
+              </Link>
             ) : (
-              <div className="flex items-center gap-3 p-1 rounded-lg bg-gray-50 dark:bg-gray-800/60 border border-gray-200/60 dark:border-gray-700/60">
-                <div className="w-9 h-9 rounded-full bg-brand-50 text-brand-700 font-bold flex items-center justify-center text-sm shrink-0 select-none border border-brand/20">
-                  HS
-                </div>
+              <Link
+                href="/profile"
+                aria-label={`Hồ sơ của ${user.name}`}
+                className="flex items-center gap-3 p-1 rounded-lg bg-gray-50 dark:bg-gray-800/60 border border-gray-200/60 dark:border-gray-700/60 hover:border-brand/30 transition-colors"
+              >
+                <Avatar src={user.avatarSrc} alt={user.name} fallbackText={user.initials} data-testid="rail-avatar" />
                 <div className="flex flex-col min-w-0 flex-1">
-                  <span className="text-base font-semibold text-neutral-900 dark:text-white truncate">
-                    Nguyễn Hồng Sơn
+                  <span className="text-base font-semibold text-neutral-900 dark:text-white truncate" title={user.name}>
+                    {user.name}
                   </span>
+                  <span className="text-xs text-content-secondary">Học viên</span>
                 </div>
-              </div>
+              </Link>
             )}
           </div>
         }
@@ -121,6 +129,7 @@ export function LearnerNavigationRail() {
           label="Tin nhắn"
           href="/messages"
           icon={<MessagesIcon />}
+          badge={unreadMessages > 0 ? unreadMessages : undefined}
           badgeColor="red"
           badgeVariant="primary"
           selected={pathname === "/messages"}

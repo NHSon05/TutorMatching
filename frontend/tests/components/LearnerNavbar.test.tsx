@@ -54,7 +54,7 @@ it("disables navbar logout while pending and redirects after success", async () 
   fireEvent.click(pending);
   expect(logout).toHaveBeenCalledTimes(1);
   await act(async () => finish());
-  await waitFor(() => expect(router.replace).toHaveBeenCalledWith("/login"));
+  await waitFor(() => expect(router.replace).toHaveBeenCalledWith("/login", { transitionTypes: ["auth-out"] }));
   expect(screen.queryByText("Private content")).not.toBeInTheDocument();
 });
 
@@ -67,7 +67,7 @@ it("keeps logout failures retryable without redirecting", async () => {
   const button = screen.getByRole("button", { name: "Đăng xuất" });
   expect(button).toBeEnabled();
   fireEvent.click(button);
-  await waitFor(() => expect(router.replace).toHaveBeenCalledWith("/login"));
+  await waitFor(() => expect(router.replace).toHaveBeenCalledWith("/login", { transitionTypes: ["auth-out"] }));
 });
 
 it("keeps the guard presentation-free and the logout control usable without account props", async () => {

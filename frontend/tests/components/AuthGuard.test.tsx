@@ -11,7 +11,7 @@ beforeEach(() => { vi.resetAllMocks(); route.pathname = "/admin/dashboard"; });
 it("hides protected content and redirects visitors", async () => {
   vi.mocked(getSession).mockResolvedValue(null);
   render(<AuthGuard role="ADMIN"><p>Private data</p></AuthGuard>);
-  await waitFor(() => expect(replace).toHaveBeenCalledWith("/login"));
+  await waitFor(() => expect(replace).toHaveBeenCalledWith("/login", { transitionTypes: ["auth-out"] }));
   expect(screen.queryByText("Private data")).not.toBeInTheDocument();
 });
 it("rejects the wrong server role despite spoofed client cookies", async () => {
@@ -30,7 +30,7 @@ it("renders authorized content and hides it on terminal expiry", async () => {
   render(<AuthGuard role="ADMIN"><p>Private data</p></AuthGuard>);
   expect(await screen.findByText("Private data")).toBeInTheDocument();
   act(() => window.dispatchEvent(new Event("session-ended")));
-  await waitFor(() => expect(replace).toHaveBeenCalledWith("/login"));
+  await waitFor(() => expect(replace).toHaveBeenCalledWith("/login", { transitionTypes: ["auth-out"] }));
   expect(screen.queryByText("Private data")).not.toBeInTheDocument();
   expect(getSession).toHaveBeenCalledTimes(1);
 });

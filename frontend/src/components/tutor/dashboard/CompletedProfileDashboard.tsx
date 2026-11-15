@@ -35,7 +35,7 @@ export function CompletedProfileDashboard({
   });
 
   return (
-    <div className="space-y-6 bg-gray-50">
+    <div className="space-y-6">
       {/* ----------------------------------------------------------------------
           HEADER KHU VỰC TỔNG QUAN (WIREFRAME 2)
       ---------------------------------------------------------------------- */}
@@ -155,19 +155,16 @@ export function CompletedProfileDashboard({
         <div className="lg:col-span-7 space-y-4">
           <div>
             <div className="flex items-center justify-between">
-              <h2 className="text-lg font-bold text-content-primary">
+              <h2 className="text-xl font-bold text-content-primary">
                 Lịch dạy hôm nay
               </h2>
               <Link
                 href="/offers"
-                className="text-sm font-medium text-brand hover:text-brand-hover underline transition-colors"
+                className="text-base font-medium text-brand hover:text-brand-hover underline transition-colors"
               >
                 Xem lịch
               </Link>
             </div>
-            <p className="text-sm text-content-muted mt-1">
-              Thứ Ba, 27/10 · 1 buổi đã hoàn thành, 1 buổi sắp diễn ra
-            </p>
           </div>
 
           {/* Card Buổi 1: Đã hoàn thành */}
@@ -196,7 +193,7 @@ export function CompletedProfileDashboard({
             </p>
 
             <div className="flex flex-wrap items-center gap-2 pt-1">
-              <Button variant="secondary" size="small">
+              <Button variant="brand" size="small">
                 Xem buổi học
               </Button>
               <Button variant="secondary" size="small">
@@ -267,9 +264,6 @@ export function CompletedProfileDashboard({
                   >
                     Cập nhật tiến độ học của Minh Anh
                   </label>
-                  <p className="text-sm text-content-secondary mt-0.5">
-                    Sau buổi học lúc 19:00 hôm nay
-                  </p>
                   <Link
                     href="/teaching-classes"
                     className="text-sm font-medium text-brand hover:text-brand-hover underline mt-1 inline-block"
@@ -303,9 +297,6 @@ export function CompletedProfileDashboard({
                   >
                     Xác nhận lịch học thử với phụ huynh Bảo Ngọc
                   </label>
-                  <p className="text-sm text-content-secondary mt-0.5">
-                    Dự kiến 28/10, 18:00 · Chưa xác nhận
-                  </p>
                   <a
                     href="#contacts-section"
                     className="text-sm font-medium text-brand hover:text-brand-hover underline mt-1 inline-block"
@@ -324,20 +315,16 @@ export function CompletedProfileDashboard({
         <div className="lg:col-span-5 space-y-4">
           <div>
             <div className="flex items-center justify-between">
-              <h2 className="text-lg font-bold text-content-primary">
+              <h2 className="text-xl font-bold text-content-primary">
                 Cơ hội phù hợp với bạn
               </h2>
               <Link
                 href="/tutors"
-                className="text-sm font-medium text-brand hover:text-brand-hover underline transition-colors"
+                className="text-base font-medium text-brand hover:text-brand-hover underline transition-colors"
               >
                 Xem tất cả
               </Link>
             </div>
-            <p className="text-sm text-content-muted mt-1 leading-relaxed">
-              Bài đăng tiềm năng từ Facebook, không phải học sinh đã nhận. Phù
-              hợp với Toán, Vật lý - khu vực Cầu Giấy.
-            </p>
           </div>
 
           <div className="space-y-4">
@@ -534,7 +521,7 @@ export function CompletedProfileDashboard({
           PHẦN DƯỚI: BẢNG "LIÊN HỆ CẦN THEO DÕI" (WIREFRAME 2)
       ---------------------------------------------------------------------- */}
       <section id="contacts-section" className="space-y-3 pt-2">
-        <h2 className="text-lg font-bold text-content-primary">
+        <h2 className="text-xl font-bold text-content-primary">
           Liên hệ cần theo dõi
         </h2>
 

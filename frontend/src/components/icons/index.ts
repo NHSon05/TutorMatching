@@ -30,3 +30,8 @@ export * from "./TrendingUpIcon";
 export * from "./ClockIcon";
 export * from "./VideoIcon";
 export * from "./AwardIcon";
+export * from "./FileCheckIcon";
+export * from "./AlertTriangleIcon";
+export * from "./HeartIcon";
+export * from "./ShareIcon";
+export * from "./BookmarkIcon";

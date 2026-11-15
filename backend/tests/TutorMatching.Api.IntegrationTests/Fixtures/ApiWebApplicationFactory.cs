@@ -20,6 +20,7 @@ public sealed class ApiWebApplicationFactory : WebApplicationFactory<Program>
     private readonly string connectionString;
     private readonly string? redisConnectionString;
     public CapturedEmailSender Emails { get; } = new();
+    public FakeGoogleIdTokenVerifier Google { get; } = new();
     internal TutorMatching.Api.IntegrationTests.Security.TestClock Clock { get; } = new();
     private readonly string signingKey = Convert.ToBase64String(System.Security.Cryptography.RandomNumberGenerator.GetBytes(32));
 
@@ -75,6 +76,8 @@ public sealed class ApiWebApplicationFactory : WebApplicationFactory<Program>
             }
             services.RemoveAll<IEmailSender>();
             services.AddSingleton<IEmailSender>(Emails);
+            services.RemoveAll<IGoogleIdTokenVerifier>();
+            services.AddSingleton<IGoogleIdTokenVerifier>(Google);
             services.AddSingleton<TimeProvider>(Clock);
             services.AddDataProtection().UseEphemeralDataProtectionProvider();
         });

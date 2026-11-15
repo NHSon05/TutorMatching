@@ -15,6 +15,10 @@ import {
   UserProfileIcon,
   UsersIcon,
 } from "../icons";
+import { AUTH_OUT_TYPES } from "@/lib/navigation/transition-types";
+import { Avatar } from "@/components/ui/avatar";
+import { toUserDisplay } from "@/lib/auth/user-display";
+import { formatBadgeCount, useMessengerBadge } from "@/hooks/use-messenger-badge";
 
 export interface TutorSidebarProps {
   onCloseMobile?: () => void;
@@ -22,7 +26,9 @@ export interface TutorSidebarProps {
 
 export function TutorSidebar({ onCloseMobile }: TutorSidebarProps) {
   const pathname = usePathname();
+  const unreadMessages = useMessengerBadge();
   const { data: account } = useSession();
+  const user = toUserDisplay(account, "Gia sư");
   const router = useRouter();
   const { mutateAsync: logout, isPending } = useLogout();
 
@@ -30,9 +36,9 @@ export function TutorSidebar({ onCloseMobile }: TutorSidebarProps) {
     if (isPending) return;
     try {
       await logout();
-      router.replace("/login");
+      router.replace("/login", { transitionTypes: AUTH_OUT_TYPES });
     } catch {
-      router.replace("/login");
+      router.replace("/login", { transitionTypes: AUTH_OUT_TYPES });
     }
   };
 
@@ -54,6 +60,7 @@ export function TutorSidebar({ onCloseMobile }: TutorSidebarProps) {
           label: "Tin nhắn",
           href: "/messages",
           icon: MessagesIcon,
+          badge: unreadMessages,
           isActive: pathname === "/messages" || pathname.startsWith("/messages/"),
         }]
       : []),
@@ -131,6 +138,14 @@ export function TutorSidebar({ onCloseMobile }: TutorSidebarProps) {
                   }`}
                 />
                 <span>{item.label}</span>
+                {"badge" in item && item.badge ? (
+                  <span
+                    className="ml-auto min-w-5 h-5 px-1.5 rounded-full bg-status-error text-white text-xs font-bold flex items-center justify-center"
+                    aria-label={`${item.badge} tin nhắn chưa đọc`}
+                  >
+                    {formatBadgeCount(item.badge)}
+                  </span>
+                ) : null}
               </Link>
             );
           })}
@@ -163,8 +178,22 @@ export function TutorSidebar({ onCloseMobile }: TutorSidebarProps) {
         </div>
       </div>
 
-      {/* Footer with logout action */}
-      <div className="p-4 border-t border-border-default">
+      {/* Footer: signed-in tutor (same session data as the top bar) + logout */}
+      <div className="p-4 border-t border-border-default space-y-2">
+        <Link
+          href="/profile"
+          onClick={onCloseMobile}
+          aria-label={`Hồ sơ của ${user.name}`}
+          className="flex items-center gap-3 p-2 rounded-xl bg-gray-50 border border-border-subtle hover:border-brand/30 transition-colors"
+        >
+          <Avatar src={user.avatarSrc} alt={user.name} fallbackText={user.initials} data-testid="tutor-sidebar-avatar" />
+          <span className="flex flex-col min-w-0">
+            <span className="text-sm font-semibold text-content-primary truncate" title={user.name}>
+              {user.name}
+            </span>
+            <span className="text-xs text-content-secondary">Gia sư</span>
+          </span>
+        </Link>
         <button
           onClick={handleLogout}
           disabled={isPending}

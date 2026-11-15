@@ -11,7 +11,12 @@ public sealed record HireWriteTarget(Guid ActorId, Guid TutorProfileId, Guid Sub
 
 public sealed record HireOffering(Guid TutorUserId, int? ListedPriceVnd, ImmutableArray<string> Modes,
     ImmutableArray<WeeklyWindow> Availability, bool ValidLocation, string? ProvinceName, string? DistrictName,
-    int? CourseSessionCount = null);
+    int? CourseSessionCount = null, IReadOnlyList<WeeklyWindow>? BusyWindows = null)
+{
+    // Windows already committed to other ACCEPTED requests, loaded under the tutor profile lock.
+    public IReadOnlyList<WeeklyWindow> Busy => BusyWindows ?? [];
+    public bool IsBusy(IEnumerable<WeeklyWindow> requested) => WeeklyAvailability.OverlapsAny(requested, Busy);
+}
 
 public interface IHireRequestStore
 {

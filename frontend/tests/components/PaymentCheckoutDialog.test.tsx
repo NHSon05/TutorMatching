@@ -95,15 +95,15 @@ describe("PaymentCheckoutDialog & HireRequestDetail payment gate", () => {
     );
 
     const completeBtn = screen.getByRole("button", {
-      name: "Hoàn tất việc học...",
+      name: "Hoàn tất",
     });
     expect(completeBtn).toBeDisabled();
     expect(
-      screen.getByText(/Cần thanh toán học phí \(trạng thái Đã thanh toán\)/i)
+      screen.getByText("Cần thanh toán học phí trước khi xác nhận hoàn tất việc học.")
     ).toBeInTheDocument();
 
     const payBtn = screen.getByRole("button", {
-      name: "Thanh toán học phí (VietQR)",
+      name: "Thanh toán học phí",
     });
     fireEvent.click(payBtn);
 

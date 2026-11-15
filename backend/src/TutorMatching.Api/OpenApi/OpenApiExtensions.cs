@@ -124,7 +124,7 @@ public static class OpenApiExtensions
                 }
                 if (new[] { typeof(TutorMatching.Application.Tutors.PublicTutorSummary), typeof(TutorMatching.Application.Tutors.PublicTutorDetail),
                     typeof(TutorMatching.Application.Tutors.PublicTutorPage), typeof(TutorMatching.Application.Tutors.PublicSubject),
-                    typeof(TutorMatching.Application.Tutors.PublicAvailability), typeof(TutorMatching.Application.Tutors.PublicCourse) }.Contains(context.JsonTypeInfo.Type))
+                    typeof(TutorMatching.Application.Tutors.PublicAvailability), typeof(TutorMatching.Application.Tutors.PublicCourse), typeof(TutorMatching.Application.Tutors.PublicBusyWindow) }.Contains(context.JsonTypeInfo.Type))
                     schema.AdditionalPropertiesAllowed = false;
                 if (context.JsonTypeInfo.Type == typeof(TutorMatching.Api.Controllers.AvailabilityRequest) ||
                     context.JsonTypeInfo.Type == typeof(TutorMatching.Api.Controllers.AvailabilityResponse))
@@ -178,6 +178,36 @@ public static class OpenApiExtensions
                         if (schema.Properties["role"] is OpenApiSchema role)
                             role.Enum = ["LEARNER", "TUTOR"];
                     }
+                }
+                if (context.JsonTypeInfo.Type == typeof(GoogleSignInRequest))
+                {
+                    schema.AdditionalPropertiesAllowed = false;
+                    if (schema.Properties?["credential"] is OpenApiSchema credential)
+                    {
+                        credential.MinLength = 1;
+                        credential.MaxLength = TutorMatching.Application.Authentication.Google.GoogleSignInHandler.MaximumCredentialLength;
+                    }
+                }
+                if (context.JsonTypeInfo.Type == typeof(CompleteGoogleRegistrationRequest))
+                {
+                    schema.AdditionalPropertiesAllowed = false;
+                    if (schema.Properties?["pendingToken"] is OpenApiSchema pendingToken)
+                    {
+                        pendingToken.MinLength = 1;
+                        pendingToken.MaxLength = TutorMatching.Application.Authentication.Google.CompleteGoogleRegistrationHandler.MaximumPendingTokenLength;
+                    }
+                    if (schema.Properties?["role"] is OpenApiSchema googleRole)
+                        googleRole.Enum = ["LEARNER", "TUTOR"];
+                }
+                if (context.JsonTypeInfo.Type == typeof(GoogleRegistrationRequired))
+                {
+                    schema.AdditionalPropertiesAllowed = false;
+                    if (schema.Properties?["status"] is OpenApiSchema pendingStatus)
+                        pendingStatus.Const = GoogleRegistrationRequired.RoleRequiredStatus;
+                    if (schema.Properties?["email"] is OpenApiSchema pendingEmail)
+                        pendingEmail.Format = "email";
+                    if (schema.Properties?["avatarUrl"] is OpenApiSchema pendingAvatar)
+                        pendingAvatar.Format = "uri";
                 }
                 if (context.JsonTypeInfo.Type == typeof(AccountResponse))
                 {

@@ -181,7 +181,7 @@ export function HireRequestDetail({
       <CardHeader>
         <CardTitle className="text-lg font-semibold">{title}</CardTitle>
       </CardHeader>
-      <CardContent className="space-y-3 text-sm">
+      <CardContent className="space-y-3 text-base">
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <div>
             <span className="text-content-secondary">Ngày bắt đầu: </span>
@@ -191,7 +191,7 @@ export function HireRequestDetail({
           </div>
           <div>
             <span className="text-content-secondary">Học phí: </span>
-            <span className="font-semibold text-brand text-base">
+            <span className="font-semibold text-base">
               {formatVnd(terms.priceVnd)} / buổi
             </span>
           </div>
@@ -232,7 +232,7 @@ export function HireRequestDetail({
             {terms.schedules.map((s, idx) => (
               <span
                 key={idx}
-                className="inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-medium bg-gray-100 text-gray-800 border border-gray-200"
+                className="inline-flex items-center px-2.5 py-1 rounded-lg text-base font-medium bg-gray-100 text-gray-800 border border-gray-200"
               >
                 {dayNames[s.dayOfWeek] || `Thứ ${s.dayOfWeek}`}: {s.startTime} -{" "}
                 {s.endTime}
@@ -269,11 +269,7 @@ export function HireRequestDetail({
                   detail.paymentStatus && (
                     <Badge
                       variant={
-                        detail.paymentStatus === "PAID"
-                          ? "success"
-                          : detail.paymentStatus === "PENDING"
-                            ? "warning"
-                            : "gray"
+                        detail.paymentStatus === "PAID" ? "success" : "warning"
                       }
                       shape="pill"
                     >
@@ -285,60 +281,64 @@ export function HireRequestDetail({
                     </Badge>
                   )}
               </div>
-              <p className="text-xs text-content-muted mt-1">
-                Mã yêu cầu: {detail.id}
-              </p>
             </div>
-            {onRefresh && (
-              <Button
-                variant="secondary"
-                size="small"
-                onClick={onRefresh}
-                disabled={
-                  isAccepting || isRejecting || isCancelling || isCompleending
-                }
-              >
-                Làm mới dữ liệu
-              </Button>
-            )}
             <Link
               href="/messages"
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg bg-blue-50 text-blue-700 hover:bg-blue-100 border border-blue-200 transition-colors"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-semibold rounded-lg bg-blue-50 text-blue-700 hover:bg-blue-100 border border-blue-200 transition-colors"
             >
-              💬 Nhắn tin trao đổi
+              Nhắn tin
             </Link>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
+            <div className="p-3 bg-surface-card rounded-xl border border-border-default">
+              <span className="text-content-secondary block text-sm">
+                Học viên
+              </span>
+              <span className="font-semibold text-content-primary text-base">
+                {detail.learner.displayName}
+              </span>
+            </div>
+            <div className="p-3 bg-surface-card rounded-xl border border-border-default">
+              <span className="text-content-secondary block text-sm">
+                Gia sư
+              </span>
+              <span className="font-semibold text-content-primary text-base">
+                {detail.tutor.displayName}
+              </span>
+            </div>
           </div>
 
           {/* Action buttons (pay/review/cancel/complete) when permitted */}
           {(canPay || canReview || canCancel || canComplete) && (
-            <div className="space-y-2 mb-4">
-              <div className="flex flex-wrap gap-2">
+            <div className="space-y-2 mt-4">
+              <div className="flex justify-end gap-2">
                 {canPay && (
                   <Button
                     variant="brand"
-                    size="small"
+                    size="medium"
                     onClick={() => void handleOpenPayment()}
                     isLoading={isInitiatingPayment}
                     disabled={isInitiatingPayment || isConfirmingPayment}
                   >
-                    Thanh toán học phí (VietQR)
+                    Thanh toán học phí
                   </Button>
                 )}
                 {canReview && (
                   <Button
                     variant="brand"
-                    size="small"
+                    size="medium"
                     onClick={() => setIsReviewOpen(true)}
                     isLoading={isSubmittingReview}
                     disabled={isSubmittingReview}
                   >
-                    Đánh giá gia sư
+                    Đánh giá
                   </Button>
                 )}
                 {(canComplete || requiresPaymentBeforeComplete) && (
                   <Button
                     variant="success"
-                    size="small"
+                    size="medium"
                     onClick={() => setCloseDialogAction("complete")}
                     isLoading={isCompleending}
                     disabled={
@@ -349,13 +349,13 @@ export function HireRequestDetail({
                       requiresPaymentBeforeComplete
                     }
                   >
-                    Hoàn tất việc học...
+                    Hoàn tất
                   </Button>
                 )}
                 {canCancel && (
                   <Button
                     variant="secondary"
-                    size="small"
+                    size="medium"
                     onClick={() => setCloseDialogAction("cancel")}
                     isLoading={isCancelling}
                     disabled={
@@ -365,37 +365,17 @@ export function HireRequestDetail({
                       isCompleending
                     }
                   >
-                    Hủy yêu cầu...
+                    Hủy
                   </Button>
                 )}
               </div>
               {requiresPaymentBeforeComplete && (
-                <p className="text-xs text-amber-800 font-medium">
-                  Cần thanh toán học phí (trạng thái Đã thanh toán) trước khi
-                  xác nhận hoàn tất việc học.
+                <p className="text-sm text-status-warning font-medium text-end">
+                  Cần thanh toán học phí trước khi xác nhận hoàn tất việc học.
                 </p>
               )}
             </div>
           )}
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
-            <div className="p-3 bg-surface-card rounded-xl border border-border-default">
-              <span className="text-content-secondary block text-xs">
-                Học viên gửi yêu cầu
-              </span>
-              <span className="font-semibold text-content-primary text-base">
-                {detail.learner.displayName}
-              </span>
-            </div>
-            <div className="p-3 bg-surface-card rounded-xl border border-border-default">
-              <span className="text-content-secondary block text-xs">
-                Gia sư nhận yêu cầu
-              </span>
-              <span className="font-semibold text-content-primary text-base">
-                {detail.tutor.displayName}
-              </span>
-            </div>
-          </div>
         </div>
       </Card>
 
@@ -403,7 +383,7 @@ export function HireRequestDetail({
       {isConflict && (
         <div
           role="alert"
-          className="p-4 rounded-xl bg-amber-50 border border-amber-300 text-amber-900 text-sm flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3"
+          className="p-4 rounded-xl bg-amber-50 border border-amber-300 text-amber-900 text-base flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3"
         >
           <div>
             <p className="font-semibold">
@@ -430,7 +410,7 @@ export function HireRequestDetail({
       {errorMessage && (
         <div
           role="alert"
-          className="p-4 rounded-xl bg-rose-50 border border-rose-300 text-rose-900 text-sm"
+          className="p-4 rounded-xl bg-rose-50 border border-rose-300 text-rose-900 text-base"
         >
           {errorMessage}
         </div>
@@ -438,22 +418,22 @@ export function HireRequestDetail({
 
       {/* Final Agreement (if accepted) */}
       {detail.finalAgreement && (
-        <Card className="border-emerald-300 bg-emerald-50/40">
+        <Card className="border-status-success bg-emerald-50/40">
           <CardHeader>
             <div className="flex items-center justify-between">
-              <CardTitle className="text-lg font-bold text-emerald-900">
+              <CardTitle className="text-lg font-bold text-neutral-900">
                 Thỏa thuận đã thống nhất (Final Agreement)
               </CardTitle>
               <Badge variant="success" appearance="solid">
                 Đã chốt
               </Badge>
             </div>
-            <p className="text-xs text-emerald-800">
+            <p className="text-sm text-status-success">
               Được chấp nhận lúc{" "}
               {formatVietnamDateTime(detail.finalAgreement.acceptedAt)}
             </p>
           </CardHeader>
-          <CardContent className="space-y-2 text-sm text-emerald-950">
+          <CardContent className="space-y-2">
             <p>Ngày bắt đầu: {detail.finalAgreement.terms.startDate}</p>
             <p>
               {detail.finalAgreement.terms.sessionsPerWeek} buổi/tuần •{" "}
@@ -479,22 +459,18 @@ export function HireRequestDetail({
               </p>
             )}
             <div>
-              <span className="text-emerald-800 font-medium">
-                Học phí thống nhất:{" "}
-              </span>
+              <span className="font-medium">Học phí thống nhất: </span>
               <span className="font-bold text-base">
                 {formatVnd(detail.finalAgreement.terms.priceVnd)} / buổi
               </span>
             </div>
             <div>
-              <span className="text-emerald-800 font-medium">
-                Lịch học chốt:{" "}
-              </span>
+              <span className="font-medium">Lịch học chốt: </span>
               <div className="flex flex-wrap gap-2 mt-1">
                 {detail.finalAgreement.terms.schedules.map((s, idx) => (
                   <span
                     key={idx}
-                    className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-emerald-100 text-emerald-900 border border-emerald-200"
+                    className="inline-flex items-center px-2 py-0.5 rounded text-base font-medium bg-status-info-bg text-status-info border border-status-info"
                   >
                     {dayNames[s.dayOfWeek] || `Thứ ${s.dayOfWeek}`}:{" "}
                     {s.startTime} - {s.endTime}

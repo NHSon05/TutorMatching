@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { useLogout } from "@/hooks/use-auth";
 import type { AccountResponse } from "@/lib/api/auth";
+import { AUTH_OUT_TYPES } from "@/lib/navigation/transition-types";
 
 export function AppNavigation({ account }: { account: AccountResponse }) {
   const router = useRouter();
@@ -15,7 +16,7 @@ export function AppNavigation({ account }: { account: AccountResponse }) {
     setError("");
     try {
       await logout();
-      router.replace("/login");
+      router.replace("/login", { transitionTypes: AUTH_OUT_TYPES });
     } catch {
       setError("Đăng xuất chưa thành công. Vui lòng thử lại.");
     }

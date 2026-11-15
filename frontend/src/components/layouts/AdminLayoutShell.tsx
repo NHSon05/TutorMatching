@@ -5,9 +5,14 @@ import Link from "next/link";
 import Logo from "@assets/logo/Logo";
 import AdminSidebar from "@/components/navigation/AdminSidebar";
 import { CloseIcon, MenuIcon } from "../icons";
+import { Avatar } from "@/components/ui/avatar";
+import { useSession } from "@/hooks/use-session";
+import { toUserDisplay } from "@/lib/auth/user-display";
 
 export function AdminLayoutShell({ children }: { children: React.ReactNode }) {
   const [mobileOpen, setMobileOpen] = React.useState(false);
+  const { data: account } = useSession();
+  const user = toUserDisplay(account, "Quản trị viên");
 
   return (
     <div className="min-h-screen flex bg-surface-base text-content-primary">
@@ -41,7 +46,7 @@ export function AdminLayoutShell({ children }: { children: React.ReactNode }) {
       )}
 
       {/* Main Content Area */}
-      <div className="flex-1 flex flex-col min-w-0">
+      <div className="bg-gray-50 flex-1 flex flex-col min-w-0">
         {/* Desktop Top Header Bar */}
         <header className="h-16 border-b border-border-default px-6 flex items-center justify-between bg-surface-base sticky top-0 z-30">
           <div className="flex items-center gap-3">
@@ -62,7 +67,9 @@ export function AdminLayoutShell({ children }: { children: React.ReactNode }) {
             <div className="hidden md:flex items-center gap-2 text-xs font-semibold text-content-secondary uppercase tracking-wider">
               <span>Hệ thống quản trị TutorMatching</span>
               <span className="text-gray-300 dark:text-gray-700">•</span>
-              <span className="text-status-error font-medium">Bảng điều hành</span>
+              <span className="text-status-error font-medium">
+                Bảng điều hành
+              </span>
             </div>
           </div>
 
@@ -81,13 +88,17 @@ export function AdminLayoutShell({ children }: { children: React.ReactNode }) {
               Cài đặt
             </Link>
 
-            {/* User Pill */}
+            {/* User Pill (same session data as the sidebar card) */}
             <div className="flex items-center gap-2 pl-2 border-l border-border-default">
-              <div className="w-7 h-7 rounded-full bg-red-100 dark:bg-red-950/80 text-status-error font-bold flex items-center justify-center text-[11px] select-none border border-red-200 dark:border-red-900">
-                AD
-              </div>
-              <span className="hidden sm:inline text-xs font-semibold text-gray-800 dark:text-gray-200">
-                Admin
+              <Avatar
+                src={user.avatarSrc}
+                alt={user.name}
+                fallbackText={user.initials}
+                size="small"
+                data-testid="admin-header-avatar"
+              />
+              <span className="hidden sm:inline max-w-40 truncate text-xs font-semibold text-gray-800 dark:text-gray-200" title={user.name}>
+                {user.name}
               </span>
             </div>
           </div>

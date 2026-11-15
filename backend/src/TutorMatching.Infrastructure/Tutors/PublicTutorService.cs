@@ -93,11 +93,13 @@ public sealed class PublicTutorService(ApplicationDbContext db) : IPublicTutorSe
                                db.TutorSubjects.Any(s => s.TutorProfileId == profileId && s.SubjectId == c.SubjectId)
                              orderby c.CreatedAt, c.Id
                              select new PublicCourse(c.Id, c.SubjectId, subject.Name, c.Name, c.Description, c.SessionCount!.Value, c.PricePerSessionVnd!.Value)).ToListAsync(ct);
+        var busy = await Hiring.TutorBusySchedule.LoadAsync(db, profileId, null, ct);
         await tx.CommitAsync(ct);
         return new PublicTutorDetail(
             p.Id, p.DisplayName, p.AvatarUrl, p.Bio, p.Qualification, p.SchoolName, p.Specialization, p.ExperienceYears, p.TeachingMethodology,
             p.Achievements, p.SessionRateVnd, p.TeachingModes, p.ProvinceCode, p.ProvinceName, p.DistrictCode, p.DistrictName, p.Subjects, p.ApprovedAt,
             slots.Select(s => new PublicAvailability(s.Id, s.DayOfWeek!.Value, s.StartTime.ToString("HH:mm"), s.EndTime.ToString("HH:mm"), "Asia/Ho_Chi_Minh")).ToList(), courses,
+            busy.Select(w => new PublicBusyWindow(w.DayOfWeek, w.StartTime.ToString("HH:mm"), w.EndTime.ToString("HH:mm"))).ToList(),
             p.AverageRating, p.ReviewCount);
     });
 

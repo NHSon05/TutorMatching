@@ -243,3 +243,161 @@ body {
 @utility linear {
   background-image: var(--gradient-linear);
 }
+
+/* ---------------------------------------------------------------------------
+   Page transitions (React <ViewTransition> in components/layouts/PageTransition)
+   Only page content animates; shell chrome (sidebar, navbar) stays put.
+--------------------------------------------------------------------------- */
+::view-transition {
+  pointer-events: none;
+}
+
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation: none;
+}
+
+::view-transition-old(.page-exit) {
+  animation: 120ms ease-in both page-fade reverse;
+}
+
+::view-transition-new(.page-enter) {
+  animation:
+    220ms ease-out 80ms both page-fade,
+    300ms cubic-bezier(0.22, 1, 0.36, 1) 80ms both page-rise;
+}
+
+@keyframes page-fade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes page-rise {
+  from {
+    translate: 0 12px;
+  }
+  to {
+    translate: 0 0;
+  }
+}
+
+/* Auth navigations swap the whole shell (public ⇄ workspace), so the shell
+   crossfades instead of switching instantly. Browsers without transition-type
+   selectors keep the instant shell swap and still animate the content. */
+html:active-view-transition-type(auth-in, auth-out)::view-transition-old(root) {
+  animation: 200ms ease-in both page-fade reverse;
+}
+html:active-view-transition-type(auth-in, auth-out)::view-transition-new(root) {
+  animation: 320ms ease-out 120ms both page-fade;
+}
+
+/* Landing / navbar / footer → login or register: the auth screen rises in. */
+::view-transition-old(.auth-open-exit) {
+  animation:
+    160ms ease-in both page-fade reverse,
+    220ms ease-in both auth-shrink reverse;
+}
+::view-transition-new(.auth-open-enter) {
+  animation:
+    260ms ease-out 100ms both page-fade,
+    420ms cubic-bezier(0.22, 1, 0.36, 1) 100ms both auth-rise;
+}
+
+/* Successful login: the form recedes, the workspace zooms in. */
+::view-transition-old(.auth-in-exit) {
+  animation:
+    180ms ease-in both page-fade reverse,
+    260ms ease-in both auth-recede;
+}
+::view-transition-new(.auth-in-enter) {
+  animation:
+    300ms ease-out 140ms both page-fade,
+    520ms cubic-bezier(0.16, 1, 0.3, 1) 140ms both auth-zoom-in;
+}
+
+/* Logout: the workspace sinks away, the login screen settles in from above. */
+::view-transition-old(.auth-out-exit) {
+  animation:
+    200ms ease-in both page-fade reverse,
+    280ms ease-in both auth-sink;
+}
+::view-transition-new(.auth-out-enter) {
+  animation:
+    300ms ease-out 160ms both page-fade,
+    460ms cubic-bezier(0.22, 1, 0.36, 1) 160ms both auth-settle;
+}
+
+@keyframes auth-rise {
+  from {
+    translate: 0 28px;
+    scale: 0.98;
+  }
+  to {
+    translate: 0 0;
+    scale: 1;
+  }
+}
+
+@keyframes auth-shrink {
+  from {
+    scale: 0.98;
+  }
+  to {
+    scale: 1;
+  }
+}
+
+@keyframes auth-recede {
+  from {
+    scale: 1;
+    filter: blur(0);
+  }
+  to {
+    scale: 1.04;
+    filter: blur(4px);
+  }
+}
+
+@keyframes auth-zoom-in {
+  from {
+    scale: 0.94;
+    filter: blur(6px);
+  }
+  to {
+    scale: 1;
+    filter: blur(0);
+  }
+}
+
+@keyframes auth-sink {
+  from {
+    translate: 0 0;
+    scale: 1;
+  }
+  to {
+    translate: 0 24px;
+    scale: 0.96;
+  }
+}
+
+@keyframes auth-settle {
+  from {
+    translate: 0 -20px;
+  }
+  to {
+    translate: 0 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-old(*),
+  ::view-transition-new(*),
+  ::view-transition-group(*) {
+    animation-duration: 0s !important;
+    animation-delay: 0s !important;
+  }
+}

@@ -363,7 +363,7 @@ export function NavItem({
           <span
             className={`px-2 py-0.5 rounded-full text-sm font-semibold shrink-0 transition-colors ${badgeClasses}`}
           >
-            {badge}
+            {badge > 99 ? "99+" : badge}
           </span>
         )}
         {hasChildren && (

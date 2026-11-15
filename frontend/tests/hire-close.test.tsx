@@ -189,8 +189,8 @@ describe("CloseRequestDialog & Terminal Controls (T042)", () => {
       />
     );
 
-    expect(screen.getByRole("button", { name: "Hủy yêu cầu..." })).toBeDisabled();
-    expect(screen.getByRole("button", { name: "Hoàn tất việc học..." })).toBeDisabled();
+    expect(screen.getByRole("button", { name: "Hủy" })).toBeDisabled();
+    expect(screen.getByRole("button", { name: "Hoàn tất" })).toBeDisabled();
 
     // Rerender in conflict state
     rerender(

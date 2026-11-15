@@ -51,6 +51,7 @@ public sealed class CreateHireRequest(IHireRequestStore store, ICurrentUser user
             if (errors.Count != 0) throw new HireValidationException(errors);
             if (terms.Validate(clock.UtcNow, session.Offering.Availability, session.Offering.Modes, session.Offering.ValidLocation).Count != 0)
                 throw new HireStoreException("availability_changed");
+            if (session.Offering.IsBusy(windows)) throw new HireStoreException("schedule_busy");
             if (command.ExpectedListedPriceVnd != session.Offering.ListedPriceVnd) throw new HireStoreException("listed_price_changed");
             var now = clock.UtcNow;
             var request = new HireRequest

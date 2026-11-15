@@ -1,3 +1,4 @@
+import { PageTransition } from "@/components/layouts/PageTransition";
 import { TutorGuard } from "@/components/tutor/TutorGuard";
 import { TutorLayoutShell } from "@/components/layouts/TutorLayoutShell";
 
@@ -8,7 +9,9 @@ export default function TutorRouteLayout({
 }) {
   return (
     <TutorGuard>
-      <TutorLayoutShell>{children}</TutorLayoutShell>
+      <TutorLayoutShell>
+        <PageTransition>{children}</PageTransition>
+      </TutorLayoutShell>
     </TutorGuard>
   );
 }

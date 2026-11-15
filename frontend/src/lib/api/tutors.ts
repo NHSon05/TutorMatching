@@ -80,6 +80,12 @@ export function publicAvatarUrl(value: string | null) {
   return /^https?:\/\//.test(value) ? value : undefined;
 }
 export interface PublicTutorDetail extends TutorListItemResponse {
+  /** Weekly windows already taken by ACCEPTED requests (day/time only). */
+  busyWindows?: {
+    dayOfWeek: number;
+    startTime: string;
+    endTime: string;
+  }[];
   availability: {
     id: string;
     dayOfWeek: number;

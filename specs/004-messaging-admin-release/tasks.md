@@ -91,22 +91,24 @@
 
 ### Implementation for User Story 2
 
-- [ ] T019 [US2] Implement Application layer notifications logic in `backend/src/TutorMatching.Application/Notifications/`:
+- [x] T019 [US2] Implement Application layer notifications logic in `backend/src/TutorMatching.Application/Notifications/`:
   - Queries: `GetNotificationsQuery`, `GetUnreadNotificationCountQuery`.
   - Commands: `MarkNotificationReadCommand`, `MarkAllNotificationsReadCommand` (with snapshot boundary condition `CreatedAt <= boundary`), `OpenNotificationCommand` (resolves target validity/authorization).
   - Integrate existing hiring/review notification triggers to dispatch `NotificationsChanged` SignalR event post-commit.
-- [ ] T020 [US2] Implement API controller `backend/src/TutorMatching.Api/Controllers/NotificationsController.cs`:
+- [x] T020 [US2] Implement API controller `backend/src/TutorMatching.Api/Controllers/NotificationsController.cs`:
   - Endpoints: `GET /api/v1/notifications`, `GET /api/v1/notifications/unread-count`, `POST /api/v1/notifications/{id}/read`, `POST /api/v1/notifications/read-all`, `POST /api/v1/notifications/{id}/open`.
   - Apply `[Authorize]`, active account check, owner isolation.
-- [ ] T021 [US2] Implement frontend notifications API client and custom hook in `frontend/src/lib/api/notifications.ts` and `frontend/src/hooks/useNotifications.ts`:
+- [x] T021 [US2] Implement frontend notifications API client and custom hook in `frontend/src/lib/api/notifications.ts` and `frontend/src/hooks/useNotifications.ts`:
   - API methods: `getNotifications`, `getUnreadCount`, `markRead`, `markAllRead`, `openNotification`.
   - Custom hook: manage notification list, unread badge count, optimistic read updates, SignalR `NotificationsChanged` listener for cache invalidation.
-- [ ] T022 [US2] Build notification UI components in `frontend/src/components/notifications/` and header integration:
+- [x] T022 [US2] Build notification UI components in `frontend/src/components/notifications/` and header integration:
+  - _Evidence 2026-11-14: `NotificationEndpointTests` (6), `NotificationContractTests` (runtime parity), `NotificationBell.test.tsx` (6). Hook files use repo kebab-case (`use-notifications.ts`); no `AppHeader.tsx` exists, so the bell is in `DashboardTopBar` (learner), `TutorLayoutShell` (tutor) and `SharedNavbar`. SignalR hook now shares one ref-counted connection._
   - `NotificationBell.tsx`: bell icon with accessible unread badge count, toggle popover.
   - `NotificationList.tsx`: paginated list with type icons, relative timestamp, unread indicator, "Đánh dấu tất cả đã đọc" (Mark all as read) button.
   - `NotificationItem.tsx`: individual item with safe click-to-open handler; shows unavailable notice if target is no longer accessible.
   - Integrate `NotificationBell` into header navigation in `frontend/src/components/navigation/AppHeader.tsx`.
 - [ ] T023 [US2] Create and run end-to-end notification journey in `frontend/tests/e2e/notifications.spec.ts`:
+  - _Open (2026-11-14): needs the isolated `--hire-browser` Playwright fixture; not yet written or run._
   - Trigger request creation/negotiation and message, observe real-time notification popover update via SignalR, mark one as read, mark all read with boundary, navigate from notification to request detail.
 
 **Checkpoint**: User Stories 1 and 2 functional and integrated — real-time messages and notifications working together.
@@ -121,7 +123,7 @@
 
 ### Tests for User Story 3 ⚠️
 
-- [ ] T024 [P] [US3] Add user administration unit and integration tests in `backend/tests/TutorMatching.Application.UnitTests/Administration/AdminUsersServiceTests.cs` and `backend/tests/TutorMatching.Api.IntegrationTests/Administration/AdminUsersEndpointTests.cs`:
+- [x] T024 [P] [US3] Add user administration unit and integration tests in `backend/tests/TutorMatching.Application.UnitTests/Administration/AdminUsersServiceTests.cs` and `backend/tests/TutorMatching.Api.IntegrationTests/Administration/AdminUsersEndpointTests.cs`:
   - Test `GET /api/v1/admin/users`: search query `q` (max 100), role filter (`LEARNER`, `TUTOR`, `ADMIN`), status filter (`ACTIVE`, `LOCKED`), pagination.
   - Test `GET /api/v1/admin/users/{id}`: returns user details with `version` UUID, role, status, profile summary; excludes password hash, security stamps, tokens.
   - Test `POST /api/v1/admin/users/{id}/status`:
@@ -131,7 +133,7 @@
     - Concurrency conflict: returns 409 when `expectedVersion` does not match current version.
     - Non-admin access denial: returns 403 Forbidden for learner or tutor.
   - Test locked account behavior: locked account cannot authenticate or make private API calls; locked tutor profile excluded from `GET /api/v1/tutors` public search.
-- [ ] T025 [P] [US3] Add frontend admin users component and dialog tests in `frontend/tests/components/admin/AdminUsers.test.tsx`:
+- [x] T025 [P] [US3] Add frontend admin users component and dialog tests in `frontend/tests/components/admin/AdminUsers.test.tsx`:
   - Test search input, role and status filter dropdowns.
   - Test user detail modal/drawer with account history, profile info, lock/unlock button.
   - Test lock/unlock confirmation modal requiring explicit confirmation checkbox/button.
@@ -140,13 +142,13 @@
 
 ### Implementation for User Story 3
 
-- [ ] T026 [US3] Implement Application layer user administration in `backend/src/TutorMatching.Application/Administration/Users/`:
+- [x] T026 [US3] Implement Application layer user administration in `backend/src/TutorMatching.Application/Administration/Users/`:
   - Queries: `SearchAdminUsersQuery`, `GetAdminUserByIdQuery`.
   - Commands: `UpdateUserStatusCommand`: validates admin role, rejects self-lock (`actorId == targetUserId`), enforces `expectedVersion` check, updates status and rotates `SecurityStamp` + `ConcurrencyVersion`, revokes active sessions via session store/token manager, appends `AuditEvent` within the same database transaction.
-- [ ] T027 [US3] Extend API controller `backend/src/TutorMatching.Api/Controllers/AdminController.cs`:
+- [x] T027 [US3] Extend API controller `backend/src/TutorMatching.Api/Controllers/AdminController.cs`:
   - Endpoints: `GET /api/v1/admin/users`, `GET /api/v1/admin/users/{id}`, `POST /api/v1/admin/users/{id}/status`.
   - Authorize with `[Authorize(Roles = "ADMIN")]`.
-- [ ] T028 [US3] Implement frontend API client in `frontend/src/lib/api/admin-users.ts` and update admin users UI in `frontend/src/app/(admin)/admin/users/page.tsx`:
+- [x] T028 [US3] Implement frontend API client in `frontend/src/lib/api/admin-users.ts` and update admin users UI in `frontend/src/app/(admin)/admin/users/page.tsx`:
   - Replace mock data in `frontend/src/app/(admin)/admin/users/page.tsx` with real API query.
   - Build `UserStatusDialog.tsx` in `frontend/src/components/admin/` with confirmation prompt, reason input, and version passing.
   - Display user details, role badge, status badge (ACTIVE / LOCKED), and audit summary.
@@ -222,6 +224,7 @@
 ### Implementation for User Story 5
 
 - [ ] T039 [US5] Implement Application layer dashboard query and audit query in `backend/src/TutorMatching.Application/Administration/Dashboard/` and `backend/src/TutorMatching.Application/Administration/Audit/`:
+  - _Partial 2026-11-14: dashboard done (`Application/Administration/Dashboard/`, `Infrastructure/Administration/AdminDashboardQuery.cs`, `GET /admin/dashboard`, repeatable-read snapshot; contract extended with `topSubjects`). Evidence: `AdminDashboardEndpointTests` (3), `tests/components/AdminDashboard.test.tsx` (3). Audit query still open._
   - `GetAdminDashboardQuery`: calculates user counts grouped by role (`LEARNER`, `TUTOR`, `ADMIN`), tutor profile counts by status (`PENDING_REVIEW`, `APPROVED`, `REJECTED`), hire request counts by status (`PENDING_TUTOR_RESPONSE`, `NEGOTIATING`, `ACCEPTED`, `REJECTED`, `CANCELLED`, `COMPLETED`); ensures all canonical enum values are present with default 0 in a single snapshot transaction.
   - `GetAuditEventsQuery`: cursor-paginated search with filters; projects to safe `AuditEventDto` `{id, actorId, action, entityType, entityId, createdAt}` (omitting internal IP and diff payloads).
 - [ ] T040 [US5] Implement API endpoints in `backend/src/TutorMatching.Api/Controllers/AdminDashboardController.cs` and `backend/src/TutorMatching.Api/Controllers/AdminAuditController.cs`:

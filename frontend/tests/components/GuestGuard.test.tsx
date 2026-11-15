@@ -57,7 +57,7 @@ describe("GuestGuard", () => {
       </QueryProvider>
     );
 
-    await waitFor(() => expect(replace).toHaveBeenCalledWith("/"));
+    await waitFor(() => expect(replace).toHaveBeenCalledWith("/", { transitionTypes: ["auth-in"] }));
     expect(screen.queryByText("Login Form Content")).not.toBeInTheDocument();
   });
 
@@ -79,7 +79,7 @@ describe("GuestGuard", () => {
       </QueryProvider>
     );
 
-    await waitFor(() => expect(replace).toHaveBeenCalledWith("/"));
+    await waitFor(() => expect(replace).toHaveBeenCalledWith("/", { transitionTypes: ["auth-in"] }));
     expect(screen.queryByText("Login Form Content")).not.toBeInTheDocument();
   });
 
@@ -101,7 +101,7 @@ describe("GuestGuard", () => {
       </QueryProvider>
     );
 
-    await waitFor(() => expect(replace).toHaveBeenCalledWith("/onboarding"));
+    await waitFor(() => expect(replace).toHaveBeenCalledWith("/onboarding", { transitionTypes: ["auth-in"] }));
     expect(screen.queryByText("Login Form Content")).not.toBeInTheDocument();
   });
 
@@ -122,7 +122,7 @@ describe("GuestGuard", () => {
       </QueryProvider>
     );
 
-    await waitFor(() => expect(replace).toHaveBeenCalledWith("/admin/dashboard"));
+    await waitFor(() => expect(replace).toHaveBeenCalledWith("/admin/dashboard", { transitionTypes: ["auth-in"] }));
     expect(screen.queryByText("Login Form Content")).not.toBeInTheDocument();
   });
 
@@ -137,7 +137,7 @@ describe("GuestGuard", () => {
     );
 
     expect(screen.queryByText("Login Form Content")).not.toBeInTheDocument();
-    await waitFor(() => expect(replace).toHaveBeenCalledWith("/"));
+    await waitFor(() => expect(replace).toHaveBeenCalledWith("/", { transitionTypes: ["auth-in"] }));
   });
 
   it("ignores a stale SSR initialRole once the session resolves as logged out", async () => {
@@ -172,7 +172,7 @@ describe("GuestGuard", () => {
       </QueryProvider>
     );
 
-    await waitFor(() => expect(replace).toHaveBeenCalledWith("/"));
+    await waitFor(() => expect(replace).toHaveBeenCalledWith("/", { transitionTypes: ["auth-in"] }));
     expect(screen.queryByText("Login Form Content")).not.toBeInTheDocument();
   });
 });

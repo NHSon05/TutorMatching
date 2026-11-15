@@ -9,6 +9,7 @@ import {
 } from "@/lib/api/hire-requests";
 import { ApiError } from "@/lib/api/http";
 import { getVietnamDate, sortWeeklySchedules } from "@/lib/date-time";
+import { overlapsBusy } from "@/lib/hiring/busy-windows";
 import {
   createHireFormState,
   hireFormReducer,
@@ -83,6 +84,13 @@ export function useHireRequestForm({
     ) {
       setError(
         "Chọn môn, ngày bắt đầu trong tương lai, lịch học và địa điểm nếu học trực tiếp."
+      );
+      return;
+    }
+    const busy = tutor.busyWindows ?? [];
+    if (schedules.some((window) => overlapsBusy(window, busy))) {
+      setError(
+        "Gia sư đã có lịch dạy vào khung giờ đã chọn. Vui lòng chọn khoảng giờ còn trống."
       );
       return;
     }

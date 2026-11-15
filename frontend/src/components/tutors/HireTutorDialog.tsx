@@ -11,6 +11,7 @@ import { Dropdown } from "@/components/ui/dropdown";
 import { TextField } from "@/components/ui/text-field";
 import { TextArea } from "@/components/ui/text-area";
 import { Spinner } from "@/components/ui/spinner";
+import { busyInSlot, freeGaps, overlapsBusy } from "@/lib/hiring/busy-windows";
 import {
   type PublicTutorDetail,
   type TutorListItemResponse,
@@ -146,9 +147,6 @@ function HireForm({
           {result.status === "PENDING"
             ? "Đang chờ gia sư phản hồi."
             : "Đang thương lượng mức giá đề xuất."}
-        </p>
-        <p className="break-all text-sm text-content-secondary">
-          Mã yêu cầu: {result.id}
         </p>
         <Button variant="brand" onClick={onClose}>
           Đóng
@@ -327,55 +325,81 @@ function HireForm({
           </p>
           {tutor.availability.length > 0 && (
             <div className="grid gap-3 md:grid-cols-2">
-              {tutor.availability.map((slot) => (
-                <div
-                  key={slot.id}
-                  className="space-y-3 rounded-xl border border-border-default p-3"
-                >
-                  <Checkbox
-                    variant="brand"
-                    label={`${slot.dayOfWeek === 7 ? "Chủ nhật" : `Thứ ${slot.dayOfWeek + 1}`}: ${slot.startTime} – ${slot.endTime}`}
-                    checked={!!windows[slot.id]}
-                    onChange={(checked) =>
-                      actions.toggleSchedule(slot.id, checked)
-                    }
-                  />
-                  {windows[slot.id] && (
-                    <div className="grid grid-cols-2 gap-3">
-                      <TextField
-                        label={`Bắt đầu ${slot.dayOfWeek}`}
-                        type="time"
-                        required
-                        min={slot.startTime}
-                        max={slot.endTime}
-                        value={windows[slot.id].startTime}
-                        onChange={(e) =>
-                          actions.changeScheduleTime(
-                            slot.id,
-                            "startTime",
-                            e.target.value
-                          )
-                        }
-                      />
-                      <TextField
-                        label={`Kết thúc ${slot.dayOfWeek}`}
-                        type="time"
-                        required
-                        min={slot.startTime}
-                        max={slot.endTime}
-                        value={windows[slot.id].endTime}
-                        onChange={(e) =>
-                          actions.changeScheduleTime(
-                            slot.id,
-                            "endTime",
-                            e.target.value
-                          )
-                        }
-                      />
-                    </div>
-                  )}
-                </div>
-              ))}
+              {tutor.availability.map((slot) => {
+                const booked = busyInSlot(slot, tutor.busyWindows ?? []);
+                const fullyBooked =
+                  booked.length > 0 &&
+                  freeGaps(slot, tutor.busyWindows ?? []).length === 0;
+                const chosen = windows[slot.id];
+                const clashes =
+                  !!chosen && overlapsBusy(chosen, tutor.busyWindows ?? []);
+                return (
+                  <div
+                    key={slot.id}
+                    className={`space-y-3 rounded-xl border p-3 ${
+                      fullyBooked
+                        ? "border-border-default bg-gray-50 dark:bg-gray-900"
+                        : clashes
+                          ? "border-status-error"
+                          : "border-border-default"
+                    }`}
+                  >
+                    <Checkbox
+                      variant="brand"
+                      label={`${slot.dayOfWeek === 7 ? "Chủ nhật" : `Thứ ${slot.dayOfWeek + 1}`}: ${slot.startTime} – ${slot.endTime}${fullyBooked ? " · Đã kín lịch" : ""}`}
+                      checked={!!chosen}
+                      disabled={fullyBooked && !chosen}
+                      helperText={
+                        booked.length > 0
+                          ? `Đã có lịch: ${booked.map((item) => `${item.startTime}–${item.endTime}`).join(", ")}`
+                          : undefined
+                      }
+                      error={
+                        clashes
+                          ? "Khoảng giờ đã chọn trùng lịch đã có."
+                          : undefined
+                      }
+                      onChange={(checked) =>
+                        actions.toggleSchedule(slot.id, checked)
+                      }
+                    />
+                    {windows[slot.id] && (
+                      <div className="grid grid-cols-2 gap-3">
+                        <TextField
+                          label={`Bắt đầu ${slot.dayOfWeek}`}
+                          type="time"
+                          required
+                          min={slot.startTime}
+                          max={slot.endTime}
+                          value={windows[slot.id].startTime}
+                          onChange={(e) =>
+                            actions.changeScheduleTime(
+                              slot.id,
+                              "startTime",
+                              e.target.value
+                            )
+                          }
+                        />
+                        <TextField
+                          label={`Kết thúc ${slot.dayOfWeek}`}
+                          type="time"
+                          required
+                          min={slot.startTime}
+                          max={slot.endTime}
+                          value={windows[slot.id].endTime}
+                          onChange={(e) =>
+                            actions.changeScheduleTime(
+                              slot.id,
+                              "endTime",
+                              e.target.value
+                            )
+                          }
+                        />
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
             </div>
           )}
           {!tutor.availability.length && (

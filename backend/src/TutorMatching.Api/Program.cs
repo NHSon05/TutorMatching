@@ -27,6 +27,8 @@ builder.Services.AddScoped<TutorMatching.Application.Hiring.PayHireRequest>();
 builder.Services.AddScoped<TutorMatching.Application.Hiring.ReviewHireRequest>();
 builder.Services.AddScoped<TutorMatching.Application.Users.Profile.CurrentProfileHandler>();
 builder.Services.AddScoped<TutorMatching.Application.Authentication.Sessions.SessionHandler>();
+builder.Services.AddScoped<TutorMatching.Application.Authentication.Google.GoogleSignInHandler>();
+builder.Services.AddScoped<TutorMatching.Application.Authentication.Google.CompleteGoogleRegistrationHandler>();
 builder.Services.AddInfrastructure(builder.Configuration);
 builder.Services.AddApiSecurity(builder.Configuration, builder.Environment);
 builder.Services.AddVersionedOpenApi();

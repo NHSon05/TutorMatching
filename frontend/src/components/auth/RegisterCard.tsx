@@ -19,6 +19,7 @@ import {
   type RegistrationError,
   type RegistrationField,
 } from "./RegisterCard.types";
+import { AUTH_OPEN_TYPES } from "@/lib/navigation/transition-types";
 
 export type * from "./RegisterCard.types";
 
@@ -354,7 +355,7 @@ export default function RegisterCard({ className = "", onSuccess }: RegisterCard
           {isSuccess && (
             <p role="status" className="rounded-xl bg-status-success-bg p-3 text-sm text-status-success-dark">
               Đăng ký thành công. Bạn có thể{" "}
-              <Link href="/login" className="font-semibold underline">
+              <Link href="/login" transitionTypes={AUTH_OPEN_TYPES} className="font-semibold underline">
                 Đăng nhập
               </Link>
               .
@@ -381,6 +382,7 @@ export default function RegisterCard({ className = "", onSuccess }: RegisterCard
           Bạn đã có tài khoản?{" "}
           <Link
             href="/login"
+            transitionTypes={AUTH_OPEN_TYPES}
             className="text-brand font-semibold hover:underline"
           >
             Đăng nhập ngay

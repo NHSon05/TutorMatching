@@ -25,6 +25,7 @@ internal sealed class MessagingFixture : IAsyncDisposable
     public HiringActor Admin => hiring.Admin;
     public HiringActor LockedAccount { get; private set; } = null!;
     public Guid SubjectId => hiring.SubjectId;
+    public Guid TutorProfileId => hiring.TutorProfileId;
     public Guid HireRequestId { get; private set; }
     public Guid SecondHireRequestId { get; private set; }
     public Guid ConversationId { get; private set; }

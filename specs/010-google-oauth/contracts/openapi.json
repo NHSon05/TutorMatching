@@ -1,0 +1,287 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "TutorMatching API - Google sign-in extension",
+    "version": "1.0.0"
+  },
+  "paths": {
+    "/api/v1/auth/google": {
+      "post": {
+        "security": [
+          {
+            "csrfHeader": [],
+            "csrfCookie": []
+          }
+        ],
+        "operationId": "googleSignIn",
+        "summary": "Sign in with a Google ID token, linking a same-email account or starting registration",
+        "description": "Requires the antiforgery header. On 200 the dual session cookies are set exactly as for /auth/login. On 202 no account or session exists yet; call /auth/google/complete with the pendingToken within 10 minutes. All refusals return the same 401 title.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/GoogleSignInRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Signed in; session cookies issued.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LoginResponse"
+                }
+              }
+            }
+          },
+          "202": {
+            "description": "Verified Google identity without an account; role selection required.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GoogleRegistrationRequired"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Missing or invalid request, or missing antiforgery token.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Google sign-in failed (generic).",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too many authentication attempts.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/auth/google/complete": {
+      "post": {
+        "security": [
+          {
+            "csrfHeader": [],
+            "csrfCookie": []
+          }
+        ],
+        "operationId": "completeGoogleRegistration",
+        "summary": "Create the account for a pending Google registration with the chosen role and sign in",
+        "description": "Requires the antiforgery header. Role ADMIN is rejected. An expired, tampered or already-used pending token returns the generic 401; the client restarts Google sign-in.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CompleteGoogleRegistrationRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Account created and signed in; session cookies issued.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LoginResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid role or request, or missing antiforgery token.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Google sign-in failed (generic).",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too many authentication attempts.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "GoogleSignInRequest": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "credential"
+        ],
+        "properties": {
+          "credential": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 4096,
+            "description": "Google ID token from Google Identity Services."
+          }
+        }
+      },
+      "GoogleRegistrationRequired": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "status",
+          "pendingToken",
+          "email",
+          "fullName",
+          "avatarUrl"
+        ],
+        "properties": {
+          "status": {
+            "type": "string",
+            "const": "role_required"
+          },
+          "pendingToken": {
+            "type": "string",
+            "description": "Opaque, tamper-proof, expires after 10 minutes."
+          },
+          "email": {
+            "type": "string",
+            "format": "email"
+          },
+          "fullName": {
+            "type": "string"
+          },
+          "avatarUrl": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "uri"
+          }
+        }
+      },
+      "CompleteGoogleRegistrationRequest": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "pendingToken",
+          "role"
+        ],
+        "properties": {
+          "pendingToken": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 4096
+          },
+          "role": {
+            "type": "string",
+            "enum": [
+              "LEARNER",
+              "TUTOR"
+            ]
+          }
+        }
+      },
+      "LoginResponse": {
+        "required": [
+          "id",
+          "email",
+          "fullName",
+          "role",
+          "status",
+          "accessToken",
+          "refreshToken",
+          "avatarUrl"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "email": {
+            "type": "string"
+          },
+          "fullName": {
+            "type": "string"
+          },
+          "role": {
+            "$ref": "#/components/schemas/AccountRole"
+          },
+          "status": {
+            "$ref": "#/components/schemas/AccountStatus"
+          },
+          "accessToken": {
+            "type": "string"
+          },
+          "refreshToken": {
+            "type": "string"
+          },
+          "avatarUrl": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "tutorProfileStatus": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "$ref": "#/components/schemas/TutorProfileStatus"
+              }
+            ]
+          }
+        },
+        "description": "Same schema as the 200 response of POST /api/v1/auth/login."
+      },
+      "AccountStatus": {
+        "enum": [
+          "ACTIVE",
+          "LOCKED",
+          "INACTIVE"
+        ],
+        "type": "string"
+      }
+    }
+  }
+}

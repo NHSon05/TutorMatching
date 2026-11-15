@@ -1,16 +1,14 @@
 # Current Session Handoff
 
-- **Status**: Sprint 9 (`009-hire-payment-and-reviews`) implemented; code-review fixes applied (2026-11-10). Two integration tests still failing.
-- **Feature**: Hire Request Tuition Payment (`VIETQR_SANDBOX`) & Post-Lesson Tutor Reviews (`hire_payments`, `hire_reviews`).
-- **Review fixes applied**:
-  1. `HireRequest.ConfirmPayment` rejects when payment or request is already PAID, and when the payment is not PENDING.
-  2. `PayHireRequest.CreateAsync` reuses the outstanding PENDING payment (`IHireWriteSession.FindPendingPaymentAsync`) and returns the post-commit `requestVersion`.
-  3. Detail `allowedActions` now owns `pay`, `review`, `replyReview`; `complete` is withheld while `HireRequest.RequiresPaymentBeforeComplete`. Frontend `HireRequestDetail` reads permissions only from `allowedActions` (viewer props removed).
-  4. Public `GET /tutors/{id}/reviews` masks reviewer names (`HireRequestQueries.MaskReviewerName`); replying to a hidden review returns `not_found`.
-  5. Rating-only `TutorProfile` updates no longer rotate `Version`/`UpdatedAt` (`ApplicationDbContext`).
-  6. Valid UUID v4 fallback for the payment idempotency key (`HireRequestPage.createIdempotencyKey`).
-- **Verification**: Domain unit 137/137; frontend Vitest 49 files / 299 tests; API integration 313/315.
-- **Blockers / next step**: Fix the two remaining integration failures:
-  - `TutorReviewTests.MigrationPreservesLegacyDecisionAndDoesNotInventVersion`: `column "average_rating" does not exist` on the legacy-migration path.
-  - `DiscoveryContractTests.EveryDiscoveryOperationMatchesItsPublishedContract`: `averageRating`/`reviewCount` on `GET /api/v1/tutors` items are not in the published contract.
-- Pre-existing lint errors (`react-hooks/set-state-in-effect`) remain in `HireRequestDetail.tsx` and `LeaveReviewDialog.tsx`.
+- **Active feature**: `010-google-oauth` (Sign in / register with Google), prioritized by the product owner on 2026-11-14. Branch is still `feat/hire-negotiation`; nothing committed.
+- **Done**: T001–T035, T037–T039, T041 (39/46). End-to-end Google sign-in on `/login`: GIS-rendered button (`GoogleSignInButton`), `POST /api/v1/auth/google` (200 session / 202 role_required / 401 generic), `GoogleRoleDialog` (LEARNER "Học viên" / TUTOR "Gia sư") → `POST /api/v1/auth/google/complete` (201). Auto-link by verified email, ADMIN/locked/unverified refused, race-safe creation, Google avatar on new accounts.
+- **Key code**: `Application/Authentication/Google/*Handler.cs`, `Infrastructure/Authentication/IdentityExternalAccountService.cs`, `GoogleIdTokenVerifier.cs`, `DataProtectionPendingGoogleRegistrationProtector.cs`, `AuthController` Google actions, OpenAPI transformer entries in `Api/OpenApi/OpenApiExtensions.cs`; frontend `components/auth/GoogleSignInButton.tsx`, `GoogleRoleDialog.tsx`, `hooks/use-auth.ts`, `lib/auth/session.ts`, `types/google-identity.d.ts`.
+- **Evidence (2026-11-14)**: Domain 139/139, Application 117/117, API integration 345/345 (incl. `GoogleAuthTests`, contract parity); Vitest `GoogleSignIn` 8/8, `LoginForm` 6/6; tsc/eslint clean on changed files.
+- **Open tasks**: T036 add the button to `RegisterCard`; T040 add 429 + log-capture checks; T042 Playwright `google-auth.spec.ts`; T043 PROJECT-MAP; T044–T046 quickstart evidence, full gates, converge + PROJECT/DECISIONS update.
+- **To try locally**: set `Google__ClientId` (backend `.env`) and `NEXT_PUBLIC_GOOGLE_CLIENT_ID` (frontend `.env.local`) to the same Web client ID with `http://localhost:3000` as an authorized JavaScript origin, then restart API and `next dev`.
+
+## Not caused by 010 (parallel work in the same working tree)
+
+- 4 failing Vitest tests: `hire-close`, `tutor-detail`, `PaymentCheckoutDialog`, `TutorDashboardClient` (UI text/buttons changed in uncommitted hiring/tutor edits).
+- Pre-existing lint errors (`react-hooks/set-state-in-effect`) in `HireRequestDetail.tsx` and `LeaveReviewDialog.tsx`.
+- Remaining MVP gaps after OAuth: password reset (001 US5), notifications (004 US2), admin users/lock (004 US3), articles/monitoring (004 US4), dashboard/audit (004 US5), release gates (004 US6) — re-verify, parallel work may have changed them.
