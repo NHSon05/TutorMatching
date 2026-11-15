@@ -1,11 +1,12 @@
 import {
+  act,
   fireEvent,
   render,
   screen,
   waitFor,
   within,
 } from "@testing-library/react";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { focusManager, QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { beforeEach, expect, it, vi } from "vitest";
 import TutorDetailClient from "@/components/tutors/TutorDetailClient";
 import { getTutorById, type PublicTutorDetail } from "@/lib/api/tutors";
@@ -97,7 +98,11 @@ it("reports unavailable when eligibility is lost after opening the detail", asyn
   vi.mocked(getTutorById).mockRejectedValue(
     new ApiError(404, "Unavailable", undefined, null, "/tutors/profile-1")
   );
-  fireEvent.click(screen.getByRole("button", { name: "Kiểm tra lại hồ sơ" }));
+  // The detail re-checks eligibility when the tab regains focus (refetchOnWindowFocus).
+  act(() => {
+    focusManager.setFocused(false);
+    focusManager.setFocused(true);
+  });
   expect(
     await screen.findByRole("heading", {
       name: "Hồ sơ gia sư không còn khả dụng",

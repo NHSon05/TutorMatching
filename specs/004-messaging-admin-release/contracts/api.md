@@ -48,10 +48,14 @@ No arbitrary conversation-create endpoint; use conversationId already returned b
 | Method and route                | Request                                         | Response                                                                       |
 | ------------------------------- | ----------------------------------------------- | ------------------------------------------------------------------------------ |
 | GET /notifications              | unreadOnly?,cursor?,pageSize?                   | `{items,nextCursor,unreadCount,readAllBoundary}`                               |
-| GET /notifications/unread-count | —                                               | `{unreadCount,asOf}`                                                           |
+| GET /notifications/unread-count | —                                               | `{unreadCount,messageUnreadCount,asOf}`                                        |
 | POST /notifications/{id}/read   | empty body                                      | Notification with first readAt retained                                        |
 | POST /notifications/read-all    | `{boundary: string}` from initial list snapshot | `{changedCount,unreadCount}`; arrivals after boundary untouched                |
 | POST /notifications/{id}/open   | empty body                                      | `{notification,target: {kind,id,hireRequestId?} or null, unavailable:boolean}` |
+
+`unreadCount` (list, unread-count, read-all) is the bell badge and excludes MESSAGE_CREATED rows; message
+activity is badged on the Messenger icon via `messageUnreadCount` (unread incoming messages). Marking
+messages read also marks their MESSAGE_CREATED notifications read and emits NotificationsChanged.
 
 Notification = `{id,type,title,body?,createdAt,isRead,readAt}`. Body may be sensitive owner-only
 review text; exclude it from logging/audit. Open marks owned item read and resolves current
@@ -59,6 +63,10 @@ reference/authorization server-side; unavailable returns200 with no navigable ta
 leaks absent target details. UI maps allowlisted kind to internal routes, no server arbitrary URL.
 Support existing hiring/review types and new message type; enumerate actual type codes in OpenAPI
 tests. Unread-all boundary cannot name another owner; never overwrite existing ReadAt.
+
+Amendment 2026-11-14 (US2 implementation): `NotificationType` adds `HIRE_PAYMENT_COMPLETED`,
+`TUTOR_REVIEW_RECEIVED` and `TUTOR_REVIEW_REPLIED`, already emitted by Sprint 9 payment/review flows.
+Legacy `NEW_MESSAGE` rows written by the outbox worker are returned as `MESSAGE_CREATED`.
 
 ## Account administration — FR-010–012/017/018
 
@@ -98,8 +106,9 @@ No delete of referenced category. Public catalog DTO unchanged.
 
 ## Dashboard/audit — FR-016–018, SC-004/005
 
-GET `/admin/dashboard` -> `{asOf,usersByRole,tutorProfilesByStatus,hireRequestsByStatus}` with canonical
-keys mapped to nonnegative counts, zero groups retained. No fake trends/classes/revenue/health.
+GET `/admin/dashboard` -> `{asOf,usersByRole,tutorProfilesByStatus,hireRequestsByStatus,topSubjects}` with canonical
+keys mapped to nonnegative counts, zero groups retained. `topSubjects` lists up to 5 `{subjectId,name,requestCount}`
+by hire-request count desc then name (all statuses, same snapshot). No fake trends/classes/revenue/health.
 GET `/admin/audit` -> cursor/pageSize, actorId?,action?,entityType?,entityId?,from?,to?; validated
 UTC range from<=to, newest(time,id) first. Each row `{id,actorId?,action,entityType,entityId?,createdAt}`.
 No IP, contact, free-form request payload, profile notes or message content.

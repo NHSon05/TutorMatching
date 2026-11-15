@@ -2330,6 +2330,9 @@
           "HIRE_REQUEST_REJECTED",
           "HIRE_REQUEST_CANCELLED",
           "HIRE_REQUEST_COMPLETED",
+          "HIRE_PAYMENT_COMPLETED",
+          "TUTOR_REVIEW_RECEIVED",
+          "TUTOR_REVIEW_REPLIED",
           "MESSAGE_CREATED"
         ]
       },
@@ -2665,7 +2668,13 @@
         "properties": {
           "unreadCount": {
             "type": "integer",
-            "minimum": 0
+            "minimum": 0,
+            "description": "Bell badge: unread notifications excluding MESSAGE_CREATED."
+          },
+          "messageUnreadCount": {
+            "type": "integer",
+            "minimum": 0,
+            "description": "Messenger badge: unread incoming messages across the caller's conversations."
           },
           "asOf": {
             "type": "string",
@@ -2675,6 +2684,7 @@
         },
         "required": [
           "unreadCount",
+          "messageUnreadCount",
           "asOf"
         ]
       },
@@ -3626,6 +3636,29 @@
           "COMPLETED"
         ]
       },
+      "SubjectDemand": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "subjectId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "name": {
+            "type": "string",
+            "minLength": 1
+          },
+          "requestCount": {
+            "type": "integer",
+            "minimum": 1
+          }
+        },
+        "required": [
+          "subjectId",
+          "name",
+          "requestCount"
+        ]
+      },
       "DashboardSnapshot": {
         "type": "object",
         "additionalProperties": false,
@@ -3643,13 +3676,22 @@
           },
           "hireRequestsByStatus": {
             "$ref": "#/components/schemas/HireRequestsByStatus"
+          },
+          "topSubjects": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/SubjectDemand"
+            },
+            "maxItems": 5,
+            "description": "Subjects with the most hire requests (all statuses), count desc then name; only subjects with requests."
           }
         },
         "required": [
           "asOf",
           "usersByRole",
           "tutorProfilesByStatus",
-          "hireRequestsByStatus"
+          "hireRequestsByStatus",
+          "topSubjects"
         ]
       },
       "AuditEvent": {
