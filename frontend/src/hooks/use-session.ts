@@ -18,7 +18,10 @@ export function useSession() {
       }
       return data;
     },
+    // Always stale so QueryProvider re-checks the session when the tab regains focus, but new
+    // observers reuse the cached account instead of calling /users/me on every component mount.
     staleTime: 0,
+    refetchOnMount: false,
     retry: false,
   });
 }

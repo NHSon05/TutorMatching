@@ -7,7 +7,10 @@ export const sessionKey = ["auth", "session"] as const;
 export function createQueryClient() {
   return new QueryClient({
     defaultOptions: {
-      queries: { retry: false, staleTime: 0, refetchOnWindowFocus: false },
+      // Reuse data for 30s across navigations instead of refetching on every mount. Queries that
+      // must stay live opt out with staleTime: 0; mutations invalidate what they change, and
+      // QueryProvider still revalidates stale active queries when the tab regains focus.
+      queries: { retry: false, staleTime: 30_000, refetchOnWindowFocus: false },
       mutations: { retry: false, gcTime: 0 },
     },
   });
