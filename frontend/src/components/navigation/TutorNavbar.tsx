@@ -37,7 +37,7 @@ export default function TutorNavbar() {
           >
             <Logo variant="gradient" size={32} className="shrink-0" />
             <span className="font-bold text-gray-900 tracking-tight">
-              TutorMatch{" "}
+              Edora{" "}
               <span className="text-xs font-semibold px-2 py-0.5 bg-brand-50 text-brand-700 rounded-full ml-1">
                 {isOnboarding ? "Hoàn thiện hồ sơ" : "Gia sư"}
               </span>

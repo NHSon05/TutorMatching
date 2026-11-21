@@ -213,7 +213,7 @@ describe("TutorMatching Routing & Role Architecture", () => {
       </LearnerShell>
     );
 
-    expect(screen.getByText("TutorMatch")).toBeInTheDocument();
+    expect(screen.getByText("Edora")).toBeInTheDocument();
     const navigation = within(screen.getByRole("navigation", { name: "Navigation Rail" }));
     expect(navigation.getByRole("link", { name: "Trang chủ" })).toHaveAttribute("href", "/");
     expect(screen.getByText("Gia sư của tôi")).toBeInTheDocument();
@@ -242,7 +242,7 @@ describe("TutorMatching Routing & Role Architecture", () => {
     );
 
     expect(await screen.findByRole("button", { name: "Đăng xuất" })).toBeInTheDocument();
-    expect(screen.getByText("TutorMatch")).toBeInTheDocument();
+    expect(screen.getByText("Edora")).toBeInTheDocument();
     expect(screen.getByText("Trang chủ")).toBeInTheDocument();
     expect(screen.getByTestId("tutors-content")).toBeInTheDocument();
   });

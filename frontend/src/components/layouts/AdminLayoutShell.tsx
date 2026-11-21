@@ -61,11 +61,11 @@ export function AdminLayoutShell({ children }: { children: React.ReactNode }) {
             <div className="md:hidden flex items-center gap-2">
               <Logo size={28} />
               <span className="font-bold text-base text-content-primary">
-                TutorMatch Admin
+                Edora Admin
               </span>
             </div>
             <div className="hidden md:flex items-center gap-2 text-xs font-semibold text-content-secondary uppercase tracking-wider">
-              <span>Hệ thống quản trị TutorMatching</span>
+              <span>Hệ thống quản trị Edora</span>
               <span className="text-gray-300 dark:text-gray-700">•</span>
               <span className="text-status-error font-medium">
                 Bảng điều hành
@@ -97,7 +97,10 @@ export function AdminLayoutShell({ children }: { children: React.ReactNode }) {
                 size="small"
                 data-testid="admin-header-avatar"
               />
-              <span className="hidden sm:inline max-w-40 truncate text-xs font-semibold text-gray-800 dark:text-gray-200" title={user.name}>
+              <span
+                className="hidden sm:inline max-w-40 truncate text-xs font-semibold text-gray-800 dark:text-gray-200"
+                title={user.name}
+              >
                 {user.name}
               </span>
             </div>

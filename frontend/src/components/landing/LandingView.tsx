@@ -49,7 +49,7 @@ export default function LandingView() {
           <div className="absolute inset-0">
             <Image
               src={section1Img.src}
-              alt="Hai học sinh cùng học tập và khám phá tri thức trên TutorMatch"
+              alt="Hai học sinh cùng học tập và khám phá tri thức trên Edora"
               rounded="none"
               className="w-full h-full object-cover object-center scale-102"
             />
@@ -301,7 +301,7 @@ export default function LandingView() {
           {/* Horizontal Divider inside Dark Showcase */}
           <div className="my-20 lg:my-24 border-t border-white/15" />
 
-          {/* Part B: "Meet Sana" Equivalent — Gặp gỡ TutorMatch AI */}
+          {/* Part B: "Meet Sana" Equivalent — Gặp gỡ Edora AI */}
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
             {/* Left: Stacked White Floating Task Cards over Dark Glass Tablet */}
             <div className="lg:col-span-6">
@@ -353,7 +353,7 @@ export default function LandingView() {
             {/* Right: Workday 44px Two-Tone Statement + Pill Button with Circle Badge */}
             <div className="lg:col-span-6 space-y-8 text-left">
               <p className="text-2xl sm:text-4xl lg:text-[44px] lg:leading-12 font-bold tracking-tight">
-                <span className="text-white">Gặp gỡ TutorMatch AI. </span>
+                <span className="text-white">Gặp gỡ Edora AI. </span>
                 <span className="text-white/65">
                   Trợ lý giáo dục thông minh giúp phân tích nhu cầu tự nhiên, tự
                   động hóa lịch học và đồng hành cùng sự tiến bộ mỗi ngày.
@@ -702,7 +702,7 @@ export default function LandingView() {
                 <p className="text-base leading-6 text-content-secondary">
                   Từ học sinh tiểu học cần xây dựng thói quen tự giác, đến học
                   sinh cuối cấp ôn thi trường Chuyên và chứng chỉ IELTS/SAT quốc
-                  tế — TutorMatch đều có đội ngũ chuyên gia đồng hành.
+                  tế — Edora đều có đội ngũ chuyên gia đồng hành.
                 </p>
 
                 <div>
@@ -811,8 +811,8 @@ export default function LandingView() {
 
                 <p className="text-base leading-6 text-content-secondary">
                   Dù bạn muốn học trực tiếp tại nhà ở Hà Nội, TP.HCM, Đà Nẵng
-                  hay học trực tuyến cùng gia sư trường top đầu, TutorMatch luôn
-                  đảm bảo quyền lợi tối đa cho phụ huynh.
+                  hay học trực tuyến cùng gia sư trường top đầu, Edora luôn đảm
+                  bảo quyền lợi tối đa cho phụ huynh.
                 </p>
 
                 <div>
@@ -840,7 +840,7 @@ export default function LandingView() {
           <div className="absolute inset-0">
             <Image
               src={section1Img.src}
-              alt="Khám phá nền tảng kết nối gia sư TutorMatch"
+              alt="Khám phá nền tảng kết nối gia sư Edora"
               rounded="none"
               className="w-full h-full object-cover object-center"
             />
@@ -849,7 +849,7 @@ export default function LandingView() {
 
           <div className="relative z-10 max-w-4xl mx-auto space-y-8">
             <h2 className="text-3xl sm:text-5xl lg:text-[68px] lg:leading-18 font-bold tracking-tight text-white">
-              Khám phá điều TutorMatch có thể mang lại cho bạn.
+              Khám phá điều Edora có thể mang lại cho bạn.
             </h2>
 
             <p className="text-base sm:text-lg text-white/85 max-w-2xl mx-auto">

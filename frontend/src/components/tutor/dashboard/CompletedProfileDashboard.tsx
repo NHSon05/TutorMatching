@@ -8,7 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
 import { IconButton } from "@/components/ui/icon-button";
 import type { AccountResponse } from "@/lib/api/auth";
-import { BellIcon, MoreHorizontalIcon } from "@/components/icons";
+import { MoreHorizontalIcon } from "@/components/icons";
 
 export interface CompletedProfileDashboardProps {
   account?: AccountResponse | null;
@@ -47,34 +47,6 @@ export function CompletedProfileDashboard({
           <p className="text-base text-content-secondary mt-1">
             Chào {tutorDisplayName}, hôm nay bạn có 2 buổi học
           </p>
-        </div>
-
-        <div className="flex items-center gap-4 self-start sm:self-center">
-          <div className="text-right">
-            <p className="text-base font-semibold text-content-primary">
-              27/10/2026
-            </p>
-            <p className="text-sm font-medium text-content-secondary">
-              Thứ Ba · 18:45
-            </p>
-          </div>
-
-          <IconButton
-            variant="secondary"
-            size="medium"
-            shape="rounded"
-            aria-label="Thông báo hệ thống"
-            className="border-border-default hover:bg-brand-50 hover:text-brand"
-          >
-            <BellIcon className="w-5 h-5 text-content-primary" />
-          </IconButton>
-
-          <div
-            title={`Gia sư ${account?.fullName || "Minh"}`}
-            className="w-11 h-11 rounded-full border border-brand-200 bg-brand-50 flex items-center justify-center font-bold text-sm text-brand-900 select-none shadow-2xs"
-          >
-            MN
-          </div>
         </div>
       </div>
 

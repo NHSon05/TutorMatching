@@ -1,15 +1,14 @@
-import { MetadataRoute } from "next";
+import type { MetadataRoute } from "next";
+import { SITE_URL } from "@/lib/site";
 
 export default function robots(): MetadataRoute.Robots {
-    const baseUrl = "https://tutor-matching-psi.vercel.app/";
-
-    return {
-        rules: {
-            userAgent: "*",
-            allow: "/",
-            disallow: ["/admin/", "/learner/", "/request/", "/onboarding", "/offers", "/profile", "/teaching-classes", "/messages/"],
- 
-        },
-        sitemap: `${baseUrl}/sitemap.xml`,
-    }
+  return {
+    rules: {
+      userAgent: "*",
+      allow: "/",
+      disallow: ["/admin/", "/learner/", "/request/", "/onboarding", "/offers", "/profile", "/teaching-classes", "/messages/"],
+    },
+    sitemap: `${SITE_URL}/sitemap.xml`,
+    host: SITE_URL,
+  };
 }

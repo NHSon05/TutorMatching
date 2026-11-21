@@ -18,7 +18,10 @@ import { GoogleRoleDialog } from "./GoogleRoleDialog";
 
 export type * from "./LoginCard.types";
 
-export default function LoginCard({ className = "", onSuccess }: LoginCardProps = {}) {
+export default function LoginCard({
+  className = "",
+  onSuccess,
+}: LoginCardProps = {}) {
   const router = useRouter();
 
   const [email, setEmail] = useState("");
@@ -27,7 +30,10 @@ export default function LoginCard({ className = "", onSuccess }: LoginCardProps 
   const [errorMsg, setErrorMsg] = useState("");
   const { mutateAsync: login, isPending: isSubmitting, reset } = useLogin();
 
-  const navigateToWorkspace = (role: UserRole, tutorProfileStatus?: TutorProfileStatus | null) => {
+  const navigateToWorkspace = (
+    role: UserRole,
+    tutorProfileStatus?: TutorProfileStatus | null
+  ) => {
     onSuccess?.(role, tutorProfileStatus);
     redirectAfterSignIn(router, role, tutorProfileStatus);
   };
@@ -52,7 +58,9 @@ export default function LoginCard({ className = "", onSuccess }: LoginCardProps 
   };
 
   const [googleError, setGoogleError] = useState("");
-  const [pendingGoogle, setPendingGoogle] = useState<GoogleRoleRequired | null>(null);
+  const [pendingGoogle, setPendingGoogle] = useState<GoogleRoleRequired | null>(
+    null
+  );
 
   const handleGoogleSignedIn = (account: AccountResponse) => {
     setPendingGoogle(null);
@@ -60,7 +68,9 @@ export default function LoginCard({ className = "", onSuccess }: LoginCardProps 
   };
 
   return (
-    <div className={`min-h-screen w-full p-2 sm:p-4 grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 overflow-hidden font-sans ${className}`.trim()}>
+    <div
+      className={`min-h-screen w-full p-2 sm:p-4 grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 overflow-hidden font-sans ${className}`.trim()}
+    >
       {/* ========================================================================= */}
       {/* CỘT TRÁI: BLUE GRADIENT BANNER & 3 STEP/HIGHLIGHT CARDS (lg:col-span-7)   */}
       {/* ========================================================================= */}
@@ -73,7 +83,7 @@ export default function LoginCard({ className = "", onSuccess }: LoginCardProps 
         <div className="relative z-10 flex items-center gap-2">
           <Logo variant="white" />
           <span className="font-bold text-xl tracking-tight text-white">
-            TutorMatch
+            Edora
           </span>
         </div>
 
@@ -84,7 +94,8 @@ export default function LoginCard({ className = "", onSuccess }: LoginCardProps 
           </h1>
 
           <p className="text-base text-blue-100/90 font-normal max-w-md">
-            Đăng nhập để tiếp tục hành trình học tập và kết nối gia sư lý tưởng của bạn.
+            Đăng nhập để tiếp tục hành trình học tập và kết nối gia sư lý tưởng
+            của bạn.
           </p>
         </div>
 
@@ -132,7 +143,11 @@ export default function LoginCard({ className = "", onSuccess }: LoginCardProps 
           {/* Email */}
           <div>
             <TextField
-              label={<span className="text-base font-semibold text-gray-800">Email</span>}
+              label={
+                <span className="text-base font-semibold text-gray-800">
+                  Email
+                </span>
+              }
               type="email"
               required
               size="medium"
@@ -145,7 +160,11 @@ export default function LoginCard({ className = "", onSuccess }: LoginCardProps 
           {/* Mật khẩu */}
           <div>
             <TextField
-              label={<span className="text-base font-semibold text-gray-800">Mật khẩu</span>}
+              label={
+                <span className="text-base font-semibold text-gray-800">
+                  Mật khẩu
+                </span>
+              }
               type={showPassword ? "text" : "password"}
               required
               size="medium"
@@ -175,13 +194,17 @@ export default function LoginCard({ className = "", onSuccess }: LoginCardProps 
                 disabled
                 className="w-4 h-4 rounded text-brand border-gray-300 focus:ring-blue-500 cursor-pointer"
               />
-              <span className="text-sm sm:text-base">Phiên đăng nhập tạm thời</span>
+              <span className="text-sm sm:text-base">
+                Phiên đăng nhập tạm thời
+              </span>
             </label>
             <Link
               href="#"
               onClick={(e) => {
                 e.preventDefault();
-                alert("Vui lòng liên hệ quản trị viên hoặc sử dụng đăng nhập Google để truy cập.");
+                alert(
+                  "Vui lòng liên hệ quản trị viên hoặc sử dụng đăng nhập Google để truy cập."
+                );
               }}
               className="text-brand font-semibold hover:underline text-sm sm:text-base"
             >
@@ -233,7 +256,10 @@ export default function LoginCard({ className = "", onSuccess }: LoginCardProps 
           onError={setGoogleError}
         />
         {googleError && (
-          <p role="alert" className="mt-2 text-center text-sm font-medium text-status-error">
+          <p
+            role="alert"
+            className="mt-2 text-center text-sm font-medium text-status-error"
+          >
             {googleError}
           </p>
         )}

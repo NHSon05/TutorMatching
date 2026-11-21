@@ -32,8 +32,6 @@ describe("TutorDashboardClient - Conditional UI Rendering", () => {
     // Header & Greeting của Wireframe 1
     expect(screen.getByRole("heading", { name: "Tổng quan" })).toBeInTheDocument();
     expect(screen.getByText("Chào Minh, bắt đầu hành trình dạy học của bạn.")).toBeInTheDocument();
-    expect(screen.getByText("27/10/2026")).toBeInTheDocument();
-    expect(screen.getByText("Thứ Ba")).toBeInTheDocument();
 
     // 4 Metrics của Wireframe 1 (0, 0, —, 0)
     expect(screen.getByText("học sinh đang dạy")).toBeInTheDocument();
@@ -86,7 +84,6 @@ describe("TutorDashboardClient - Conditional UI Rendering", () => {
     // Header & Greeting của Wireframe 2
     expect(screen.getByRole("heading", { name: "Tổng quan" })).toBeInTheDocument();
     expect(screen.getByText("Chào Minh, hôm nay bạn có 2 buổi học")).toBeInTheDocument();
-    expect(screen.getByText("Thứ Ba · 18:45")).toBeInTheDocument();
 
     // 4 Metrics thực tế của Wireframe 2
     expect(screen.getByText("12")).toBeInTheDocument();

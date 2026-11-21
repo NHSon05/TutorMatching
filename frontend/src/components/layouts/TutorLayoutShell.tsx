@@ -48,7 +48,7 @@ export function TutorLayoutShell({ children }: { children: React.ReactNode }) {
             <Logo size={32} />
             <div className="flex items-center gap-2">
               <span className="font-bold text-lg sm:text-xl tracking-tight text-content-primary group-hover:text-brand-600 transition-colors">
-                TutorMatch
+                Edora
               </span>
               <span className="text-xs font-semibold px-2.5 py-0.5 bg-brand-50 text-brand-700 dark:bg-brand-950/60 dark:text-brand-300 rounded-full border border-brand-200 dark:border-brand-800">
                 {isOnboarding ? "Hoàn thiện hồ sơ" : "Gia sư"}
@@ -65,7 +65,10 @@ export function TutorLayoutShell({ children }: { children: React.ReactNode }) {
                   size="small"
                   data-testid="tutor-header-avatar"
                 />
-                <span className="hidden sm:inline text-xs font-medium text-content-secondary" title={user.name}>
+                <span
+                  className="hidden sm:inline text-xs font-medium text-content-secondary"
+                  title={user.name}
+                >
                   {user.name}
                 </span>
               </span>
@@ -118,7 +121,7 @@ export function TutorLayoutShell({ children }: { children: React.ReactNode }) {
 
       {/* Main Content Area */}
       <div className="flex-1 flex flex-col min-w-0">
-        <main className="bg-gray-50 flex-1 w-full max-w-7xl mx-auto px-4 sm:px-6 py-4 overflow-y-auto">
+        <main className="bg-gray-50 flex-1 w-full mx-auto px-4 sm:px-6 py-4 overflow-y-auto">
           <DashboardTopBar
             user={{
               name: user.name,

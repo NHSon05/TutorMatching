@@ -65,7 +65,7 @@ const defaultPlatformLogo = (
   <div className="flex items-center gap-2.5 select-none">
     <Logo variant="gradient" className="w-8 h-8" />
     <span className="font-bold text-xl tracking-tight text-gray-900 dark:text-white">
-      TutorMatch
+      Edora
     </span>
   </div>
 );

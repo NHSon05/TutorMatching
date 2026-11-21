@@ -23,7 +23,10 @@ import { AUTH_OPEN_TYPES } from "@/lib/navigation/transition-types";
 
 export type * from "./RegisterCard.types";
 
-export default function RegisterCard({ className = "", onSuccess }: RegisterCardProps = {}) {
+export default function RegisterCard({
+  className = "",
+  onSuccess,
+}: RegisterCardProps = {}) {
   // 1. Vai trò (Gia sư, Phụ Huynh, Học Sinh)
   const [role, setRole] = useState("TUTOR");
 
@@ -45,7 +48,11 @@ export default function RegisterCard({ className = "", onSuccess }: RegisterCard
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
   const [generalError, setGeneralError] = useState("");
-  const { mutateAsync: registerAccount, isPending: isSubmitting, reset } = useRegister();
+  const {
+    mutateAsync: registerAccount,
+    isPending: isSubmitting,
+    reset,
+  } = useRegister();
   const [isSuccess, setIsSuccess] = useState(false);
 
   const clearFieldError = (field: RegistrationField) => {
@@ -62,7 +69,8 @@ export default function RegisterCard({ className = "", onSuccess }: RegisterCard
       validationErrors.password = `Mật khẩu không được vượt quá ${MAX_PASSWORD_LENGTH} ký tự.`;
     }
     if (password !== confirmPassword) {
-      validationErrors.passwordConfirmation = "Mật khẩu xác nhận không trùng khớp.";
+      validationErrors.passwordConfirmation =
+        "Mật khẩu xác nhận không trùng khớp.";
     }
 
     setFieldErrors(validationErrors);
@@ -90,17 +98,28 @@ export default function RegisterCard({ className = "", onSuccess }: RegisterCard
       } else if (apiError.errors) {
         const serverErrors = Object.fromEntries(
           Object.entries(apiError.errors)
-            .filter(([field, messages]) =>
-              ["fullName", "email", "password", "passwordConfirmation", "role"].includes(field) &&
-              messages.length > 0)
+            .filter(
+              ([field, messages]) =>
+                [
+                  "fullName",
+                  "email",
+                  "password",
+                  "passwordConfirmation",
+                  "role",
+                ].includes(field) && messages.length > 0
+            )
             .map(([field, messages]) => [field, messages[0]])
         ) as FieldErrors;
         setFieldErrors(serverErrors);
         if (Object.keys(serverErrors).length === 0) {
-          setGeneralError(apiError.message || "Không thể đăng ký. Vui lòng thử lại.");
+          setGeneralError(
+            apiError.message || "Không thể đăng ký. Vui lòng thử lại."
+          );
         }
       } else {
-        setGeneralError(apiError.message || "Không thể đăng ký. Vui lòng thử lại.");
+        setGeneralError(
+          apiError.message || "Không thể đăng ký. Vui lòng thử lại."
+        );
       }
     } finally {
       reset();
@@ -123,7 +142,7 @@ export default function RegisterCard({ className = "", onSuccess }: RegisterCard
         <div className="relative z-10 flex items-center gap-2">
           <Logo variant="white" />
           <span className="font-bold text-xl tracking-tight text-white">
-            TutorMatch
+            Edora
           </span>
         </div>
 
@@ -198,7 +217,11 @@ export default function RegisterCard({ className = "", onSuccess }: RegisterCard
           {/* TRƯỜNG 2: Email */}
           <div>
             <TextField
-              label={<span className="text-base font-semibold text-gray-800">Email</span>}
+              label={
+                <span className="text-base font-semibold text-gray-800">
+                  Email
+                </span>
+              }
               type="email"
               required
               size="medium"
@@ -224,7 +247,9 @@ export default function RegisterCard({ className = "", onSuccess }: RegisterCard
                 onClick={() => setIsCountryDropdownOpen(!isCountryDropdownOpen)}
                 className="flex items-center gap-1.5 text-base font-medium text-gray-800 pr-2.5 border-r border-gray-200 focus:outline-none"
               >
-                <span className="text-lg leading-none">{selectedCountry.flag}</span>
+                <span className="text-lg leading-none">
+                  {selectedCountry.flag}
+                </span>
                 <span className="text-sm">{selectedCountry.code}</span>
                 <svg
                   className="w-3.5 h-3.5 text-gray-500"
@@ -256,7 +281,9 @@ export default function RegisterCard({ className = "", onSuccess }: RegisterCard
                     >
                       <span className="text-lg">{c.flag}</span>
                       <span className="text-sm">{c.name}</span>
-                      <span className="text-gray-400 text-sm ml-auto">{c.code}</span>
+                      <span className="text-gray-400 text-sm ml-auto">
+                        {c.code}
+                      </span>
                     </button>
                   ))}
                 </div>
@@ -275,7 +302,11 @@ export default function RegisterCard({ className = "", onSuccess }: RegisterCard
           {/* TRƯỜNG 4: Họ và tên */}
           <div>
             <TextField
-              label={<span className="text-base font-semibold text-gray-800">Họ và tên</span>}
+              label={
+                <span className="text-base font-semibold text-gray-800">
+                  Họ và tên
+                </span>
+              }
               type="text"
               required
               size="medium"
@@ -293,7 +324,11 @@ export default function RegisterCard({ className = "", onSuccess }: RegisterCard
           <div className="flex flex-col sm:flex-row gap-4">
             <div className="flex-1">
               <TextField
-                label={<span className="text-base font-semibold text-gray-800">Mật khẩu</span>}
+                label={
+                  <span className="text-base font-semibold text-gray-800">
+                    Mật khẩu
+                  </span>
+                }
                 type={showPassword ? "text" : "password"}
                 required
                 size="medium"
@@ -320,7 +355,11 @@ export default function RegisterCard({ className = "", onSuccess }: RegisterCard
 
             <div className="flex-1">
               <TextField
-                label={<span className="text-base font-semibold text-gray-800">Xác nhận mật khẩu</span>}
+                label={
+                  <span className="text-base font-semibold text-gray-800">
+                    Xác nhận mật khẩu
+                  </span>
+                }
                 type={showConfirmPassword ? "text" : "password"}
                 required
                 size="medium"
@@ -337,7 +376,9 @@ export default function RegisterCard({ className = "", onSuccess }: RegisterCard
                     type="button"
                     onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                     className="text-gray-400 hover:text-gray-600 focus:outline-none"
-                    aria-label={showConfirmPassword ? "Ẩn mật khẩu" : "Hiện mật khẩu"}
+                    aria-label={
+                      showConfirmPassword ? "Ẩn mật khẩu" : "Hiện mật khẩu"
+                    }
                   >
                     {showConfirmPassword ? "👁️" : "🙈"}
                   </button>
@@ -353,9 +394,16 @@ export default function RegisterCard({ className = "", onSuccess }: RegisterCard
           )}
 
           {isSuccess && (
-            <p role="status" className="rounded-xl bg-status-success-bg p-3 text-sm text-status-success-dark">
+            <p
+              role="status"
+              className="rounded-xl bg-status-success-bg p-3 text-sm text-status-success-dark"
+            >
               Đăng ký thành công. Bạn có thể{" "}
-              <Link href="/login" transitionTypes={AUTH_OPEN_TYPES} className="font-semibold underline">
+              <Link
+                href="/login"
+                transitionTypes={AUTH_OPEN_TYPES}
+                className="font-semibold underline"
+              >
                 Đăng nhập
               </Link>
               .

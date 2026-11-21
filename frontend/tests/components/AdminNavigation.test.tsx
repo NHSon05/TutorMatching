@@ -36,7 +36,7 @@ describe("Admin Navigation Suite", () => {
     it("renders brand logo, admin role badge, and navigation links", () => {
       render(<AdminNavbar />);
 
-      expect(screen.getByText("TutorMatching")).toBeInTheDocument();
+      expect(screen.getByText("Edora")).toBeInTheDocument();
       expect(screen.getByText("Quản trị")).toBeInTheDocument();
       expect(screen.getByText("Superuser")).toBeInTheDocument();
 
@@ -69,7 +69,7 @@ describe("Admin Navigation Suite", () => {
     it("renders sidebar items with role badge and logout button", () => {
       render(<AdminSidebar />);
 
-      expect(screen.getByText("TutorMatch")).toBeInTheDocument();
+      expect(screen.getByText("Edora")).toBeInTheDocument();
       expect(screen.getByText("Admin")).toBeInTheDocument();
       expect(screen.getByText("Bảng điều khiển")).toBeInTheDocument();
       expect(screen.getByText("Duyệt hồ sơ gia sư")).toBeInTheDocument();
@@ -92,7 +92,7 @@ describe("Admin Navigation Suite", () => {
       );
 
       expect(screen.getByTestId("admin-content")).toBeInTheDocument();
-      expect(screen.getByText("Hệ thống quản trị TutorMatching")).toBeInTheDocument();
+      expect(screen.getByText("Hệ thống quản trị Edora")).toBeInTheDocument();
       expect(screen.getByText("Hệ thống trực tuyến")).toBeInTheDocument();
     });
   });

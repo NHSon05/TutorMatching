@@ -3,8 +3,8 @@ import LoginCard from "@/components/auth/LoginCard";
 import { GuestGuard } from "@/components/GuestGuard";
 
 export const metadata: Metadata = {
-  title: "Đăng nhập | TutorMatching",
-  description: "Đăng nhập vào hệ thống TutorMatching.",
+  title: "Đăng nhập | Edora",
+  description: "Đăng nhập vào hệ thống Edora.",
 };
 
 export default function LoginPage() {

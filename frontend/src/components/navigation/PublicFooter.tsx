@@ -49,7 +49,7 @@ const FOOTER_COLUMNS = [
     ],
   },
   {
-    title: "VỀ TUTORMATCH",
+    title: "VỀ EDORA",
     links: [
       { label: "Sứ mệnh giáo dục", href: "/#about" },
       { label: "Tiêu chuẩn kiểm duyệt", href: "/#ai-platform" },
@@ -69,7 +69,7 @@ export default function PublicFooter() {
             <Link href="/" className="inline-flex items-center gap-2.5 group">
               <Logo variant="gradient" size={44} />
               <span className="font-bold text-4xl tracking-tight text-brand">
-                TutorMatching
+                Edora
               </span>
             </Link>
             <p className="text-base text-content-secondary leading-relaxed">
@@ -175,7 +175,7 @@ export default function PublicFooter() {
           </div>
 
           <p className="font-medium text-content-secondary">
-            © 2026 TutorMatching. All rights reserved.
+            © 2026 Edora. All rights reserved.
           </p>
         </div>
       </div>

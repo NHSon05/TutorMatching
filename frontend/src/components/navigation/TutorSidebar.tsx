@@ -19,7 +19,10 @@ import { AUTH_OUT_TYPES } from "@/lib/navigation/transition-types";
 import { POST_LOGOUT_PATH } from "@/lib/auth/logout-redirect";
 import { Avatar } from "@/components/ui/avatar";
 import { toUserDisplay } from "@/lib/auth/user-display";
-import { formatBadgeCount, useMessengerBadge } from "@/hooks/use-messenger-badge";
+import {
+  formatBadgeCount,
+  useMessengerBadge,
+} from "@/hooks/use-messenger-badge";
 
 export interface TutorSidebarProps {
   onCloseMobile?: () => void;
@@ -57,13 +60,16 @@ export function TutorSidebar({ onCloseMobile }: TutorSidebarProps) {
       isActive: pathname === "/request" || pathname.startsWith("/request/"),
     },
     ...(account?.tutorProfileStatus === "APPROVED"
-      ? [{
-          label: "Tin nhắn",
-          href: "/messages",
-          icon: MessagesIcon,
-          badge: unreadMessages,
-          isActive: pathname === "/messages" || pathname.startsWith("/messages/"),
-        }]
+      ? [
+          {
+            label: "Tin nhắn",
+            href: "/messages",
+            icon: MessagesIcon,
+            badge: unreadMessages,
+            isActive:
+              pathname === "/messages" || pathname.startsWith("/messages/"),
+          },
+        ]
       : []),
     {
       label: "Học sinh",
@@ -112,7 +118,7 @@ export function TutorSidebar({ onCloseMobile }: TutorSidebarProps) {
             className="group-hover:scale-105 transition-transform shrink-0"
           />
           <span className="font-bold text-xl tracking-tight text-brand-950 group-hover:text-brand transition-colors leading-none">
-            TutorMatch
+            Edora
           </span>
         </Link>
       </div>
@@ -187,9 +193,17 @@ export function TutorSidebar({ onCloseMobile }: TutorSidebarProps) {
           aria-label={`Hồ sơ của ${user.name}`}
           className="flex items-center gap-3 p-2 rounded-xl bg-gray-50 border border-border-subtle hover:border-brand/30 transition-colors"
         >
-          <Avatar src={user.avatarSrc} alt={user.name} fallbackText={user.initials} data-testid="tutor-sidebar-avatar" />
+          <Avatar
+            src={user.avatarSrc}
+            alt={user.name}
+            fallbackText={user.initials}
+            data-testid="tutor-sidebar-avatar"
+          />
           <span className="flex flex-col min-w-0">
-            <span className="text-sm font-semibold text-content-primary truncate" title={user.name}>
+            <span
+              className="text-sm font-semibold text-content-primary truncate"
+              title={user.name}
+            >
               {user.name}
             </span>
             <span className="text-xs text-content-secondary">Gia sư</span>

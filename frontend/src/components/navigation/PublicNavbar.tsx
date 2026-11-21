@@ -85,7 +85,7 @@ export default function PublicNavbar() {
               className="group-hover:scale-105 transition-transform shrink-0"
             />
             <span className="font-bold text-xl sm:text-2xl tracking-tight text-brand-950 group-hover:text-brand transition-colors leading-none">
-              TutorMatch
+              Edora
             </span>
           </Link>
         </div>

@@ -43,7 +43,7 @@ describe("LearnerNavigationRail and DashboardTopBar synchronization", () => {
 
     // Initial state: expanded
     expect(useUIStore.getState().mode).toBe("expanded");
-    expect(screen.getByText("TutorMatch")).toBeInTheDocument();
+    expect(screen.getByText("Edora")).toBeInTheDocument();
 
     const toggleButton = screen.getByRole("button", {
       name: "Thu gọn thanh điều hướng",
@@ -54,8 +54,8 @@ describe("LearnerNavigationRail and DashboardTopBar synchronization", () => {
 
     expect(useUIStore.getState().mode).toBe("collapsed");
     expect(useUIStore.getState().sidebarCollapsed).toBe(true);
-    // When collapsed, the text TutorMatch and Upgrade text are hidden
-    expect(screen.queryByText("TutorMatch")).not.toBeInTheDocument();
+    // When collapsed, the text Edora and Upgrade text are hidden
+    expect(screen.queryByText("Edora")).not.toBeInTheDocument();
     expect(
       screen.queryByText("Upgrade to Pro for more facilities")
     ).not.toBeInTheDocument();
@@ -68,6 +68,6 @@ describe("LearnerNavigationRail and DashboardTopBar synchronization", () => {
 
     expect(useUIStore.getState().mode).toBe("expanded");
     expect(useUIStore.getState().sidebarCollapsed).toBe(false);
-    expect(screen.getByText("TutorMatch")).toBeInTheDocument();
+    expect(screen.getByText("Edora")).toBeInTheDocument();
   });
 });

@@ -45,7 +45,7 @@ export const PLATFORM_PORTRAITS = [
     ctaHref: "#ai-concierge",
     image:
       "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=900&auto=format&fit=crop",
-    badgeTitle: "TutorMatch AI Agent",
+    badgeTitle: "Edora AI Agent",
     badgeSubtitle: "Độ tương thích chuyên môn 99.4%",
     badgeMetric: "Khớp lệnh trong 30s",
   },
@@ -58,7 +58,7 @@ export const PERSONA_TABS = [
     eyebrow: "DÀNH CHO GIA ĐÌNH & HỌC VIÊN",
     title: "Tìm đúng người thầy truyền cảm hứng chỉ sau một câu mô tả.",
     description:
-      "Không còn mất hàng tuần tìm kiếm trên các hội nhóm. Trợ lý AI của TutorMatch đối chiếu mục tiêu điểm số, tính cách của con và ngân sách gia đình để chọn ra 3 gia sư xuất sắc nhất.",
+      "Không còn mất hàng tuần tìm kiếm trên các hội nhóm. Trợ lý AI của Edora đối chiếu mục tiêu điểm số, tính cách của con và ngân sách gia đình để chọn ra 3 gia sư xuất sắc nhất.",
     bullets: [
       "Hồ sơ bằng cấp và căn cước được xác thực 100%",
       "Học thử 2 buổi đầu tiên để đánh giá mức độ phù hợp",
@@ -179,7 +179,7 @@ export const CUSTOMER_STORIES = [
     id: "ams",
     badge: "THPT Chuyên Hà Nội - Amsterdam",
     quote:
-      "“Chỉ sau 10 tuần học cùng gia sư Toán trên TutorMatch, cháu Minh Khôi đã tự tin giải trọn vẹn câu hình học nâng cao và đỗ nguyện vọng 1 vào lớp 10 Chuyên như ước mơ của cả gia đình.”",
+      "“Chỉ sau 10 tuần học cùng gia sư Toán trên Edora, cháu Minh Khôi đã tự tin giải trọn vẹn câu hình học nâng cao và đỗ nguyện vọng 1 vào lớp 10 Chuyên như ước mơ của cả gia đình.”",
     author: "Chị Nguyễn Thanh Hương",
     role: "Phụ huynh học sinh Nguyễn Minh Khôi · Quận Cầu Giấy, Hà Nội",
     image:
@@ -212,7 +212,7 @@ export const CUSTOMER_STORIES = [
     quote:
       "“Nền tảng giúp mình quản lý tới 6 lớp dạy kèm Vật Lý mà không hề bị trùng lịch. Học sinh đều được giao bài tập trực tuyến và phụ huynh cực kỳ yên tâm vì thấy kết quả từng tuần.”",
     author: "ThS. Trần Quốc Tuấn",
-    role: "Gia sư Vật Lý tiêu biểu · 5 năm đồng hành cùng TutorMatch",
+    role: "Gia sư Vật Lý tiêu biểu · 5 năm đồng hành cùng Edora",
     image:
       "https://images.unsplash.com/photo-1531482615713-2afd69097998?q=80&w=1200&auto=format&fit=crop",
     metrics: [

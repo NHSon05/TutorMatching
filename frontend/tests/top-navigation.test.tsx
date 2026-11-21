@@ -5,13 +5,13 @@ import { TopNavigation, TopBar } from "../src/components/ui/top-navigation";
 describe("TopNavigation Component (Photonix UI Clone)", () => {
   it("renders default platform logo when no logo provided", () => {
     render(<TopNavigation />);
-    expect(screen.getByText("TutorMatch")).toBeInTheDocument();
+    expect(screen.getByText("Edora")).toBeInTheDocument();
   });
 
   it("renders custom logo when provided", () => {
     render(<TopNavigation logo={<span>Custom Brand Logo</span>} />);
     expect(screen.getByText("Custom Brand Logo")).toBeInTheDocument();
-    expect(screen.queryByText("TutorMatch")).not.toBeInTheDocument();
+    expect(screen.queryByText("Edora")).not.toBeInTheDocument();
   });
 
   it("renders centerContent and rightContent correctly", () => {
@@ -27,7 +27,7 @@ describe("TopNavigation Component (Photonix UI Clone)", () => {
 
   it("hides left section when hideLeftSection is true", () => {
     render(<TopNavigation hideLeftSection />);
-    expect(screen.queryByText("TutorMatch")).not.toBeInTheDocument();
+    expect(screen.queryByText("Edora")).not.toBeInTheDocument();
   });
 
   it("applies border divider when showDivider is true", () => {
@@ -45,6 +45,6 @@ describe("TopNavigation Component (Photonix UI Clone)", () => {
   it("supports TopBar alias identically", () => {
     render(<TopBar centerContent={<span>Center Title</span>} />);
     expect(screen.getByText("Center Title")).toBeInTheDocument();
-    expect(screen.getByText("TutorMatch")).toBeInTheDocument();
+    expect(screen.getByText("Edora")).toBeInTheDocument();
   });
 });

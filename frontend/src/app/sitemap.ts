@@ -1,31 +1,12 @@
-import { MetadataRoute } from "next";
+import type { MetadataRoute } from "next";
+import { SITE_URL } from "@/lib/site";
 
 export default function sitemap(): MetadataRoute.Sitemap {
-    const baseUrl = "https://tutor-matching-psi.vercel.app/";
-    return [
-        {
-            url: baseUrl,
-            lastModified: new Date(),
-            changeFrequency: "daily",
-            priority: 1,
-        },
-        {
-            url: `${baseUrl}/tutors`,
-            lastModified: new Date(),
-            changeFrequency: "daily",
-            priority: 0.8,
-        },
-        {
-            url: `${baseUrl}/login`,
-            lastModified: new Date(),
-            changeFrequency: "monthly",
-            priority: 0.5,
-        },
-        {
-            url: `${baseUrl}/register`,
-            lastModified: new Date(),
-            changeFrequency: "monthly",
-            priority: 0.5,
-        },
-    ]
+  const lastModified = new Date();
+  return [
+    { url: `${SITE_URL}/`, lastModified, changeFrequency: "daily", priority: 1 },
+    { url: `${SITE_URL}/tutors`, lastModified, changeFrequency: "daily", priority: 0.8 },
+    { url: `${SITE_URL}/login`, lastModified, changeFrequency: "monthly", priority: 0.5 },
+    { url: `${SITE_URL}/register`, lastModified, changeFrequency: "monthly", priority: 0.5 },
+  ];
 }

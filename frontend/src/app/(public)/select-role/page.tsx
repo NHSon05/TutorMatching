@@ -3,7 +3,7 @@ import SelectRoleCard from "@/components/auth/SelectRoleCard";
 import { GuestGuard } from "@/components/GuestGuard";
 
 export const metadata: Metadata = {
-  title: "Chọn vai trò - TutorMatching",
+  title: "Chọn vai trò - Edora",
   description: "Chọn vai trò tài khoản của bạn để tiếp tục trải nghiệm.",
 };
 

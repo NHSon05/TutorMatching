@@ -47,7 +47,7 @@ export function LearnerNavigationRail() {
                 {!isCollapsed && (
                   <div className="flex items-center gap-1.5">
                     <span className="text-xl bg-linear-to-r from-brand to-sky-400 bg-clip-text text-transparent font-bold">
-                      TutorMatch
+                      Edora
                     </span>
                   </div>
                 )}
@@ -71,8 +71,18 @@ export function LearnerNavigationRail() {
               </div>
             )}
             {isCollapsed ? (
-              <Link href="/profile" title={`Học viên ${user.name}`} aria-label={`Hồ sơ của ${user.name}`} className="block w-fit mx-auto rounded-full">
-                <Avatar src={user.avatarSrc} alt={user.name} fallbackText={user.initials} data-testid="rail-avatar" />
+              <Link
+                href="/profile"
+                title={`Học viên ${user.name}`}
+                aria-label={`Hồ sơ của ${user.name}`}
+                className="block w-fit mx-auto rounded-full"
+              >
+                <Avatar
+                  src={user.avatarSrc}
+                  alt={user.name}
+                  fallbackText={user.initials}
+                  data-testid="rail-avatar"
+                />
               </Link>
             ) : (
               <Link
@@ -80,12 +90,22 @@ export function LearnerNavigationRail() {
                 aria-label={`Hồ sơ của ${user.name}`}
                 className="flex items-center gap-3 p-1 rounded-lg bg-gray-50 dark:bg-gray-800/60 border border-gray-200/60 dark:border-gray-700/60 hover:border-brand/30 transition-colors"
               >
-                <Avatar src={user.avatarSrc} alt={user.name} fallbackText={user.initials} data-testid="rail-avatar" />
+                <Avatar
+                  src={user.avatarSrc}
+                  alt={user.name}
+                  fallbackText={user.initials}
+                  data-testid="rail-avatar"
+                />
                 <div className="flex flex-col min-w-0 flex-1">
-                  <span className="text-base font-semibold text-neutral-900 dark:text-white truncate" title={user.name}>
+                  <span
+                    className="text-base font-semibold text-neutral-900 dark:text-white truncate"
+                    title={user.name}
+                  >
                     {user.name}
                   </span>
-                  <span className="text-xs text-content-secondary">Học viên</span>
+                  <span className="text-xs text-content-secondary">
+                    Học viên
+                  </span>
                 </div>
               </Link>
             )}

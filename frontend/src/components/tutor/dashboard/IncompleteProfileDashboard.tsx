@@ -6,9 +6,7 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
-import { IconButton } from "@/components/ui/icon-button";
 import type { AccountResponse } from "@/lib/api/auth";
-import { BellIcon } from "@/components/icons";
 
 export interface IncompleteProfileDashboardProps {
   account?: AccountResponse | null;
@@ -40,33 +38,6 @@ export function IncompleteProfileDashboard({
           <p className="text-base text-content-secondary mt-1">
             Chào {tutorDisplayName}, bắt đầu hành trình dạy học của bạn.
           </p>
-        </div>
-
-        <div className="flex items-center gap-4 self-start sm:self-center">
-          <div className="text-right">
-            <p className="text-base font-semibold text-content-primary">
-              27/10/2026
-            </p>
-            <p className="text-sm font-medium text-content-secondary">Thứ Ba</p>
-          </div>
-
-          <IconButton
-            variant="secondary"
-            size="medium"
-            shape="rounded"
-            aria-label="Thông báo hệ thống"
-            className="border-border-default hover:bg-brand-50 hover:text-brand"
-          >
-            <BellIcon className="w-5 h-5 text-content-primary" />
-          </IconButton>
-
-          {/* Avatar mang phong cách Tutor Warm Gold */}
-          <div
-            title={`Gia sư ${account?.fullName || "Minh"}`}
-            className="w-11 h-11 rounded-full border border-brand-200 bg-brand-50 flex items-center justify-center font-bold text-sm text-brand-900 select-none shadow-2xs"
-          >
-            MN
-          </div>
         </div>
       </div>
 
@@ -227,8 +198,8 @@ export function IncompleteProfileDashboard({
                   Hoàn thiện hồ sơ để nhận cơ hội phù hợp
                 </h3>
                 <p className="text-base text-content-secondary mt-1.5 leading-relaxed">
-                  Bổ sung 3 thông tin dưới đây để TutorMatching hiểu nhu cầu
-                  giảng dạy của bạn.
+                  Bổ sung 3 thông tin dưới đây để Edora hiểu nhu cầu giảng dạy
+                  của bạn.
                 </p>
               </div>
             </div>

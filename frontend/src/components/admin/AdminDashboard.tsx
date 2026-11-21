@@ -79,8 +79,8 @@ export default function AdminDashboard() {
             <Badge variant="admin">Admin Portal</Badge>
           </div>
           <p className="mt-1 text-sm text-content-secondary">
-            Tổng quan chỉ số hoạt động toàn hệ thống TutorMatching & vận hành
-            ghép gia sư.
+            Tổng quan chỉ số hoạt động toàn hệ thống Edora & vận hành ghép gia
+            sư.
           </p>
         </div>
         <div className="flex items-center gap-3 text-xs text-content-secondary">

@@ -27,12 +27,12 @@ export default function AdminNavbar() {
       logo={
         <Link
           href="/admin/dashboard"
-          aria-label="TutorMatching — Tổng quan quản trị viên"
+          aria-label="Edora — Tổng quan quản trị viên"
           className="flex items-center gap-2"
         >
           <Logo variant="gradient" className="h-8 w-8" />
           <span className="hidden 2xl:inline font-bold tracking-tight">
-            TutorMatching
+            Edora
           </span>
           <span className="hidden sm:inline rounded-full bg-red-50 text-status-error px-2.5 py-0.5 text-xs font-semibold border border-red-200 dark:bg-red-950/60 dark:border-red-900">
             Quản trị
@@ -48,7 +48,8 @@ export default function AdminNavbar() {
             const isActive =
               item.href === "/admin/dashboard"
                 ? pathname === "/admin/dashboard"
-                : pathname === item.href || pathname.startsWith(`${item.href}/`);
+                : pathname === item.href ||
+                  pathname.startsWith(`${item.href}/`);
             return (
               <Link
                 key={item.href}

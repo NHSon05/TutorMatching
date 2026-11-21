@@ -77,7 +77,7 @@ export default function AdminSidebar({ onCloseMobile }: AdminSidebarProps) {
           <div className="flex flex-col">
             <div className="flex items-center gap-1.5">
               <span className="font-bold text-lg tracking-tight text-content-primary group-hover:text-status-error transition-colors">
-                TutorMatch
+                Edora
               </span>
               <span className="text-[11px] font-semibold px-2 py-0.5 bg-red-50 text-status-error dark:bg-red-950/60 dark:text-red-300 rounded-full border border-red-200 dark:border-red-900">
                 Admin
@@ -151,7 +151,10 @@ export default function AdminSidebar({ onCloseMobile }: AdminSidebarProps) {
                 data-testid="admin-sidebar-avatar"
               />
               <div className="flex flex-col min-w-0">
-                <span className="text-xs font-semibold text-gray-900 dark:text-gray-100 truncate" title={user.name}>
+                <span
+                  className="text-xs font-semibold text-gray-900 dark:text-gray-100 truncate"
+                  title={user.name}
+                >
                   {user.name}
                 </span>
                 <span className="text-[10px] text-green-600 font-medium flex items-center gap-1">
