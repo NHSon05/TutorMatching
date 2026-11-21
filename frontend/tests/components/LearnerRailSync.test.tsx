@@ -24,8 +24,8 @@ vi.mock("next/image", () => ({
   ),
 }));
 
-vi.mock("@/components/LogoutButton", () => ({
-  LogoutButton: () => <button type="button">Logout</button>,
+vi.mock("@/components/navigation/AccountMenu", () => ({
+  AccountMenu: () => <button type="button">Account</button>,
 }));
 
 describe("LearnerNavigationRail and DashboardTopBar synchronization", () => {

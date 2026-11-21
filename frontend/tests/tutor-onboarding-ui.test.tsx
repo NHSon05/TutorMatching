@@ -208,10 +208,11 @@ describe("Tutor Onboarding & Sidebar Visibility Guards", () => {
       expect(within(topBar).getByText("GS")).toBeInTheDocument();
       // The sidebar shows the very same initials (name/avatar are in sync).
       expect(within(screen.getByTestId("tutor-sidebar-avatar")).getByText("GS")).toBeInTheDocument();
-      // Top-bar logout, in addition to the sidebar's own.
-      expect(screen.getAllByRole("button", { name: "Đăng xuất" })).toHaveLength(
-        2
-      );
+      // Sidebar keeps its own logout; the top bar's lives in the avatar account menu.
+      expect(screen.getAllByRole("button", { name: "Đăng xuất" })).toHaveLength(1);
+      fireEvent.click(within(topBar).getByRole("button", { name: /^Tài khoản của/ }));
+      expect(within(topBar).getByRole("menuitem", { name: "Đăng xuất" })).toBeInTheDocument();
+      expect(within(topBar).getByRole("menuitem", { name: "Tài khoản" })).toHaveAttribute("href", "/profile");
     });
 
     it("collapses and expands the desktop sidebar from the top bar toggle", () => {

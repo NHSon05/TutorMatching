@@ -1,4 +1,4 @@
-import { screen, waitFor, within } from "@testing-library/react";
+import { fireEvent, screen, waitFor, within } from "@testing-library/react";
 import { render } from "./query-wrapper";
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import HomePage from "../src/app/(public)/page";
@@ -220,9 +220,10 @@ describe("TutorMatching Routing & Role Architecture", () => {
     expect(screen.getByText("Lịch học")).toBeInTheDocument();
     expect(screen.getByText("Tin nhắn")).toBeInTheDocument();
     expect(navigation.getByRole("link", { name: "Yêu cầu thuê" })).toHaveAttribute("href", "/learner/requests");
-    expect(screen.getByRole("button", { name: "Đăng xuất" })).toBeInTheDocument();
-    expect(screen.getByText("Nguyễn Hồng Sơn")).toBeInTheDocument();
-    expect(screen.getByText("Thành viên")).toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: "Tài khoản của Nguyễn Hồng Sơn" }));
+    expect(screen.getByRole("menuitem", { name: "Đăng xuất" })).toBeInTheDocument();
+    expect(screen.getAllByText("Nguyễn Hồng Sơn").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("Thành viên").length).toBeGreaterThan(0);
     expect(screen.getByTestId("learner-content")).toBeInTheDocument();
   });
 
@@ -241,7 +242,8 @@ describe("TutorMatching Routing & Role Architecture", () => {
       </SiteShell>
     );
 
-    expect(await screen.findByRole("button", { name: "Đăng xuất" })).toBeInTheDocument();
+    fireEvent.click(await screen.findByRole("button", { name: "Tài khoản của Nguyễn Hồng Sơn" }));
+    expect(screen.getByRole("menuitem", { name: "Đăng xuất" })).toBeInTheDocument();
     expect(screen.getByText("Edora")).toBeInTheDocument();
     expect(screen.getByText("Trang chủ")).toBeInTheDocument();
     expect(screen.getByTestId("tutors-content")).toBeInTheDocument();

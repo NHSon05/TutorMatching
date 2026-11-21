@@ -17,8 +17,9 @@ test("login, private profile, logout, then reject a copied cookie", async ({ pag
   await expect(page.getByRole("navigation", { name: "Tài khoản" })).toBeVisible();
   const cookies = await page.context().cookies();
   expect((await page.request.get(`${api}/users/me`)).status()).toBe(200);
-  await page.getByRole("button", { name: "Đăng xuất", exact: true }).click();
-  await expect(page).toHaveURL(/login/);
+  await page.getByRole("button", { name: /^Tài khoản của/ }).click();
+  await page.getByRole("menuitem", { name: "Đăng xuất" }).click();
+  await expect(page).toHaveURL(/\/$/);
   const replay = await browser.newContext();
   await replay.addCookies(cookies);
   expect((await replay.request.get(`${api}/users/me`)).status()).toBe(401);

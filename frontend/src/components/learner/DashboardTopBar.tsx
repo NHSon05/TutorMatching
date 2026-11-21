@@ -2,9 +2,9 @@
 
 import * as React from "react";
 import Link from "next/link";
-import { Avatar, TextField } from "../ui";
+import { TextField } from "../ui";
 import type { DashboardTopBarProps, DashboardUser } from "./types";
-import { LogoutButton } from "../LogoutButton";
+import { AccountMenu } from "../navigation/AccountMenu";
 import { NotificationBell } from "../notifications/NotificationBell";
 import { SidebarToggleIcon } from "../icons";
 import { useUIStore } from "@/stores/use-ui-store";
@@ -113,22 +113,14 @@ export function DashboardTopBar({
 
         <NotificationBell />
 
-        {/* User Avatar: same source (session) as the sidebar; falls back to initials. */}
-        <Link
-          href="/profile"
-          aria-label={`Hồ sơ của ${display.name}`}
-          title={display.name}
-          className="rounded-full"
-        >
-          <Avatar
-            src={display.avatarSrc}
-            alt={display.name}
-            fallbackText={display.initials}
-            data-testid="topbar-avatar"
-            className="border-2 border-white dark:border-gray-800 shadow-xs"
-          />
-        </Link>
-        <LogoutButton />
+        {/* User Avatar opens the account menu; same source (session) as the sidebar. */}
+        <AccountMenu
+          name={display.name}
+          avatarSrc={display.avatarSrc}
+          initials={display.initials}
+          subtitle={roleLabel}
+          avatarTestId="topbar-avatar"
+        />
       </div>
     </div>
   );
