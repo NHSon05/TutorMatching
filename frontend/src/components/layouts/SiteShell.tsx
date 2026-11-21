@@ -82,7 +82,11 @@ export function SiteShell({
 
   // 3. Shared routes (/messages, /settings) when accessed by non-learner (e.g. Tutor, Admin)
   if (isSharedRoute) {
-    if (!isLoading && account?.role === "TUTOR" && account?.tutorProfileStatus !== "APPROVED") {
+    if (
+      !isLoading &&
+      account?.role === "TUTOR" &&
+      account?.tutorProfileStatus !== "APPROVED"
+    ) {
       return null;
     }
 

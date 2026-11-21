@@ -27,7 +27,10 @@ export function DashboardTopBar({
   sidebarCollapsed,
 }: DashboardTopBarProps) {
   const [searchValue, setSearchValue] = React.useState("");
-  const display = toUserDisplay({ fullName: user.name, avatarUrl: user.avatar }, user.name);
+  const display = toUserDisplay(
+    { fullName: user.name, avatarUrl: user.avatar },
+    user.name
+  );
   const mode = useUIStore((state) => state.mode);
   const toggleMode = useUIStore((state) => state.toggleMode);
 
@@ -37,7 +40,7 @@ export function DashboardTopBar({
   const handleToggle = onToggleSidebar ?? toggleMode;
 
   return (
-    <div className="w-full flex flex-col  sm:flex-row sticky top-2 z-20 items-stretch sm:items-center justify-between gap-4 pb-6">
+    <div className="w-full flex flex-col sm:flex-row sticky top-2 z-20 items-stretch sm:items-center justify-between gap-4 pb-6">
       <Link
         href={mobileLink.href}
         className="md:hidden text-brand font-semibold"
@@ -111,7 +114,12 @@ export function DashboardTopBar({
         <NotificationBell />
 
         {/* User Avatar: same source (session) as the sidebar; falls back to initials. */}
-        <Link href="/profile" aria-label={`Hồ sơ của ${display.name}`} title={display.name} className="rounded-full">
+        <Link
+          href="/profile"
+          aria-label={`Hồ sơ của ${display.name}`}
+          title={display.name}
+          className="rounded-full"
+        >
           <Avatar
             src={display.avatarSrc}
             alt={display.name}

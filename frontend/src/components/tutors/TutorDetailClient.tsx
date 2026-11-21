@@ -221,7 +221,7 @@ export default function TutorDetailClient({
       </Card>
     );
     return (
-      <div className="mx-auto w-full max-w-7xl space-y-6 text-content-primary">
+      <div className="mx-auto w-full space-y-6 text-content-primary">
         <div className="grid gap-6 lg:grid-cols-3 lg:items-start">
           <div className="lg:col-span-2">
             <Card padding="none" className="relative overflow-hidden">

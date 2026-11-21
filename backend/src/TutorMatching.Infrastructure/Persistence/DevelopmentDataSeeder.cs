@@ -18,7 +18,11 @@ public sealed class DevelopmentDataSeeder(
     {
         await SeedProvincesAndDistrictsAsync();
         await SeedAdminAsync();
-        await SeedTutorsAsync();
+        // Demo tutors share a known password; set Seed__DemoTutors=false for real deployments.
+        if (!bool.TryParse(configuration["Seed:DemoTutors"], out var demoTutors) || demoTutors)
+        {
+            await SeedTutorsAsync();
+        }
     }
 
     private async Task SeedProvincesAndDistrictsAsync()
