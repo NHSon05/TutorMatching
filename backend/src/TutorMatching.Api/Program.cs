@@ -49,7 +49,9 @@ if (args.Contains("--seed-only"))
 }
 
 // Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment() || app.Environment.IsEnvironment("Testing"))
+// Outside Development/Testing, expose API docs only when Swagger__Enabled=true is set explicitly.
+if (app.Environment.IsDevelopment() || app.Environment.IsEnvironment("Testing")
+    || app.Configuration.GetValue<bool>("Swagger:Enabled"))
 {
     app.MapOpenApi().AllowAnonymous();
     app.UseSwaggerUI(options =>
