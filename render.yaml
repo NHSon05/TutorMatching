@@ -19,6 +19,10 @@ services:
     envVars:
       - key: PORT
         value: "8080"
+      # Render terminates TLS; trust its X-Forwarded-Proto/For so the app sees HTTPS
+      # (required by Secure antiforgery cookies) and real client IPs (rate limiting).
+      - key: ASPNETCORE_FORWARDEDHEADERS_ENABLED
+        value: "true"
       - key: ConnectionStrings__DefaultConnection
         sync: false # Supabase session pooler connection string
       - key: ConnectionStrings__Redis
