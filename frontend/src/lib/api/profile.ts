@@ -1,5 +1,5 @@
 import type { AccountResponse } from "@/lib/api/auth";
-import { API_BASE_URL, http } from "@/lib/api/http";
+import { apiAssetUrl, http } from "@/lib/api/http";
 
 export interface PersonalProfileResponse extends AccountResponse {
   phoneNumber: string | null;
@@ -25,7 +25,7 @@ export async function updateCurrentProfile(request: UpdateProfileRequest): Promi
 export function resolveAvatarUrl(value?: string | null): string | undefined {
   if (!value) return undefined;
   if (value.startsWith("/uploads/avatars/")) {
-    return new URL(value, new URL(API_BASE_URL, typeof window === "undefined" ? "http://localhost:3000" : window.location.origin).origin).href;
+    return apiAssetUrl(value);
   }
   try {
     const url = new URL(value);
