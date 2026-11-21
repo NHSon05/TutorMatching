@@ -1,4 +1,4 @@
-import { http, API_BASE_URL } from "./http";
+import { http, apiAssetUrl } from "./http";
 export interface PublicSubject {
   subjectId: string;
   name: string;
@@ -76,7 +76,7 @@ export async function getTutors(
 export function publicAvatarUrl(value: string | null) {
   if (!value) return undefined;
   if (value.startsWith("/uploads/avatars/") && !value.includes(".."))
-    return new URL(value, API_BASE_URL).href;
+    return apiAssetUrl(value);
   return /^https?:\/\//.test(value) ? value : undefined;
 }
 export interface PublicTutorDetail extends TutorListItemResponse {

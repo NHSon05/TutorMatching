@@ -5,6 +5,14 @@ export const API_BASE_URL = (
   process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:5014/api/v1"
 ).replace(/\/+$/, "");
 
+/**
+ * URL for a file served by the API (e.g. `/uploads/...`). With an absolute API base it
+ * points at the API origin; with a same-origin proxy base (`/api/v1`) it stays root-relative.
+ */
+export function apiAssetUrl(path: string): string {
+  return /^https?:\/\//i.test(API_BASE_URL) ? new URL(path, API_BASE_URL).href : path;
+}
+
 export class ApiError extends Error {
   readonly title: string;
 

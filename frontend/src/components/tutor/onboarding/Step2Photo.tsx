@@ -4,6 +4,7 @@ import React, { useState, useRef } from "react";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { uploadTutorAvatar } from "@/lib/api/tutor-onboarding";
+import { apiAssetUrl } from "@/lib/api/http";
 
 interface Step2PhotoProps {
   avatarUrl?: string;
@@ -64,7 +65,7 @@ export function Step2Photo({ avatarUrl, onUploaded, error, onUploadingChange }: 
           <div className="relative w-36 h-36 rounded-full overflow-hidden border-4 border-brand-500/20 bg-gray-100 shadow-md flex items-center justify-center">
             {avatarUrl ? (
               <Image
-                src={avatarUrl.startsWith("http") ? avatarUrl : `http://localhost:5014${avatarUrl}`}
+                src={avatarUrl.startsWith("http") ? avatarUrl : apiAssetUrl(avatarUrl)}
                 alt="Avatar preview"
                 fill
                 sizes="144px"
