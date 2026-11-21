@@ -9,14 +9,23 @@ import type { GoogleRoleRequired } from "@/lib/auth/session";
 import { useGoogleSignIn } from "@/hooks/use-auth";
 
 const GOOGLE_SCRIPT_SRC = "https://accounts.google.com/gsi/client";
-const MIN_BUTTON_WIDTH = 200;
-const MAX_BUTTON_WIDTH = 400; // Google Identity Services limit.
+const GOOGLE_BUTTON_WIDTH = 400; // Google Identity Services maximum.
+const FALLBACK_LABEL = "Đăng nhập với Google";
+const BUTTON_LABELS: Record<
+  NonNullable<GoogleSignInButtonProps["text"]>,
+  string
+> = {
+  signin_with: "Đăng nhập bằng Google",
+  continue_with: "Tiếp tục với Google",
+  signup_with: "Đăng ký bằng Google",
+};
 
 export const GOOGLE_NOT_CONFIGURED_MESSAGE =
   "Đăng nhập Google chưa được cấu hình. Vui lòng dùng email và mật khẩu.";
 export const GOOGLE_SIGN_IN_FAILED_MESSAGE =
   "Không thể đăng nhập bằng Google. Vui lòng thử lại hoặc dùng email và mật khẩu.";
-export const GOOGLE_RATE_LIMITED_MESSAGE = "Bạn đã thử quá nhiều lần. Vui lòng đợi một lát rồi thử lại.";
+export const GOOGLE_RATE_LIMITED_MESSAGE =
+  "Bạn đã thử quá nhiều lần. Vui lòng đợi một lát rồi thử lại.";
 
 export interface GoogleSignInButtonProps {
   /** Text shown inside Google's button. */
@@ -30,7 +39,8 @@ export interface GoogleSignInButtonProps {
 }
 
 export function googleErrorMessage(error: unknown): string {
-  if (error instanceof ApiError && error.status === 429) return GOOGLE_RATE_LIMITED_MESSAGE;
+  if (error instanceof ApiError && error.status === 429)
+    return GOOGLE_RATE_LIMITED_MESSAGE;
   return GOOGLE_SIGN_IN_FAILED_MESSAGE;
 }
 
@@ -51,7 +61,9 @@ export function GoogleSignInButton({
   const { mutateAsync: signInWithGoogle, isPending } = useGoogleSignIn();
 
   // Google keeps the first callback it was given; route it to the latest props.
-  const handleCredentialRef = useRef<(response: GoogleCredentialResponse) => void>(() => {});
+  const handleCredentialRef = useRef<
+    (response: GoogleCredentialResponse) => void
+  >(() => {});
   useEffect(() => {
     handleCredentialRef.current = async ({ credential }) => {
       onStart?.();
@@ -71,63 +83,112 @@ export function GoogleSignInButton({
     if (!container || !identity) return;
     identity.initialize({
       client_id: clientId,
-      callback: response => handleCredentialRef.current(response),
+      callback: (response) => handleCredentialRef.current(response),
       ux_mode: "popup",
       auto_select: false,
       cancel_on_tap_outside: true,
     });
-    const width = Math.min(MAX_BUTTON_WIDTH, Math.max(MIN_BUTTON_WIDTH, Math.floor(container.offsetWidth)));
     container.replaceChildren();
     identity.renderButton(container, {
       type: "standard",
       theme: "outline",
       size: "large",
       text,
-      shape: "pill",
+      shape: "rectangular",
       logo_alignment: "center",
-      width,
+      width: GOOGLE_BUTTON_WIDTH,
       locale: "vi",
     });
     setIsRendered(true);
   };
 
+  // Google's button cannot be wider than 400px. Stretch the invisible real button over the
+  // full-width visual one so a click anywhere on it still opens Google's popup.
+  const overlayRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    const overlay = overlayRef.current;
+    const container = containerRef.current;
+    if (!overlay || !container || !isRendered) return;
+    const fit = () => {
+      const scaleX = overlay.offsetWidth / GOOGLE_BUTTON_WIDTH;
+      const scaleY = overlay.offsetHeight / Math.max(1, container.offsetHeight);
+      container.style.transform = `scale(${scaleX}, ${scaleY})`;
+    };
+    fit();
+    const observer =
+      typeof ResizeObserver === "undefined" ? null : new ResizeObserver(fit);
+    observer?.observe(overlay);
+    return () => observer?.disconnect();
+  }, [isRendered]);
+
   if (!clientId) {
     return (
-      <Button
-        type="button"
-        variant="secondary"
-        size="medium"
-        shape="rounded"
-        isFullWidth
+      <GoogleVisualButton
+        label={FALLBACK_LABEL}
         onClick={() => onError(GOOGLE_NOT_CONFIGURED_MESSAGE)}
-        leadingIcon={<GoogleLogo />}
-        className="bg-white hover:bg-gray-50 border-gray-200 text-gray-700 font-semibold shadow-xs"
-      >
-        Đăng nhập với Google
-      </Button>
+      />
     );
   }
 
   return (
     <div className="relative w-full" aria-busy={isPending}>
-      <Script src={GOOGLE_SCRIPT_SRC} strategy="afterInteractive" onReady={renderGoogleButton} />
-      {!isRendered && (
-        <div
-          aria-hidden="true"
-          className="h-11 w-full rounded-full border border-gray-200 bg-gray-50 animate-pulse"
-        />
-      )}
-      <div
-        ref={containerRef}
-        data-testid="google-signin-button"
-        className={`flex w-full justify-center ${isPending ? "pointer-events-none opacity-60" : ""}`}
+      <Script
+        src={GOOGLE_SCRIPT_SRC}
+        strategy="afterInteractive"
+        onReady={renderGoogleButton}
       />
+      <div
+        className={`group relative w-full rounded-xl focus-within:ring-2 focus-within:ring-brand focus-within:ring-offset-2 ${
+          isPending ? "pointer-events-none opacity-60" : ""
+        } ${isRendered ? "" : "animate-pulse"}`}
+      >
+        {/* Visual only: keyboard and screen readers reach Google's real button in the overlay. */}
+        <GoogleVisualButton label={BUTTON_LABELS[text]} decorative />
+        <div
+          ref={overlayRef}
+          className="absolute inset-0 overflow-hidden opacity-0"
+        >
+          <div
+            ref={containerRef}
+            data-testid="google-signin-button"
+            className="w-fit origin-top-left"
+          />
+        </div>
+      </div>
       {isPending && (
-        <p role="status" className="mt-2 text-center text-sm text-gray-500">
+        <p role="status" className="mt-2 text-center text-base text-gray-500">
           Đang đăng nhập bằng Google...
         </p>
       )}
     </div>
+  );
+}
+
+/** Full-width Google button styled like the other auth buttons. */
+function GoogleVisualButton({
+  label,
+  onClick,
+  decorative = false,
+}: {
+  label: string;
+  onClick?: () => void;
+  decorative?: boolean;
+}) {
+  return (
+    <Button
+      type="button"
+      variant="secondary"
+      size="large"
+      shape="rounded"
+      isFullWidth
+      onClick={onClick}
+      tabIndex={decorative ? -1 : undefined}
+      aria-hidden={decorative || undefined}
+      leadingIcon={<GoogleLogo />}
+      className="bg-white hover:bg-gray-50 group-hover:bg-gray-50 border-gray-200 text-gray-700 font-semibold shadow-xs"
+    >
+      {label}
+    </Button>
   );
 }
 

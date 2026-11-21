@@ -5,13 +5,14 @@ import { useState } from "react";
 import Logo from "@assets/logo/Logo";
 import { Button } from "../ui";
 import { AUTH_OPEN_TYPES } from "@/lib/navigation/transition-types";
+import { CourseMegaMenu, CourseMenuMobile } from "./CourseMegaMenu";
 
 export default function PublicNavbar() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   return (
     <header className="w-full fixed top-2 z-20 px-3 sm:px-6 transition-all">
-      <div className="max-w-[1776px] mx-auto h-18 rounded-[36px] bg-surface-card backdrop-blur-2xl border border-border-default shadow-sm px-4 sm:px-7 lg:px-9 flex items-center justify-between gap-4">
+      <div className="relative max-w-[1776px] mx-auto h-18 rounded-[36px] bg-surface-card backdrop-blur-2xl border border-border-default shadow-sm px-4 sm:px-7 lg:px-9 flex items-center justify-between gap-4">
         {/* Left: Mobile Toggle & Desktop Pill Navigation Links */}
         <div className="flex items-center gap-2 lg:flex-1">
           <button
@@ -67,6 +68,7 @@ export default function PublicNavbar() {
             >
               Gia sư
             </Link>
+            <CourseMegaMenu />
             <Link
               href="#ai-platform"
               className="px-4 py-2 rounded-full hover:bg-gray-900/5 transition-colors"
@@ -138,6 +140,7 @@ export default function PublicNavbar() {
           >
             Tìm gia sư
           </Link>
+          <CourseMenuMobile onNavigate={() => setMobileMenuOpen(false)} />
           <Link
             href="#ai-platform"
             onClick={() => setMobileMenuOpen(false)}

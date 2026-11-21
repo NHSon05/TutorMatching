@@ -23,7 +23,7 @@ export default function SharedNavbar() {
               T
             </span>
             <span className="font-bold text-gray-900 tracking-tight">
-              TutorMatching
+              Edora
             </span>
           </Link>
 

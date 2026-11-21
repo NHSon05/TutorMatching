@@ -100,14 +100,14 @@ export default function TutorDetailClient({
   const renderContent = () => {
     if (query.isPending)
       return (
-        <div className="mx-auto w-full max-w-7xl space-y-4">
+        <div className="mx-auto w-full max-w-[1776px] space-y-4">
           {back}
           <p role="status">Đang tải hồ sơ gia sư...</p>
         </div>
       );
     if (query.isError)
       return (
-        <div className="mx-auto w-full max-w-7xl">
+        <div className="mx-auto w-full max-w-[1776px]">
           <Card className="space-y-4">
             <h1 className="text-xl font-bold">
               {query.error instanceof ApiError && query.error.status === 404

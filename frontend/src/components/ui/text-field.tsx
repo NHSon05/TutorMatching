@@ -3,8 +3,10 @@ import * as React from "react";
 export type TextFieldSize = "small" | "medium" | "large";
 export type TextFieldVariant = "outlined" | "filled";
 
-export interface TextFieldProps
-  extends Omit<React.InputHTMLAttributes<HTMLInputElement>, "size" | "prefix"> {
+export interface TextFieldProps extends Omit<
+  React.InputHTMLAttributes<HTMLInputElement>,
+  "size" | "prefix"
+> {
   label?: React.ReactNode;
   helperText?: React.ReactNode;
   error?: string | boolean;
@@ -106,7 +108,9 @@ export const TextField = React.forwardRef<HTMLInputElement, TextFieldProps>(
     const canClear = isClearable && !disabled && Boolean(resolvedValue);
 
     return (
-      <div className={`${isFullWidth ? "w-full" : "w-auto inline-block"} ${className}`}>
+      <div
+        className={`${isFullWidth ? "w-full" : "w-auto inline-block"} ${className}`}
+      >
         {label && (
           <label
             htmlFor={inputId}
@@ -123,8 +127,8 @@ export const TextField = React.forwardRef<HTMLInputElement, TextFieldProps>(
             hasError
               ? "border-status-error focus-within:ring-2 focus-within:ring-status-error/30"
               : variant === "filled"
-              ? "bg-gray-100 dark:bg-gray-800 border-transparent focus-within:bg-white dark:focus-within:bg-gray-900 focus-within:border-gray-900 dark:focus-within:border-white focus-within:ring-2 focus-within:ring-gray-900/10"
-              : "bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-700 focus-within:border-gray-900 dark:focus-within:border-white focus-within:ring-2 focus-within:ring-gray-900/10 shadow-2xs"
+                ? "bg-gray-100 dark:bg-gray-800 border-transparent focus-within:bg-white dark:focus-within:bg-gray-900 focus-within:border-gray-900 dark:focus-within:border-white focus-within:ring-2 focus-within:ring-gray-900/10"
+                : "bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-700 focus-within:border-gray-900 dark:focus-within:border-white focus-within:ring-2 focus-within:ring-gray-900/10 shadow-2xs"
           } ${disabled ? "opacity-50 bg-gray-50 dark:bg-gray-800/50 cursor-not-allowed" : ""}`}
         >
           {leadingIcon && (
@@ -160,7 +164,13 @@ export const TextField = React.forwardRef<HTMLInputElement, TextFieldProps>(
               onClick={handleClear}
               className="p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition-colors shrink-0 mr-1"
             >
-              <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+              <svg
+                className="w-3.5 h-3.5"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2.5"
+              >
                 <line x1="18" y1="6" x2="6" y2="18" />
                 <line x1="6" y1="6" x2="18" y2="18" />
               </svg>
@@ -181,10 +191,16 @@ export const TextField = React.forwardRef<HTMLInputElement, TextFieldProps>(
         </div>
 
         {errorMessage && (
-          <p className={`text-status-error font-medium ${currentSize.helper}`}>{errorMessage}</p>
+          <p className={`text-status-error font-medium ${currentSize.helper}`}>
+            {errorMessage}
+          </p>
         )}
         {helperText && !errorMessage && (
-          <p className={`text-gray-500 dark:text-gray-400 ${currentSize.helper}`}>{helperText}</p>
+          <p
+            className={`text-gray-500 dark:text-gray-400 ${currentSize.helper}`}
+          >
+            {helperText}
+          </p>
         )}
       </div>
     );

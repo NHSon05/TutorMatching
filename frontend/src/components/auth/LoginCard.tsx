@@ -134,7 +134,7 @@ export default function LoginCard({
       {/* CỘT PHẢI: FORM ĐĂNG NHẬP & FAST-ACCESS BUTTONS (lg:col-span-5)           */}
       {/* ========================================================================= */}
       <div className="lg:col-span-5 flex flex-col justify-center px-2 sm:px-16 py-4 sm:py-6">
-        <h2 className="text-3xl font-extrabold text-gray-900 text-center mb-4 tracking-tight">
+        <h2 className="text-3xl font-semibold text-gray-900 text-center mb-4 tracking-tight">
           Đăng Nhập
         </h2>
 
@@ -144,13 +144,13 @@ export default function LoginCard({
           <div>
             <TextField
               label={
-                <span className="text-base font-semibold text-gray-800">
+                <span className="text-lg font-semibold text-gray-800">
                   Email
                 </span>
               }
               type="email"
               required
-              size="medium"
+              size="large"
               placeholder="example@gmail.com"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
@@ -161,13 +161,13 @@ export default function LoginCard({
           <div>
             <TextField
               label={
-                <span className="text-base font-semibold text-gray-800">
+                <span className="text-lg font-semibold text-gray-800">
                   Mật khẩu
                 </span>
               }
               type={showPassword ? "text" : "password"}
               required
-              size="medium"
+              size="large"
               placeholder="••••••••••••••••"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
@@ -218,7 +218,7 @@ export default function LoginCard({
               type="submit"
               disabled={isSubmitting}
               variant="brand"
-              size="medium"
+              size="large"
               shape="rounded"
               className="w-full text-base font-semibold"
             >

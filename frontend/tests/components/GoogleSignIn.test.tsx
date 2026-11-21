@@ -76,7 +76,7 @@ it("renders Google's own enabled button with the configured client id", async ()
   );
   expect(window.google!.accounts.id.renderButton).toHaveBeenCalledWith(
     expect.any(HTMLElement),
-    expect.objectContaining({ theme: "outline", shape: "pill", locale: "vi" }),
+    expect.objectContaining({ theme: "outline", width: 400, locale: "vi" }),
   );
 });
 
