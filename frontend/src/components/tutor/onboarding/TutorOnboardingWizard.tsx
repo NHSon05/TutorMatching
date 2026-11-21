@@ -422,18 +422,17 @@ export function TutorOnboardingWizard() {
 
   return (
     <div className="max-w-4xl mx-auto space-y-8 pb-12">
-      <p>Trạng thái hồ sơ: {profileStatus}</p>
-      {ownerId && <TutorReviewHistory accountId={ownerId} />}
+      {/* {ownerId && <TutorReviewHistory accountId={ownerId} />} */}
       {/* ========================================================================= */}
       {/* HEADER VÀ STEPPER TIẾN ĐỘ 6 BƯỚC                                          */}
       {/* ========================================================================= */}
       <div className="bg-white rounded-2xl border border-gray-200 p-6 shadow-2xs">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-6">
           <div>
-            <h1 className="text-2xl font-extrabold text-gray-900 tracking-tight">
-              Hoàn thiện hồ sơ Gia sư
+            <h1 className="text-2xl font-semibold text-gray-900 tracking-tight">
+              Hoàn thiện hồ sơ
             </h1>
-            <p className="text-xs text-gray-500 mt-1">
+            <p className="text-sm text-neutrla-900 mt-1">
               Bước {currentStep}/6: {STEPS[currentStep - 1].title} —{" "}
               {STEPS[currentStep - 1].description}
             </p>
@@ -617,7 +616,7 @@ export function TutorOnboardingWizard() {
                 disabled={isSavingDraft || isSubmitting || isAvatarUploading}
                 onClick={handleNext}
               >
-                Tiếp tục bước tiếp theo →
+                Tiếp theo →
               </Button>
             ) : (
               <Button

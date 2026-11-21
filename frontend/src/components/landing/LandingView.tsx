@@ -44,7 +44,7 @@ export default function LandingView() {
           SECTION 1: WORKDAY FULL-BLEED HERO + AI CONCIERGE BAR
       ===================================================================== */}
       <section id="hero" className="px-3 sm:px-6 pt-3 pb-4">
-        <div className="relative max-w-[1776px] mx-auto min-h-190 lg:min-h-210 rounded-[36px] overflow-hidden flex flex-col justify-between px-4 sm:px-10 lg:px-16 py-14 sm:py-20 shadow-xl">
+        <div className="relative mx-auto min-h-190 lg:min-h-210 rounded-[36px] overflow-hidden flex flex-col justify-between px-4 sm:px-10 lg:px-16 py-14 sm:py-20 shadow-xl">
           {/* Background Photography (User's section-1.webp) */}
           <div className="absolute inset-0">
             <Image
@@ -137,7 +137,7 @@ export default function LandingView() {
       ===================================================================== */}
       <section
         id="about"
-        className="max-w-381.5 mx-auto px-4 sm:px-8 py-20 lg:py-28"
+        className="max-w-[1776px] mx-auto px-4 sm:px-8 py-20 lg:py-28"
       >
         <div className="max-w-4xl mx-auto text-center">
           <h2 className="text-3xl sm:text-5xl lg:text-6xl lg:leading-15 font-bold tracking-tight text-brand-900">
@@ -382,7 +382,7 @@ export default function LandingView() {
       ===================================================================== */}
       <section
         id="testimonials"
-        className="max-w-381.5 mx-auto px-4 sm:px-8 py-20 lg:py-28"
+        className="max-w-[1776px] mx-auto px-4 sm:px-8 py-20 lg:py-28"
       >
         {/* Split Header */}
         <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-6">
@@ -490,7 +490,8 @@ export default function LandingView() {
       ===================================================================== */}
       <section
         id="solutions"
-        className="max-w-381.5 mx-auto px-4 sm:px-8 py-16 lg:py-24"
+        className="max-w-[1776px] mx-auto
+        "
       >
         <div className="max-w-3xl mx-auto text-center mb-14 lg:mb-20">
           <h2 className="text-3xl sm:text-5xl lg:text-[56px] lg:leading-15 font-bold tracking-tight text-brand-950">
