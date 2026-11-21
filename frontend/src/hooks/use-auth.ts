@@ -9,6 +9,7 @@ import {
   logout,
   type GoogleRegistrationRole,
 } from "@/lib/auth/session";
+import { markUserSignedOut } from "@/lib/auth/logout-redirect";
 import { replaceSession } from "@/lib/query/client";
 
 export function useLogin() {
@@ -54,7 +55,10 @@ export function useLogout() {
   const client = useQueryClient();
   return useMutation({
     mutationFn: logout,
-    onSuccess: () => replaceSession(client, null),
+    onSuccess: () => {
+      markUserSignedOut();
+      replaceSession(client, null);
+    },
     retry: false,
     gcTime: 0,
   });

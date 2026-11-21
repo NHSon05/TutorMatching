@@ -16,6 +16,7 @@ import {
   UsersIcon,
 } from "../icons";
 import { AUTH_OUT_TYPES } from "@/lib/navigation/transition-types";
+import { POST_LOGOUT_PATH } from "@/lib/auth/logout-redirect";
 import { Avatar } from "@/components/ui/avatar";
 import { toUserDisplay } from "@/lib/auth/user-display";
 import { formatBadgeCount, useMessengerBadge } from "@/hooks/use-messenger-badge";
@@ -36,7 +37,7 @@ export function TutorSidebar({ onCloseMobile }: TutorSidebarProps) {
     if (isPending) return;
     try {
       await logout();
-      router.replace("/login", { transitionTypes: AUTH_OUT_TYPES });
+      router.replace(POST_LOGOUT_PATH, { transitionTypes: AUTH_OUT_TYPES });
     } catch {
       router.replace("/login", { transitionTypes: AUTH_OUT_TYPES });
     }
